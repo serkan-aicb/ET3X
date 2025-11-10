@@ -8,8 +8,10 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 import { createClient } from "../../lib/supabase/client";
+import { Suspense } from "react";
 
-export default function StudentLogin() {
+// Separate component for the main content that uses useSearchParams
+function StudentLoginContent() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
@@ -77,6 +79,93 @@ export default function StudentLogin() {
   };
 
   return (
+    <Card className="w-full max-w-md shadow-xl rounded-2xl overflow-hidden">
+      <CardHeader className="bg-blue-600 text-white text-center">
+        <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center mx-auto mb-4">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+          </svg>
+        </div>
+        <CardTitle className="text-2xl">Student Login</CardTitle>
+        <CardDescription className="text-blue-100">
+          Enter your email to receive a magic link for login
+        </CardDescription>
+      </CardHeader>
+      <form onSubmit={handleLogin}>
+        <CardContent className="space-y-6 pt-6">
+          <div className="space-y-2">
+            <Label htmlFor="email" className="text-gray-700">Email</Label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="student@university.edu"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="py-3 px-4 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+            />
+          </div>
+          {message && (
+            <div className={`p-3 rounded-lg ${message.includes("Check your email") ? "bg-green-50 text-green-700 border border-green-200" : "bg-red-50 text-red-700 border border-red-200"}`}>
+              {message}
+            </div>
+          )}
+          {error && (
+            <div className="p-3 rounded-lg bg-red-50 text-red-700 border border-red-200">
+              {error}
+            </div>
+          )}
+        </CardContent>
+        <CardFooter className="flex flex-col space-y-4">
+          <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium" disabled={loading}>
+            {loading ? (
+              <span className="flex items-center justify-center">
+                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Sending...
+              </span>
+            ) : "Send Magic Link"}
+          </Button>
+          <Button type="button" variant="outline" className="w-full border-blue-600 text-blue-600 hover:bg-blue-50 py-3 rounded-lg font-medium" onClick={() => router.push('/')}>
+            Back to Home
+          </Button>
+        </CardFooter>
+      </form>
+    </Card>
+  );
+}
+
+// Loading fallback component
+function StudentLoginLoading() {
+  return (
+    <Card className="w-full max-w-md shadow-xl rounded-2xl overflow-hidden">
+      <CardHeader className="bg-blue-600 text-white text-center">
+        <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center mx-auto mb-4">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+          </svg>
+        </div>
+        <CardTitle className="text-2xl">Student Login</CardTitle>
+        <CardDescription className="text-blue-100">
+          Enter your email to receive a magic link for login
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6 pt-6">
+        <div className="space-y-2">
+          <div className="h-5 bg-gray-200 rounded w-1/3"></div>
+          <div className="h-12 bg-gray-200 rounded-lg"></div>
+        </div>
+        <div className="h-12 bg-gray-200 rounded-lg"></div>
+        <div className="h-12 bg-gray-200 rounded-lg"></div>
+      </CardContent>
+    </Card>
+  );
+}
+
+export default function StudentLogin() {
+  return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col">
       {/* Header */}
       <header className="py-6 px-4 sm:px-6 lg:px-8">
@@ -92,61 +181,9 @@ export default function StudentLogin() {
 
       {/* Main Content */}
       <main className="flex-grow flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-        <Card className="w-full max-w-md shadow-xl rounded-2xl overflow-hidden">
-          <CardHeader className="bg-blue-600 text-white text-center">
-            <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center mx-auto mb-4">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-              </svg>
-            </div>
-            <CardTitle className="text-2xl">Student Login</CardTitle>
-            <CardDescription className="text-blue-100">
-              Enter your email to receive a magic link for login
-            </CardDescription>
-          </CardHeader>
-          <form onSubmit={handleLogin}>
-            <CardContent className="space-y-6 pt-6">
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-gray-700">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="student@university.edu"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="py-3 px-4 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                />
-              </div>
-              {message && (
-                <div className={`p-3 rounded-lg ${message.includes("Check your email") ? "bg-green-50 text-green-700 border border-green-200" : "bg-red-50 text-red-700 border border-red-200"}`}>
-                  {message}
-                </div>
-              )}
-              {error && (
-                <div className="p-3 rounded-lg bg-red-50 text-red-700 border border-red-200">
-                  {error}
-                </div>
-              )}
-            </CardContent>
-            <CardFooter className="flex flex-col space-y-4">
-              <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium" disabled={loading}>
-                {loading ? (
-                  <span className="flex items-center justify-center">
-                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Sending...
-                  </span>
-                ) : "Send Magic Link"}
-              </Button>
-              <Button type="button" variant="outline" className="w-full border-blue-600 text-blue-600 hover:bg-blue-50 py-3 rounded-lg font-medium" onClick={() => router.push('/')}>
-                Back to Home
-              </Button>
-            </CardFooter>
-          </form>
-        </Card>
+        <Suspense fallback={<StudentLoginLoading />}>
+          <StudentLoginContent />
+        </Suspense>
       </main>
 
       {/* Footer */}

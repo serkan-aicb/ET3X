@@ -1,8 +1,12 @@
 import { NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
+import { type NextRequest } from 'next/server'
 
-export async function GET(request: Request, { params }: { params: { path: string[] } }) {
-  const path = params.path
+// Updated to properly handle the route parameters according to Next.js App Router requirements
+export async function GET(request: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
+  // Unwrap the params promise
+  const unwrappedParams = await params
+  const path = unwrappedParams.path
   
   // Check if path is valid (should be [role, id])
   if (!path || path.length !== 2) {

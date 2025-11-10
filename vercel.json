@@ -1,31 +1,3 @@
 {
-  "version": 2,
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/next",
-      "config": {
-        "includeFiles": [
-          ".env"
-        ]
-      }
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/"
-    }
-  ],
-  "env": {
-    "NEXT_PUBLIC_SUPABASE_URL": "@next_public_supabase_url",
-    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "@next_public_supabase_anon_key",
-    "SUPABASE_SERVICE_ROLE_KEY": "@supabase_service_role_key",
-    "ENVELOPE_MASTER_KEY": "@envelope_master_key",
-    "PINATA_JWT": "@pinata_jwt",
-    "POLYGON_RPC_URL": "@polygon_rpc_url",
-    "WALLET_PRIVATE_KEY": "@wallet_private_key",
-    "CONTRACT_ADDRESS": "@contract_address",
-    "SITE_BASE": "@site_base"
-  }
+  "version": 2
 }
