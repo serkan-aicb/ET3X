@@ -186,147 +186,82 @@ export default function Home() {
         </motion.div>
 
         {/* Animated Feature Cards */}
-        <motion.section 
+        <section 
           id="get-started"
           className="mt-24 w-full max-w-7xl"
-          variants={container}
-          initial="hidden"
-          animate="show"
         >
-          <motion.h2 
-            className="text-4xl md:text-5xl font-bold text-center text-gray-900 mb-16"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
-            viewport={{ once: true }}
-          >
+          <h2 className="text-4xl md:text-5xl font-bold text-center text-gray-900 mb-16">
             Choose Your <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Path</span>
-          </motion.h2>
+          </h2>
           
           <div className="grid gap-10 md:grid-cols-3">
-            <motion.div
-              variants={item}
-              whileHover={{ y: -15 }}
-              transition={{ type: "spring", stiffness: 300 }}
-            >
-              <Card className="bg-white/80 backdrop-blur-lg shadow-2xl rounded-3xl overflow-hidden h-full border-0 hover:shadow-2xl transition-all duration-500 relative group">
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                <CardHeader className="relative overflow-hidden">
-                  <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxkZWZzPjxwYXR0ZXJuIGlkPSJwYXR0ZXJuIiB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHBhdHRlcm5Vbml0cz0idXNlclNwYWNlT25Vc2UiIHBhdHRlcm5UcmFuc2Zvcm09InJvdGF0ZSg0NSkiPjxjaXJjbGUgY3g9IjEwIiBjeT0iMTAiIHI9IjAuNSIgZmlsbD0id2hpdGUiIGZpbGwtb3BhY2l0eT0iMC4xIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI3BhdHRlcm4pIi8+PC9zdmc+')] opacity-20"></div>
-                  <motion.div 
-                    className="w-20 h-20 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-6"
-                    animate={{
-                      y: [0, -15, 0],
-                    }}
-                    transition={{
-                      duration: 4,
-                      repeat: Infinity,
-                      ease: "easeInOut"
-                    }}
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                    </svg>
-                  </motion.div>
-                  <CardTitle className="text-center text-3xl text-gray-900">Students</CardTitle>
-                  <CardDescription className="text-gray-600 text-center text-lg">
-                    Learn, grow, and showcase your skills
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="pt-8">
-                  <p className="mb-8 text-gray-700 text-lg">
-                    Explore tasks, request assignments, submit evidence, and earn portable credentials built on W3C standards and stored using IPFS-backed, verifiable records.
-                  </p>
-                  <Button asChild className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                    <Link href="/stud">Student Login</Link>
-                  </Button>
-                </CardContent>
-              </Card>
-            </motion.div>
+            <div className="bg-white shadow-xl rounded-3xl overflow-hidden h-full border-0">
+              <div className="p-8">
+                <div className="w-20 h-20 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-6">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                  </svg>
+                </div>
+                <h3 className="text-center text-3xl text-gray-900 font-bold mb-2">Students</h3>
+                <p className="text-gray-600 text-center text-lg mb-6">
+                  Learn, grow, and showcase your skills
+                </p>
+                <p className="mb-8 text-gray-700 text-lg">
+                  Explore tasks, request assignments, submit evidence, and earn portable credentials built on W3C standards and stored using IPFS-backed, verifiable records.
+                </p>
+                <Link href="/stud" className="block w-full">
+                  <div className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-6 text-lg font-semibold text-center cursor-pointer">
+                    Student Login
+                  </div>
+                </Link>
+              </div>
+            </div>
 
-            <motion.div
-              variants={item}
-              whileHover={{ y: -15 }}
-              transition={{ type: "spring", stiffness: 300 }}
-            >
-              <Card className="bg-white/80 backdrop-blur-lg shadow-2xl rounded-3xl overflow-hidden h-full border-0 hover:shadow-2xl transition-all duration-500 relative group">
-                <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-indigo-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                <CardHeader className="relative overflow-hidden">
-                  <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxkZWZzPjxwYXR0ZXJuIGlkPSJwYXR0ZXJuIiB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHBhdHRlcm5Vbml0cz0idXNlclNwYWNlT25Vc2UiIHBhdHRlcm5UcmFuc2Zvcm09InJvdGF0ZSg0NSkiPjxjaXJjbGUgY3g9IjEwIiBjeT0iMTAiIHI9IjAuNSIgZmlsbD0id2hpdGUiIGZpbGwtb3BhY2l0eT0iMC4xIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI3BhdHRlcm4pIi8+PC9zdmc+')] opacity-20"></div>
-                  <motion.div 
-                    className="w-20 h-20 rounded-full bg-purple-100 flex items-center justify-center mx-auto mb-6"
-                    animate={{
-                      y: [0, -15, 0],
-                    }}
-                    transition={{
-                      duration: 4,
-                      repeat: Infinity,
-                      ease: "easeInOut",
-                      delay: 0.2
-                    }}
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                    </svg>
-                  </motion.div>
-                  <CardTitle className="text-center text-3xl text-gray-900">Educators</CardTitle>
-                  <CardDescription className="text-gray-600 text-center text-lg">
-                    Create, assign, and assess learning
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="pt-8">
-                  <p className="mb-8 text-gray-700 text-lg">
-                    Create tasks with clear rubrics, assign work to individuals or teams, review submissions, and issue verifiable credentials anchored through W3C, IPFS, and Polygon-compatible standards.
-                  </p>
-                  <Button asChild className="w-full bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white rounded-xl py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                    <Link href="/edu">Educator Login</Link>
-                  </Button>
-                </CardContent>
-              </Card>
-            </motion.div>
+            <div className="bg-white shadow-xl rounded-3xl overflow-hidden h-full border-0">
+              <div className="p-8">
+                <div className="w-20 h-20 rounded-full bg-purple-100 flex items-center justify-center mx-auto mb-6">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                  </svg>
+                </div>
+                <h3 className="text-center text-3xl text-gray-900 font-bold mb-2">Educators</h3>
+                <p className="text-gray-600 text-center text-lg mb-6">
+                  Create, assign, and assess learning
+                </p>
+                <p className="mb-8 text-gray-700 text-lg">
+                  Create tasks with clear rubrics, assign work to individuals or teams, review submissions, and issue verifiable credentials anchored through W3C, IPFS, and Polygon-compatible standards.
+                </p>
+                <Link href="/edu" className="block w-full">
+                  <div className="w-full bg-purple-600 hover:bg-purple-700 text-white rounded-xl py-6 text-lg font-semibold text-center cursor-pointer">
+                    Educator Login
+                  </div>
+                </Link>
+              </div>
+            </div>
 
-            <motion.div
-              variants={item}
-              whileHover={{ y: -15 }}
-              transition={{ type: "spring", stiffness: 300 }}
-            >
-              <Card className="bg-white/80 backdrop-blur-lg shadow-2xl rounded-3xl overflow-hidden h-full border-0 hover:shadow-2xl transition-all duration-500 relative group">
-                <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                <CardHeader className="relative overflow-hidden">
-                  <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxkZWZzPjxwYXR0ZXJuIGlkPSJwYXR0ZXJuIiB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHBhdHRlcm5Vbml0cz0idXNlclNwYWNlT25Vc2UiIHBhdHRlcm5UcmFuc2Zvcm09InJvdGF0ZSg0NSkiPjxjaXJjbGUgY3g9IjEwIiBjeT0iMTAiIHI9IjAuNSIgZmlsbD0id2hpdGUiIGZpbGwtb3BhY2l0eT0iMC4xIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI3BhdHRlcm4pIi8+PC9zdmc+')] opacity-20"></div>
-                  <motion.div 
-                    className="w-20 h-20 rounded-full bg-indigo-100 flex items-center justify-center mx-auto mb-6"
-                    animate={{
-                      y: [0, -15, 0],
-                    }}
-                    transition={{
-                      duration: 4,
-                      repeat: Infinity,
-                      ease: "easeInOut",
-                      delay: 0.4
-                    }}
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                    </svg>
-                  </motion.div>
-                  <CardTitle className="text-center text-3xl text-gray-900">Administrators</CardTitle>
-                  <CardDescription className="text-gray-600 text-center text-lg">
-                    Oversee and manage programs
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="pt-8">
-                  <p className="mb-8 text-gray-700 text-lg">
-                    Oversee programs, track engagement and outcomes, and manage compliance while benefiting from decentralized, tamper-evident credential verification.
-                  </p>
-                  <Button asChild variant="outline" className="w-full border-indigo-600 text-indigo-600 hover:bg-indigo-50 rounded-xl py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                    <Link href="/admin-talent3x">Admin Login</Link>
-                  </Button>
-                </CardContent>
-              </Card>
-            </motion.div>
+            <div className="bg-white shadow-xl rounded-3xl overflow-hidden h-full border-0">
+              <div className="p-8">
+                <div className="w-20 h-20 rounded-full bg-indigo-100 flex items-center justify-center mx-auto mb-6">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <h3 className="text-center text-3xl text-gray-900 font-bold mb-2">Administrators</h3>
+                <p className="text-gray-600 text-center text-lg mb-6">
+                  Oversee and manage programs
+                </p>
+                <p className="mb-8 text-gray-700 text-lg">
+                  Oversee programs, track engagement and outcomes, and manage compliance while benefiting from decentralized, tamper-evident credential verification.
+                </p>
+                <Link href="/admin-talent3x" className="block w-full">
+                  <div className="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl py-6 text-lg font-semibold text-center cursor-pointer">
+                    Admin Login
+                  </div>
+                </Link>
+              </div>
+            </div>
           </div>
-        </motion.section>
+        </section>
 
         {/* How It Works Section */}
         <motion.section 
