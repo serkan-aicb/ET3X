@@ -55,6 +55,7 @@ export default function StudentTaskDetail() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         setMessage("You must be logged in to request a task.");
+        setRequesting(false);
         return;
       }
       
@@ -67,6 +68,7 @@ export default function StudentTaskDetail() {
       
       if (existingRequests && existingRequests.length > 0) {
         setMessage("You have already requested this task.");
+        setRequesting(false);
         return;
       }
       
@@ -83,6 +85,7 @@ export default function StudentTaskDetail() {
         throw error;
       }
       
+      // Show success message
       setMessage("Task requested successfully! The educator will review your request.");
     } catch (error: unknown) {
       if (error instanceof Error) {
@@ -313,6 +316,7 @@ export default function StudentTaskDetail() {
               </div>
             </div>
             
+            {/* Message display - this is already present but let's make sure it's styled properly */}
             {message && (
               <div className={`p-3 rounded-lg ${message.includes("successfully") ? "bg-green-50 text-green-700 border border-green-200" : "bg-red-50 text-red-700 border border-red-200"}`}>
                 {message}

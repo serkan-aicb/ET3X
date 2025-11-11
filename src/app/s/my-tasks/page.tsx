@@ -26,7 +26,10 @@ export default function StudentMyTasks() {
       
       // Get current user
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) {
+        router.push("/stud");
+        return;
+      }
       
       // Get tasks assigned to this student
       const { data, error } = await supabase
@@ -36,6 +39,7 @@ export default function StudentMyTasks() {
           task_assignments(id)
         `)
         .eq('task_assignments.assignee', user.id)
+        .in('status', ['assigned', 'delivered', 'rated']) // Include all relevant statuses
         .order('created_at', { ascending: false });
       
       if (!error && data) {

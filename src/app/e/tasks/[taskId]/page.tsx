@@ -34,6 +34,7 @@ export default function TaskDetail() {
   const [assignments, setAssignments] = useState<TaskAssignment[]>([]);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
+  const [message, setMessage] = useState(""); // Add this state for messages
   const router = useRouter();
   const params = useParams();
   const taskId = params.taskId as string;
@@ -107,41 +108,115 @@ export default function TaskDetail() {
   const handleAssignTask = async (applicantId: string) => {
     const supabase = createClient();
     
-    // Create task assignment
-    const { error: assignError } = await supabase
-      .from('task_assignments')
-      .insert({
-        task: taskId,
-        assignee: applicantId
-      });
-    
-    if (assignError) {
-      console.error("Error assigning task:", assignError);
-      return;
-    }
-    
-    // Update task status to 'assigned' if needed
-    const { data: assignments } = await supabase
-      .from('task_assignments')
-      .select('id')
-      .eq('task', taskId);
-    
-    if (assignments && assignments.length > 0) {
+    try {
+      // Check if this is a group task and if we need to assign multiple students
+      // For now, we'll implement the basic assignment and then extend it for group tasks
+      const { error: assignError } = await supabase
+        .from('task_assignments')
+        .insert({
+          task: taskId,
+          assignee: applicantId
+        });
+      
+      if (assignError) {
+        throw new Error(`Error assigning task: ${assignError.message}`);
+      }
+      
+      // Update task status to 'assigned'
       await supabase
         .from('tasks')
         .update({ status: 'assigned' })
         .eq('id', taskId);
+      
+      // Update request status
+      await supabase
+        .from('task_requests')
+        .update({ status: 'selected' })
+        .eq('task', taskId)
+        .eq('applicant', applicantId);
+      
+      // Set success message
+      setMessage("Task assigned successfully!");
+      
+      // Refresh data after a short delay to ensure database consistency
+      setTimeout(() => {
+        router.refresh();
+      }, 500);
+      
+      // Clear message after 3 seconds
+      setTimeout(() => setMessage(""), 3000);
+    } catch (error) {
+      console.error("Error assigning task:", error);
+      setMessage(`Error assigning task: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      
+      // Clear message after 5 seconds
+      setTimeout(() => setMessage(""), 5000);
     }
+  };
+
+  // Add a new function to handle group assignment
+  const handleAssignGroupTask = async (applicantIds: string[]) => {
+    const supabase = createClient();
     
-    // Update request status
-    await supabase
-      .from('task_requests')
-      .update({ status: 'selected' })
-      .eq('task', taskId)
-      .eq('applicant', applicantId);
-    
-    // Refresh data
-    router.refresh();
+    try {
+      // Create task assignments for all selected students
+      const assignments = applicantIds.map(applicantId => ({
+        task: taskId,
+        assignee: applicantId
+      }));
+      
+      const { error: assignError } = await supabase
+        .from('task_assignments')
+        .insert(assignments);
+      
+      if (assignError) {
+        throw new Error(`Error assigning task to group: ${assignError.message}`);
+      }
+      
+      // Update task status to 'assigned'
+      await supabase
+        .from('tasks')
+        .update({ status: 'assigned' })
+        .eq('id', taskId);
+      
+      // Update request status for all selected students
+      await supabase
+        .from('task_requests')
+        .update({ status: 'selected' })
+        .eq('task', taskId)
+        .in('applicant', applicantIds);
+      
+      // Set success message
+      setMessage(`Task assigned successfully to ${applicantIds.length} students!`);
+      
+      // Refresh data after a short delay to ensure database consistency
+      setTimeout(() => {
+        router.refresh();
+      }, 500);
+      
+      // Clear message after 3 seconds
+      setTimeout(() => setMessage(""), 3000);
+    } catch (error) {
+      console.error("Error assigning group task:", error);
+      setMessage(`Error assigning group task: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      
+      // Clear message after 5 seconds
+      setTimeout(() => setMessage(""), 5000);
+    }
+  };
+
+  // Add state for group selection
+  const [selectedApplicants, setSelectedApplicants] = useState<string[]>([]);
+  
+  // Function to toggle applicant selection
+  const toggleApplicantSelection = (applicantId: string) => {
+    setSelectedApplicants(prev => {
+      if (prev.includes(applicantId)) {
+        return prev.filter(id => id !== applicantId);
+      } else {
+        return [...prev, applicantId];
+      }
+    });
   };
 
   const handleDeclineRequest = async (applicantId: string) => {
@@ -214,10 +289,22 @@ export default function TaskDetail() {
         status: 'draft' // New task starts as draft
       });
     
-    if (!error) {
-      // Redirect to tasks page
-      router.push("/e/tasks");
+    if (error) {
+      console.error("Error duplicating task:", error);
+      // Show error message to user
+      setMessage("Error duplicating task. Please try again.");
+      setTimeout(() => setMessage(""), 3000);
+      return;
     }
+    
+    // Show success message
+    setMessage("Task duplicated successfully!");
+    setTimeout(() => setMessage(""), 3000);
+    
+    // Redirect to tasks page after a short delay
+    setTimeout(() => {
+      router.push("/e/tasks");
+    }, 1000);
   };
 
   if (loading) {
@@ -385,6 +472,13 @@ export default function TaskDetail() {
           </Button>
         </div>
         
+        {/* Add message display */}
+        {message && (
+          <div className={`p-3 rounded-lg mb-4 ${message.includes("successfully") ? "bg-green-50 text-green-700 border border-green-200" : "bg-red-50 text-red-700 border border-red-200"}`}>
+            {message}
+          </div>
+        )}
+        
         <Card className="shadow-lg rounded-xl overflow-hidden mb-8">
           <CardHeader className="bg-gray-50">
             <div className="flex justify-between items-start">
@@ -514,11 +608,20 @@ export default function TaskDetail() {
                     .filter(req => req.status === 'requested')
                     .map((request) => (
                       <div key={request.id} className="flex items-center justify-between p-4 border rounded-lg">
-                        <div className="flex flex-col">
-                          <span className="font-medium">@{request.profiles?.username || request.applicant}</span>
-                          {request.profiles?.did && (
-                            <span className="text-sm text-gray-500">{request.profiles.did}</span>
-                          )}
+                        <div className="flex items-center space-x-3">
+                          {/* Add checkbox for group selection */}
+                          <input
+                            type="checkbox"
+                            checked={selectedApplicants.includes(request.applicant)}
+                            onChange={() => toggleApplicantSelection(request.applicant)}
+                            className="h-5 w-5 text-blue-600 rounded focus:ring-blue-500"
+                          />
+                          <div className="flex flex-col">
+                            <span className="font-medium">{request.profiles?.username || request.applicant}</span>
+                            {request.profiles?.did && (
+                              <span className="text-sm text-gray-500">{request.profiles.did}</span>
+                            )}
+                          </div>
                         </div>
                         <div className="space-x-2">
                           <Button 
@@ -540,6 +643,17 @@ export default function TaskDetail() {
                       </div>
                     ))
                   }
+                  {/* Add group assignment button when multiple students are selected */}
+                  {selectedApplicants.length > 1 && (
+                    <div className="pt-4">
+                      <Button 
+                        className="bg-green-600 hover:bg-green-700"
+                        onClick={() => handleAssignGroupTask(selectedApplicants)}
+                      >
+                        Assign to {selectedApplicants.length} Selected Students
+                      </Button>
+                    </div>
+                  )}
                 </div>
               )}
             </CardContent>
@@ -562,7 +676,7 @@ export default function TaskDetail() {
                   {assignments.map((assignment) => (
                     <div key={assignment.id} className="flex items-center justify-between p-4 border rounded-lg">
                       <div className="flex flex-col">
-                        <span className="font-medium">@{assignment.profiles?.username || assignment.assignee}</span>
+                        <span className="font-medium">{assignment.profiles?.username || assignment.assignee}</span>
                         {assignment.profiles?.did && (
                           <span className="text-sm text-gray-500">{assignment.profiles.did}</span>
                         )}

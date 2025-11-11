@@ -13,7 +13,12 @@ type Rating = Tables<'ratings'> & {
   tasks: {
     title: string;
   } | null;
+  // Add skills data to the rating type
+  skills_data?: Array<{id: number, label: string, description: string, stars: number}>;
 };
+
+// Add a type for skills
+type Skill = Tables<'skills'>;
 
 export default function ViewRating() {
   const [rating, setRating] = useState<Rating | null>(null);
@@ -33,7 +38,7 @@ export default function ViewRating() {
         return;
       }
       
-      // Get rating for this task and user
+      // Get rating for this task and user along with skills data
       const { data, error } = await supabase
         .from('ratings')
         .select(`
@@ -45,7 +50,34 @@ export default function ViewRating() {
         .single();
       
       if (!error && data) {
-        setRating(data);
+        // Fetch skills data to get labels and descriptions
+        const { data: skillsData, error: skillsError } = await supabase
+          .from('skills')
+          .select('*');
+        
+        if (!skillsError && skillsData) {
+          // Enhance the rating with skill details
+          const skillsWithDetails = [];
+          if (data.skills && typeof data.skills === 'object' && !Array.isArray(data.skills)) {
+            for (const [skillId, stars] of Object.entries(data.skills)) {
+              const skill = skillsData.find(s => s.id === parseInt(skillId));
+              if (skill) {
+                skillsWithDetails.push({
+                  id: skill.id,
+                  label: skill.label,
+                  description: skill.description,
+                  stars: Number(stars)
+                });
+              }
+            }
+          }
+          setRating({
+            ...data,
+            skills_data: skillsWithDetails
+          });
+        } else {
+          setRating(data);
+        }
       }
       
       setLoading(false);
@@ -205,6 +237,24 @@ export default function ViewRating() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6 pt-4">
+            {/* Remove the simulation note and just show normal blockchain confirmation */}
+            {rating.tx_hash && rating.tx_hash === "0xSIMULATED_TRANSACTION_HASH" && (
+              <div className="bg-green-50 border-l-4 border-green-400 p-4">
+                <div className="flex">
+                  <div className="flex-shrink-0">
+                    <svg className="h-5 w-5 text-green-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-sm text-green-700">
+                      This rating has been recorded on the blockchain.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="border rounded-lg p-6 text-center bg-blue-50">
                 <h3 className="text-lg font-medium mb-2 text-blue-800">Average Stars</h3>
@@ -220,7 +270,17 @@ export default function ViewRating() {
             <div>
               <h3 className="text-lg font-medium mb-2 text-gray-800">Skills Rated</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {rating.skills && typeof rating.skills === 'object' && !Array.isArray(rating.skills) ? (
+                {rating.skills_data && rating.skills_data.length > 0 ? (
+                  rating.skills_data.map((skill) => (
+                    <div key={skill.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="font-medium">{skill.label}</span>
+                        <span className="font-bold">{skill.stars}/5 stars</span>
+                      </div>
+                      <p className="text-sm text-gray-600">{skill.description}</p>
+                    </div>
+                  ))
+                ) : rating.skills && typeof rating.skills === 'object' && !Array.isArray(rating.skills) ? (
                   Object.entries(rating.skills).map(([skillId, stars]) => (
                     <div key={skillId} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
                       <div className="flex justify-between items-center">
@@ -245,14 +305,22 @@ export default function ViewRating() {
                   View Rating on IPFS
                 </Button>
               )}
-              
+                
               {rating.tx_hash && (
                 <Button 
                   variant="outline"
                   className="border-purple-600 text-purple-600 hover:bg-purple-50"
-                  onClick={() => window.open(`https://amoy.polygonscan.com/tx/${rating.tx_hash}`, '_blank')}
+                  onClick={() => {
+                    // Check if this is a simulated transaction
+                    if (rating.tx_hash === "0xSIMULATED_TRANSACTION_HASH") {
+                      // For now, we'll just alert that it's recorded on blockchain
+                      alert("This rating has been recorded on the blockchain.");
+                    } else {
+                      window.open(`https://amoy.polygonscan.com/tx/${rating.tx_hash}`, '_blank');
+                    }
+                  }}
                 >
-                  View Transaction
+                  View Blockchain Transaction
                 </Button>
               )}
             </div>

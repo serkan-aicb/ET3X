@@ -398,18 +398,26 @@ export default function EditTask() {
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-60 overflow-y-auto p-4 border-2 border-gray-200 rounded-lg">
                   {availableSkills.map((skill) => (
-                    <div key={skill.id} className="flex items-center space-x-2">
+                    <div key={skill.id} className="flex items-start space-x-2">
                       <Checkbox
                         id={`skill-${skill.id}`}
                         checked={skills.includes(skill.id)}
                         onCheckedChange={() => handleSkillToggle(skill.id)}
+                        className="mt-1"
                       />
-                      <Label 
-                        htmlFor={`skill-${skill.id}`} 
-                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                      >
-                        {skill.label}
-                      </Label>
+                      <div className="flex flex-col">
+                        <Label 
+                          htmlFor={`skill-${skill.id}`} 
+                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                        >
+                          {skill.label}
+                        </Label>
+                        {skill.description && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {skill.description}
+                          </p>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>

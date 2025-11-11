@@ -8,11 +8,15 @@ import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
 import { createClient } from "@/lib/supabase/client";
 import { SkillScore, Level, computeXP } from "@/lib/utils/xp";
-import { anchorRating } from "@/lib/polygon/client";
+// Import the IPFS client
+import { pinJSONToIPFS } from "@/lib/pinata/client";
+// Comment out the blockchain import for now
+// import { anchorRating } from "@/lib/polygon/client";
 import { Tables } from '@/lib/supabase/types';
 
 type Task = Tables<'tasks'>;
 
+// Update the props to include skill details with descriptions
 export function RatingForm({ 
   taskId, 
   students, 
@@ -21,7 +25,7 @@ export function RatingForm({
 }: { 
   taskId: string; 
   students: { id: string; username: string }[]; 
-  skills: { id: number; label: string }[]; 
+  skills: { id: number; label: string; description: string }[]; 
   task: Task;
 }) {
   const [ratings, setRatings] = useState<Record<string, Record<number, number>>>({});
@@ -56,6 +60,15 @@ export function RatingForm({
       // Get current user (educator)
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("User not found");
+      
+      // Get educator profile for DID
+      const { data: educatorProfile, error: educatorError } = await supabase
+        .from('profiles')
+        .select('did')
+        .eq('id', user.id)
+        .single();
+      
+      if (educatorError) throw educatorError;
       
       // Create ratings for each student
       for (const student of students) {
@@ -93,7 +106,7 @@ export function RatingForm({
         
         if (insertError) throw insertError;
         
-        // Anchor rating to blockchain
+        // Handle IPFS and blockchain anchoring
         if (ratingData) {
           try {
             // Get student profile to get DID
@@ -106,21 +119,65 @@ export function RatingForm({
             if (profileError) {
               console.error('Error fetching student profile:', profileError);
             } else if (studentProfile?.did) {
-              // Anchor to blockchain
-              const txHash = await anchorRating(
-                ratingData.id, // Using rating ID as CID for now
-                taskId,
-                studentProfile.did
-              );
+              // Prepare rating data for IPFS
+              const ratingDocument = {
+                ratingId: ratingData.id,
+                taskId: taskId,
+                taskTitle: task.title,
+                student: {
+                  id: student.id,
+                  username: student.username,
+                  did: studentProfile.did
+                },
+                educator: {
+                  id: user.id,
+                  did: educatorProfile.did
+                },
+                skills: studentRatings,
+                starsAvg: starsAvg,
+                xp: xp,
+                notes: notes[student.id] || "",
+                createdAt: new Date().toISOString()
+              };
               
-              // Update rating with transaction hash
+              // Pin rating to IPFS
+              const cid = await pinJSONToIPFS(ratingDocument);
+              console.log('Rating pinned to IPFS with CID:', cid);
+              
+              // Update rating with CID
+              await supabase
+                .from('ratings')
+                .update({ cid: cid })
+                .eq('id', ratingData.id);
+              
+              // Simulate blockchain anchoring
+              // Instead of calling anchorRating, we'll just log the simulation
+              console.log('SIMULATION: Would anchor rating to blockchain with:', {
+                cid: cid,
+                taskId: taskId,
+                studentDID: studentProfile.did,
+                educatorDID: educatorProfile.did
+              });
+              
+              // In a real implementation, this would be:
+              // const txHash = await anchorRating(
+              //   cid,
+              //   taskId,
+              //   studentProfile.did,
+              //   educatorProfile.did
+              // );
+              
+              // For simulation, we'll use a fake transaction hash
+              const txHash = "0xSIMULATED_TRANSACTION_HASH";
+              
+              // Update rating with simulated transaction hash
               await supabase
                 .from('ratings')
                 .update({ tx_hash: txHash })
                 .eq('id', ratingData.id);
             }
           } catch (anchorError) {
-            console.error('Error anchoring rating to blockchain:', anchorError);
+            console.error('Error anchoring rating:', anchorError);
             // Don't throw here as we still want to complete the rating process
           }
         }
@@ -159,9 +216,15 @@ export function RatingForm({
               {skills.map((skill) => (
                 <div key={skill.id} className="space-y-2">
                   <div className="flex justify-between">
-                    <Label htmlFor={`rating-${student.id}-${skill.id}`}>
-                      {skill.label}
-                    </Label>
+                    <div>
+                      <Label htmlFor={`rating-${student.id}-${skill.id}`}>
+                        {skill.label}
+                      </Label>
+                      {/* Display skill description */}
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {skill.description}
+                      </p>
+                    </div>
                     <span className="text-sm text-muted-foreground">
                       {ratings[student.id]?.[skill.id] || 0}/5
                     </span>

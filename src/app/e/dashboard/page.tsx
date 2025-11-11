@@ -173,6 +173,9 @@ export default function EducatorDashboard() {
             <span className="text-2xl font-bold text-blue-800">Talent3X</span>
           </Link>
           <div className="flex space-x-2">
+            <Button variant="outline" onClick={() => router.push("/e/my-tasks")}>
+              My Tasks
+            </Button>
             <Button variant="outline" onClick={() => router.push("/e/profile")}>
               Profile
             </Button>

@@ -146,7 +146,11 @@ export default function RateTask() {
             <RatingForm 
               taskId={taskId} 
               students={students} 
-              skills={skills.map(s => ({ id: s.id, label: s.label }))} 
+              skills={skills.map(s => ({ 
+                id: s.id, 
+                label: s.label,
+                description: s.description || ""
+              }))} 
               task={task}
             />
           )}

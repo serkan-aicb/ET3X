@@ -59,29 +59,35 @@ export default function StudentDashboard() {
       // Get task statistics
       const { data: assignments, error: assignmentsError } = await supabase
         .from('task_assignments')
-        .select('task')
+        .select(`
+          task,
+          tasks(status)
+        `)
         .eq('assignee', user.id);
       
       if (!assignmentsError && assignments) {
-        const taskIds = assignments.map(a => a.task);
+        // Count tasks by status
+        let totalTasks = 0;
+        let completedTasks = 0; // 'rated' status
+        let pendingTasks = 0;   // 'assigned' and 'delivered' status
         
-        if (taskIds.length > 0) {
-          const { data: tasks, error: tasksError } = await supabase
-            .from('tasks')
-            .select('status')
-            .in('id', taskIds);
-          
-          if (!tasksError && tasks) {
-            const completedTasks = tasks.filter(t => t.status === 'rated').length;
-            const pendingTasks = tasks.filter(t => t.status !== 'rated').length;
-            
-            setStats({
-              totalTasks: tasks.length,
-              completedTasks,
-              pendingTasks
-            });
+        assignments.forEach(assignment => {
+          if (assignment.tasks && assignment.tasks.length > 0) {
+            const task = assignment.tasks[0];
+            totalTasks++;
+            if (task.status === 'rated') {
+              completedTasks++;
+            } else if (task.status === 'assigned' || task.status === 'delivered') {
+              pendingTasks++;
+            }
           }
-        }
+        });
+        
+        setStats({
+          totalTasks,
+          completedTasks,
+          pendingTasks
+        });
       }
       
       setLoading(false);
@@ -184,6 +190,9 @@ export default function StudentDashboard() {
             <span className="text-2xl font-bold text-blue-800">Talent3X</span>
           </Link>
           <div className="flex space-x-2">
+            <Button variant="outline" onClick={() => router.push("/s/my-tasks")}>
+              My Tasks
+            </Button>
             <Button variant="outline" onClick={() => router.push("/s/profile")}>
               Profile
             </Button>

@@ -29,6 +29,27 @@ export default function SubmitTask() {
     const fetchTask = async () => {
       const supabase = createClient();
       
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        router.push("/stud");
+        return;
+      }
+      
+      // Check if user is assigned to this task
+      const { data: assignment, error: assignmentError } = await supabase
+        .from('task_assignments')
+        .select('id')
+        .eq('task', taskId)
+        .eq('assignee', user.id)
+        .single();
+      
+      if (assignmentError || !assignment) {
+        // User is not assigned to this task
+        router.push("/s/my-tasks");
+        return;
+      }
+      
       // Get task details
       const { data, error } = await supabase
         .from('tasks')
@@ -46,7 +67,7 @@ export default function SubmitTask() {
     if (taskId) {
       fetchTask();
     }
-  }, [taskId]);
+  }, [taskId, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
