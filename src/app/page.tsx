@@ -312,39 +312,6 @@ export default function Home() {
           </motion.div>
         </motion.section>
 
-        {/* Stats Section */}
-        <motion.section 
-          className="mt-32 max-w-6xl mx-auto w-full"
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          viewport={{ once: true }}
-        >
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {[
-              { value: "1000+", label: "Students" },
-              { value: "50+", label: "Educators" },
-              { value: "200+", label: "Tasks Completed" },
-              { value: "98%", label: "Satisfaction Rate" }
-            ].map((stat, index) => (
-              <motion.div
-                key={index}
-                className="text-center"
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                viewport={{ once: true }}
-                whileHover={{ scale: 1.05 }}
-              >
-                <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
-                  {stat.value}
-                </div>
-                <div className="text-gray-600 text-lg">{stat.label}</div>
-              </motion.div>
-            ))}
-          </div>
-        </motion.section>
-
         {/* Key Benefits */}
         <motion.section 
           className="mt-32 max-w-7xl mx-auto w-full"

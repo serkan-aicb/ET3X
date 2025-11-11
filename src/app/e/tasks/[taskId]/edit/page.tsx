@@ -114,6 +114,9 @@ export default function EditTask() {
     try {
       const supabase = createClient();
       
+      // For group tasks (seats > 1), force recurrence to 'oneoff'
+      const finalRecurrence = seats > 1 ? "oneoff" : recurrence;
+      
       // Update task
       const { error } = await supabase
         .from('tasks')
@@ -126,7 +129,7 @@ export default function EditTask() {
           seats,
           skill_level: skillLevel,
           license,
-          recurrence,
+          recurrence: finalRecurrence,
           skills,
           due_date: dueDate || null
         })
@@ -135,10 +138,7 @@ export default function EditTask() {
       if (error) throw error;
 
       setMessage("Task updated successfully!");
-      // Redirect back to task detail page
-      setTimeout(() => {
-        router.push(`/e/tasks/${taskId}`);
-      }, 2000);
+      router.push(`/e/tasks/${taskId}`);
     } catch (error: unknown) {
       if (error instanceof Error) {
         setMessage(error.message || "An error occurred while updating the task.");
@@ -376,15 +376,26 @@ export default function EditTask() {
                 
                 <div className="space-y-2">
                   <Label>Recurrence</Label>
-                  <Select value={recurrence} onValueChange={(value: "oneoff" | "recurring") => setRecurrence(value)}>
+                  <Select 
+                    value={recurrence} 
+                    onValueChange={(value: "oneoff" | "recurring") => setRecurrence(value)}
+                    disabled={seats > 1} // Disable recurrence selection for group tasks
+                  >
                     <SelectTrigger className="py-3 px-4 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200">
                       <SelectValue placeholder="Select recurrence" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="oneoff">One-off</SelectItem>
-                      <SelectItem value="recurring">Recurring</SelectItem>
+                      <SelectItem value="recurring" disabled={seats > 1}>
+                        Recurring {seats > 1 ? "(Not available for group tasks)" : ""}
+                      </SelectItem>
                     </SelectContent>
                   </Select>
+                  {seats > 1 && (
+                    <p className="text-sm text-gray-500">
+                      Recurring is not available for group tasks. This will be set to One-off.
+                    </p>
+                  )}
                 </div>
               </div>
               

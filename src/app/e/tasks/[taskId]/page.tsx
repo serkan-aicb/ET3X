@@ -59,7 +59,7 @@ export default function TaskDetail() {
       setTask(taskData);
       
       // Get task requests
-      const { data: requestsData } = await supabase
+      const { data: requestsData, error: requestsError } = await supabase
         .from('task_requests')
         .select(`
           *,
@@ -67,12 +67,17 @@ export default function TaskDetail() {
         `)
         .eq('task', taskId);
       
+      if (requestsError) {
+        console.error("Error fetching task requests:", requestsError);
+      }
+      
       if (requestsData) {
+        console.log("Requests data:", requestsData);
         setRequests(requestsData);
       }
       
       // Get task assignments
-      const { data: assignmentsData } = await supabase
+      const { data: assignmentsData, error: assignmentsError } = await supabase
         .from('task_assignments')
         .select(`
           *,
@@ -80,18 +85,27 @@ export default function TaskDetail() {
         `)
         .eq('task', taskId);
       
+      if (assignmentsError) {
+        console.error("Error fetching task assignments:", assignmentsError);
+      }
+      
       if (assignmentsData) {
+        console.log("Assignments data:", assignmentsData);
         setAssignments(assignmentsData);
       }
       
       // Get submissions
-      const { data: submissionsData } = await supabase
+      const { data: submissionsData, error: submissionsError } = await supabase
         .from('submissions')
         .select(`
           *,
           profiles(username)
         `)
         .eq('task', taskId);
+      
+      if (submissionsError) {
+        console.error("Error fetching submissions:", submissionsError);
+      }
       
       if (submissionsData) {
         setSubmissions(submissionsData);
@@ -122,11 +136,38 @@ export default function TaskDetail() {
         throw new Error(`Error assigning task: ${assignError.message}`);
       }
       
-      // Update task status to 'assigned'
-      await supabase
-        .from('tasks')
-        .update({ status: 'assigned' })
-        .eq('id', taskId);
+      // For group tasks, check if all seats are filled before changing status
+      if (task && task.seats && task.seats > 1) {
+        // Get current assignments for this task
+        const { data: currentAssignments } = await supabase
+          .from('task_assignments')
+          .select('id')
+          .eq('task', taskId);
+        
+        // If all seats are filled, update task status to 'assigned'
+        if (currentAssignments && currentAssignments.length >= task.seats) {
+          await supabase
+            .from('tasks')
+            .update({ status: 'assigned' })
+            .eq('id', taskId);
+          
+          // Set message indicating task is fully assigned
+          setMessage(`Task assigned successfully! All ${task.seats} seats filled.`);
+        } else {
+          // Task still has available seats
+          const assignedCount = currentAssignments ? currentAssignments.length : 0;
+          const remainingSeats = task.seats - assignedCount;
+          setMessage(`Task assigned successfully! ${remainingSeats} seats still available.`);
+        }
+      } else {
+        // For individual tasks, update status immediately
+        await supabase
+          .from('tasks')
+          .update({ status: 'assigned' })
+          .eq('id', taskId);
+        
+        setMessage("Task assigned successfully!");
+      }
       
       // Update request status
       await supabase
@@ -135,16 +176,13 @@ export default function TaskDetail() {
         .eq('task', taskId)
         .eq('applicant', applicantId);
       
-      // Set success message
-      setMessage("Task assigned successfully!");
-      
       // Refresh data after a short delay to ensure database consistency
       setTimeout(() => {
         router.refresh();
       }, 500);
       
-      // Clear message after 3 seconds
-      setTimeout(() => setMessage(""), 3000);
+      // Clear message after 5 seconds
+      setTimeout(() => setMessage(""), 5000);
     } catch (error) {
       console.error("Error assigning task:", error);
       setMessage(`Error assigning task: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -173,11 +211,38 @@ export default function TaskDetail() {
         throw new Error(`Error assigning task to group: ${assignError.message}`);
       }
       
-      // Update task status to 'assigned'
-      await supabase
-        .from('tasks')
-        .update({ status: 'assigned' })
-        .eq('id', taskId);
+      // For group tasks, check if all seats are filled
+      if (task && task.seats && task.seats > 1) {
+        // Get current assignments for this task
+        const { data: currentAssignments } = await supabase
+          .from('task_assignments')
+          .select('id')
+          .eq('task', taskId);
+        
+        // If all seats are filled, update task status to 'assigned'
+        if (currentAssignments && currentAssignments.length >= task.seats) {
+          await supabase
+            .from('tasks')
+            .update({ status: 'assigned' })
+            .eq('id', taskId);
+          
+          // Set message indicating task is fully assigned
+          setMessage(`Task assigned successfully to ${applicantIds.length} students! All ${task.seats} seats filled.`);
+        } else {
+          // Task still has available seats
+          const assignedCount = currentAssignments ? currentAssignments.length : 0;
+          const remainingSeats = task.seats - assignedCount;
+          setMessage(`Task assigned successfully to ${applicantIds.length} students! ${remainingSeats} seats still available.`);
+        }
+      } else {
+        // For individual tasks or if all seats filled, update status
+        await supabase
+          .from('tasks')
+          .update({ status: 'assigned' })
+          .eq('id', taskId);
+        
+        setMessage(`Task assigned successfully to ${applicantIds.length} students!`);
+      }
       
       // Update request status for all selected students
       await supabase
@@ -186,19 +251,126 @@ export default function TaskDetail() {
         .eq('task', taskId)
         .in('applicant', applicantIds);
       
+      // Refresh data after a short delay to ensure database consistency
+      setTimeout(() => {
+        router.refresh();
+      }, 500);
+      
+      // Clear message after 5 seconds
+      setTimeout(() => setMessage(""), 5000);
+    } catch (error) {
+      console.error("Error assigning group task:", error);
+      setMessage(`Error assigning group task: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      
+      // Clear message after 5 seconds
+      setTimeout(() => setMessage(""), 5000);
+    }
+  };
+
+  // Function to group applicants into groups of specified size
+  const groupApplicants = (applicants: TaskRequest[], groupSize: number) => {
+    const groups = [];
+    for (let i = 0; i < applicants.length; i += groupSize) {
+      groups.push(applicants.slice(i, i + groupSize));
+    }
+    return groups;
+  };
+
+  // Function to assign a group of applicants to the task
+  const handleAssignGroupOfApplicants = async (group: TaskRequest[]) => {
+    const supabase = createClient();
+    
+    try {
+      // Create task assignments for all students in the group
+      const assignments = group.map(applicant => ({
+        task: taskId,
+        assignee: applicant.applicant
+      }));
+      
+      const { error: assignError } = await supabase
+        .from('task_assignments')
+        .insert(assignments);
+      
+      if (assignError) {
+        throw new Error(`Error assigning task to group: ${assignError.message}`);
+      }
+      
+      // Update task status if all seats are filled
+      let message = "";
+      if (task && task.seats) {
+        // Get current assignments for this task
+        const { data: currentAssignments } = await supabase
+          .from('task_assignments')
+          .select('id')
+          .eq('task', taskId);
+        
+        // If all seats are filled, update task status to 'assigned'
+        if (currentAssignments && currentAssignments.length >= task.seats) {
+          await supabase
+            .from('tasks')
+            .update({ status: 'assigned' })
+            .eq('id', taskId);
+          
+          message = `Group of ${group.length} students assigned successfully! All ${task.seats} seats filled.`;
+        } else {
+          // Task still has available seats
+          const assignedCount = currentAssignments ? currentAssignments.length : 0;
+          const remainingSeats = task.seats - assignedCount;
+          message = `Group of ${group.length} students assigned successfully! ${remainingSeats} seats still available.`;
+        }
+      } else {
+        message = `Group of ${group.length} students assigned successfully!`;
+      }
+      
+      // Update request status for all students in the group
+      const applicantIds = group.map(applicant => applicant.applicant);
+      await supabase
+        .from('task_requests')
+        .update({ status: 'selected' })
+        .eq('task', taskId)
+        .in('applicant', applicantIds);
+      
       // Set success message
-      setMessage(`Task assigned successfully to ${applicantIds.length} students!`);
+      setMessage(message);
       
       // Refresh data after a short delay to ensure database consistency
       setTimeout(() => {
         router.refresh();
       }, 500);
       
-      // Clear message after 3 seconds
-      setTimeout(() => setMessage(""), 3000);
+      return message; // Return message for batch operations
     } catch (error) {
-      console.error("Error assigning group task:", error);
-      setMessage(`Error assigning group task: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error("Error assigning group of applicants:", error);
+      const errorMsg = `Error assigning group: ${error instanceof Error ? error.message : 'Unknown error'}`;
+      setMessage(errorMsg);
+      throw new Error(errorMsg); // Re-throw for batch operations
+    }
+  };
+
+  // Function to assign all applicants in groups of 5
+  const handleAssignAllInGroups = async () => {
+    try {
+      // Filter only requested applicants
+      const requestedApplicants = requests.filter(req => req.status === 'requested');
+      
+      // Group them into groups of 5
+      const groups = groupApplicants(requestedApplicants, 5);
+      
+      // Assign each group and collect messages
+      const messages = [];
+      for (const group of groups) {
+        const message = await handleAssignGroupOfApplicants(group);
+        messages.push(message);
+      }
+      
+      // Set final message
+      setMessage(`Successfully assigned all applicants in ${groups.length} groups of 5!`);
+      
+      // Clear message after 5 seconds
+      setTimeout(() => setMessage(""), 5000);
+    } catch (error) {
+      console.error("Error assigning all applicants in groups:", error);
+      setMessage(`Error assigning all applicants: ${error instanceof Error ? error.message : 'Unknown error'}`);
       
       // Clear message after 5 seconds
       setTimeout(() => setMessage(""), 5000);
@@ -553,15 +725,29 @@ export default function TaskDetail() {
               
               <div className="border rounded-lg p-4">
                 <h3 className="text-sm font-medium text-gray-500">Recurrence</h3>
-                <p className="mt-1 capitalize">{task.recurrence || "Not specified"}</p>
+                <p className="mt-1 capitalize">
+                  {task.recurrence || "Not specified"}
+                  {task.seats && task.seats > 1 && task.recurrence === "oneoff" && " (Group task)"}
+                </p>
               </div>
               
               <div className="border rounded-lg p-4">
                 <h3 className="text-sm font-medium text-gray-500">Participants</h3>
-                <p className="mt-1">{task.seats} participant{task.seats !== 1 ? 's' : ''}</p>
+                <p className="mt-1">
+                  {task.seats} participant{task.seats !== 1 ? 's' : ''}
+                  {task.seats && task.seats > 1 && (
+                    <>
+                      <br />
+                      <span className="text-xs text-gray-500">
+                        {/* Show assigned count */}
+                        {assignments.length > 0 ? `${assignments.length} assigned` : "0 assigned"}
+                      </span>
+                    </>
+                  )}
+                </p>
               </div>
             </div>
-            
+
             <div className="border rounded-lg p-4">
               <h3 className="text-sm font-medium text-gray-500 mb-2">Status</h3>
               <span className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium ${
@@ -617,9 +803,16 @@ export default function TaskDetail() {
                             className="h-5 w-5 text-blue-600 rounded focus:ring-blue-500"
                           />
                           <div className="flex flex-col">
-                            <span className="font-medium">{request.profiles?.username || request.applicant}</span>
+                            <span className="font-medium">
+                              {request.profiles?.username ? request.profiles.username : 
+                               request.profiles?.did ? request.profiles.did : 
+                               `User ${request.applicant.substring(0, 8)}...`}
+                            </span>
                             {request.profiles?.did && (
                               <span className="text-sm text-gray-500">{request.profiles.did}</span>
+                            )}
+                            {!request.profiles && (
+                              <span className="text-sm text-gray-500">Profile not loaded</span>
                             )}
                           </div>
                         </div>
@@ -654,6 +847,28 @@ export default function TaskDetail() {
                       </Button>
                     </div>
                   )}
+                  
+                  {/* Add button to assign all applicants in groups of 5 */}
+                  {requests.filter(req => req.status === 'requested').length > 5 && (
+                    <div className="pt-4">
+                      <Button 
+                        className="bg-purple-600 hover:bg-purple-700"
+                        onClick={handleAssignAllInGroups}
+                      >
+                        Assign All in Groups of 5
+                      </Button>
+                    </div>
+                  )}
+                  
+                  {/* Show grouping suggestion */}
+                  {requests.filter(req => req.status === 'requested').length > 0 && (
+                    <div className="pt-4">
+                      <p className="text-sm text-gray-600">
+                        Tip: You can select multiple students and assign them as a group, or use the &quot;Assign All in Groups of 5&quot; button to automatically group all applicants.
+                      </p>
+                    </div>
+                  )}
+
                 </div>
               )}
             </CardContent>
@@ -676,9 +891,16 @@ export default function TaskDetail() {
                   {assignments.map((assignment) => (
                     <div key={assignment.id} className="flex items-center justify-between p-4 border rounded-lg">
                       <div className="flex flex-col">
-                        <span className="font-medium">{assignment.profiles?.username || assignment.assignee}</span>
+                        <span className="font-medium">
+                          {assignment.profiles?.username ? assignment.profiles.username : 
+                           assignment.profiles?.did ? assignment.profiles.did : 
+                           `User ${assignment.assignee.substring(0, 8)}...`}
+                        </span>
                         {assignment.profiles?.did && (
                           <span className="text-sm text-gray-500">{assignment.profiles.did}</span>
+                        )}
+                        {!assignment.profiles && (
+                          <span className="text-sm text-gray-500">Profile not loaded</span>
                         )}
                       </div>
                       <span className="text-sm text-gray-500">

@@ -28,7 +28,34 @@ export default function StudentTasks() {
         .order('created_at', { ascending: false });
       
       if (!error && data) {
-        setTasks(data);
+        // Also get assigned tasks that are group tasks with available seats
+        const { data: assignedGroupTasks, error: assignedError } = await supabase
+          .from('tasks')
+          .select('*')
+          .eq('status', 'assigned')
+          .gt('seats', 1)
+          .order('created_at', { ascending: false });
+        
+        if (!assignedError && assignedGroupTasks) {
+          // For each assigned group task, check if it has available seats
+          const tasksWithAvailableSeats = [];
+          for (const task of assignedGroupTasks) {
+            const { data: assignments } = await supabase
+              .from('task_assignments')
+              .select('id')
+              .eq('task', task.id);
+            
+            const assignedCount = assignments ? assignments.length : 0;
+            if (assignedCount < task.seats) {
+              tasksWithAvailableSeats.push(task);
+            }
+          }
+          
+          // Combine open tasks with assigned group tasks that have available seats
+          setTasks([...data, ...tasksWithAvailableSeats]);
+        } else {
+          setTasks(data);
+        }
       }
       
       setLoading(false);

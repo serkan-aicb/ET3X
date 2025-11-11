@@ -113,6 +113,24 @@ ALTER TABLE admin_codes ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can view their own profile" ON profiles
   FOR SELECT USING (auth.uid() = id);
 
+CREATE POLICY "Educators can view profiles of students who requested their tasks" ON profiles
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM task_requests tr
+      JOIN tasks t ON tr.task = t.id
+      WHERE t.creator = auth.uid() AND tr.applicant = profiles.id
+    )
+  );
+
+CREATE POLICY "Educators can view profiles of students assigned to their tasks" ON profiles
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM task_assignments ta
+      JOIN tasks t ON ta.task = t.id
+      WHERE t.creator = auth.uid() AND ta.assignee = profiles.id
+    )
+  );
+
 CREATE POLICY "Users can update their own profile" ON profiles
   FOR UPDATE USING (auth.uid() = id);
 
@@ -148,6 +166,9 @@ CREATE POLICY "Assignees can view their own assignments" ON task_assignments
 
 CREATE POLICY "Task creators can view assignments for their tasks" ON task_assignments
   FOR SELECT USING (task IN (SELECT id FROM tasks WHERE creator = auth.uid()));
+
+CREATE POLICY "Task creators can insert assignments for their tasks" ON task_assignments
+  FOR INSERT WITH CHECK (task IN (SELECT id FROM tasks WHERE creator = auth.uid()));
 
 -- Submissions policies
 CREATE POLICY "Submitters can view their own submissions" ON submissions

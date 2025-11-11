@@ -24,16 +24,35 @@ export default function StudentTaskDetail() {
     const fetchTask = async () => {
       const supabase = createClient();
       
-      // Get task details
-      const { data, error } = await supabase
+      // First, get the task regardless of status to check if it's a group task
+      const { data: taskData, error: taskError } = await supabase
         .from('tasks')
         .select('*')
         .eq('id', taskId)
-        .eq('status', 'open') // Only show open tasks
         .single();
       
-      if (!error && data) {
-        setTask(data);
+      if (taskError) {
+        setLoading(false);
+        return;
+      }
+      
+      // For group tasks, check if there are available seats
+      if (taskData && taskData.seats && taskData.seats > 1) {
+        // Get current assignments for this task
+        const { data: assignments } = await supabase
+          .from('task_assignments')
+          .select('id')
+          .eq('task', taskId);
+        
+        // If there are available seats, show the task even if it's assigned
+        const assignedCount = assignments ? assignments.length : 0;
+        if (assignedCount < taskData.seats) {
+          setTask(taskData);
+        }
+      } 
+      // For non-group tasks, only show if open
+      else if (taskData && taskData.status === 'open') {
+        setTask(taskData);
       }
       
       setLoading(false);
@@ -307,12 +326,25 @@ export default function StudentTaskDetail() {
               
               <div className="border rounded-lg p-4">
                 <h3 className="text-sm font-medium text-gray-500">Recurrence</h3>
-                <p className="mt-1 capitalize">{task.recurrence || "Not specified"}</p>
+                <p className="mt-1 capitalize">
+                  {task.recurrence || "Not specified"}
+                  {task.seats && task.seats > 1 && " (Group task)"}
+                </p>
               </div>
               
               <div className="border rounded-lg p-4">
                 <h3 className="text-sm font-medium text-gray-500">Participants</h3>
-                <p className="mt-1">{task.seats} participant{task.seats !== 1 ? 's' : ''}</p>
+                <p className="mt-1">
+                  {task.seats} participant{task.seats !== 1 ? 's' : ''}
+                  {task.seats && task.seats > 1 && (
+                    <>
+                      <br />
+                      <span className="text-xs text-gray-500">
+                        Group task - Apply to join a team
+                      </span>
+                    </>
+                  )}
+                </p>
               </div>
             </div>
             
