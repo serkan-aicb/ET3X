@@ -39,77 +39,67 @@ export default function StudentMyTasks() {
       
       console.log("Current user:", user);
       
-      // Get the username for the current user
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('username')
-        .eq('id', user.id)
-        .single();
-      
-      if (profileError || !profileData) {
-        console.error("Error fetching user profile:", profileError);
-        if (isMounted) {
-          router.push("/stud");
-        }
-        return;
-      }
-      
-      const currentUserUsername = profileData.username;
-      
-      // Use the most reliable approach - first get task assignments, then get the tasks
-      // Try using username first, fallback to UUID if needed
-      const { data: assignmentsByUsername, error: assignmentsByUsernameError } = await supabase
-        .from('task_assignments')
-        .select('task')
-        .eq('assignee_username', currentUserUsername);
-      
-      let assignments = assignmentsByUsername;
-      let assignmentsError = assignmentsByUsernameError;
-      
-      // If username-based query fails, fallback to UUID-based query
-      if (assignmentsByUsernameError || !assignmentsByUsername || assignmentsByUsername.length === 0) {
-        console.log("Falling back to UUID-based query for assignments");
-        const { data: assignmentsByUUID, error: assignmentsByUUIDError } = await supabase
+      try {
+        // Use the most reliable approach - first get task assignments, then get the tasks
+        // Try using username first, fallback to UUID if needed
+        const { data: assignmentsByUsername, error: assignmentsByUsernameError } = await supabase
           .from('task_assignments')
           .select('task')
-          .eq('assignee', user.id);
+          .eq('assignee_username', user.email); // Using email as username for now
         
-        assignments = assignmentsByUUID;
-        assignmentsError = assignmentsByUUIDError;
-      }
-      
-      console.log("Assignments:", { assignments, assignmentsError });
-      
-      if (assignmentsError) {
-        console.error("Error fetching assignments:", assignmentsError);
-        if (isMounted) {
-          setTasks([]);
+        let assignments = assignmentsByUsername;
+        let assignmentsError = assignmentsByUsernameError;
+        
+        // If username-based query fails or returns no results, fallback to UUID-based query
+        if (assignmentsByUsernameError || !assignmentsByUsername || assignmentsByUsername.length === 0) {
+          console.log("Falling back to UUID-based query for assignments");
+          const { data: assignmentsByUUID, error: assignmentsByUUIDError } = await supabase
+            .from('task_assignments')
+            .select('task')
+            .eq('assignee', user.id);
+          
+          assignments = assignmentsByUUID;
+          assignmentsError = assignmentsByUUIDError;
         }
-        return;
-      }
-      
-      if (assignments && assignments.length > 0) {
-        // Extract task IDs
-        const taskIds = assignments.map(assignment => assignment.task);
-        console.log("Task IDs to fetch:", taskIds);
         
-        // Get tasks with these IDs and relevant statuses
-        const { data: tasksData, error: tasksError } = await supabase
-          .from('tasks')
-          .select('*')
-          .in('id', taskIds)
-          .in('status', ['assigned', 'delivered', 'rated'])
-          .order('created_at', { ascending: false });
+        console.log("Assignments:", { assignments, assignmentsError });
         
-        console.log("Tasks data:", { tasksData, tasksError });
+        if (assignmentsError) {
+          console.error("Error fetching assignments:", assignmentsError);
+          if (isMounted) {
+            setTasks([]);
+          }
+          return;
+        }
         
-        if (!tasksError && tasksData && isMounted) {
-          setTasks(tasksData);
+        if (assignments && assignments.length > 0) {
+          // Extract task IDs
+          const taskIds = assignments.map(assignment => assignment.task);
+          console.log("Task IDs to fetch:", taskIds);
+          
+          // Get tasks with these IDs and relevant statuses
+          const { data: tasksData, error: tasksError } = await supabase
+            .from('tasks')
+            .select('*')
+            .in('id', taskIds)
+            .in('status', ['assigned', 'delivered', 'rated'])
+            .order('created_at', { ascending: false });
+          
+          console.log("Tasks data:", { tasksData, tasksError });
+          
+          if (!tasksError && tasksData && isMounted) {
+            setTasks(tasksData);
+          } else if (isMounted) {
+            setTasks([]);
+          }
         } else if (isMounted) {
           setTasks([]);
         }
-      } else if (isMounted) {
-        setTasks([]);
+      } catch (error) {
+        console.error("Unexpected error fetching tasks:", error);
+        if (isMounted) {
+          setTasks([]);
+        }
       }
       
       if (isMounted) {

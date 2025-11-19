@@ -38,62 +38,65 @@ export default function StudentTaskDetail() {
         return;
       }
       
-      // First, get the task regardless of status to check if it's a group task
-      const { data: taskData, error: taskError } = await supabase
-        .from('tasks')
-        .select(`
-          *,
-          skills_data:skills(id, label, description)
-        `)
-        .eq('id', taskId)
-        .single();
-      
-      console.log("Task data:", { taskData, taskError });
-      
-      if (taskError) {
-        console.log("Error fetching task:", taskError);
-        setLoading(false);
-        return;
-      }
-      
-      if (!taskData) {
-        console.log("No task data found");
-        setLoading(false);
-        return;
-      }
-      
-      // For group tasks, check if there are available seats
-      if (taskData && taskData.seats && taskData.seats > 1) {
-        console.log("This is a group task with", taskData.seats, "seats");
-        
-        // Get current assignments for this task
-        const { data: assignments, error: assignmentsError } = await supabase
-          .from('task_assignments')
-          .select('id')
-          .eq('task', taskId);
-        
-        console.log("Current assignments:", { assignments, assignmentsError });
-        
-        // If there are available seats, show the task even if it's assigned
-        const assignedCount = assignments ? assignments.length : 0;
-        console.log("Assigned count:", assignedCount);
-        
-        if (assignedCount < taskData.seats) {
-          console.log("Showing task - has available seats");
-          setTask(taskData);
-        } else {
-          console.log("Not showing task - all seats filled");
+      try {
+        // Get current user
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        if (userError || !user) {
+          console.log("No user logged in");
+          setLoading(false);
+          return;
         }
-      } 
-      // For non-group tasks, only show if open
-      else if (taskData && taskData.status === 'open') {
-        console.log("Showing individual task - status is open");
-        setTask(taskData);
-      } else {
-        console.log("Not showing task - not open or group task logic didn't match");
-        // Even if not open, we should still show the task to the student
-        // This allows them to see tasks they've requested or been assigned to
-        setTask(taskData);
+        
+        console.log("Current user:", user);
+        
+        // Try to fetch the task - the RLS policies should handle access control
+        const { data: taskData, error: taskError } = await supabase
+          .from('tasks')
+          .select(`
+            *,
+            skills_data:skills(id, label, description)
+          `)
+          .eq('id', taskId)
+          .single();
+        
+        console.log("Task fetch result:", { taskData, taskError });
+        
+        if (taskData && !taskError) {
+          // Check if this is a group task with available seats
+          if (taskData.seats && taskData.seats > 1) {
+            console.log("This is a group task with", taskData.seats, "seats");
+            
+            // Get current assignments for this task
+            const { data: assignments, error: assignmentsError } = await supabase
+              .from('task_assignments')
+              .select('id')
+              .eq('task', taskId);
+            
+            console.log("Current assignments:", { assignments, assignmentsError });
+            
+            // If there are available seats, show the task even if it's assigned
+            const assignedCount = assignments ? assignments.length : 0;
+            console.log("Assigned count:", assignedCount);
+            
+            if (assignedCount < taskData.seats) {
+              console.log("Showing task - has available seats");
+              setTask(taskData);
+            } else {
+              console.log("Not showing task - all seats filled");
+              // Still show the task but indicate it's full
+              setTask(taskData);
+            }
+          } else {
+            // For individual tasks or tasks with no seat limit, show the task
+            console.log("Showing task - individual task or no seat limit");
+            setTask(taskData);
+          }
+        } else if (taskError) {
+          console.log("Error fetching task:", taskError);
+          // Even if we get an error, we might still want to show a message
+        }
+      } catch (error) {
+        console.error("Unexpected error fetching task:", error);
       }
       
       setLoading(false);
@@ -157,12 +160,12 @@ export default function StudentTaskDetail() {
         return;
       }
       
-      // Create task request using username
+      // Create task request using both UUID and username for compatibility
       const { data: requestData, error: insertError } = await supabase
         .from('task_requests')
         .insert({
           task: taskId,
-          applicant: user.id, // Keep UUID for backward compatibility
+          applicant: user.id, // Keep UUID for backward compatibility and RLS policies
           applicant_username: applicantUsername // Add username for new approach
         })
         .select();

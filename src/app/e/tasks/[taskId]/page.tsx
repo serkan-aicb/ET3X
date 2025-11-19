@@ -57,147 +57,152 @@ export default function TaskDetail() {
         return;
       }
       
-      // Get task details with skills data
-      const { data: taskData, error: taskError } = await supabase
-        .from('tasks')
-        .select(`
-          *,
-          skills_data:skills(id, label, description)
-        `)
-        .eq('id', taskId)
-        .single();
-      
-      console.log("Task data:", { taskData, taskError });
-      
-      if (taskError) {
-        console.error("Error fetching task:", taskError);
-        router.push("/e/tasks");
-        return;
-      }
-      
-      if (!taskData) {
-        console.log("No task data found");
-        router.push("/e/tasks");
-        return;
-      }
-      
-      setTask(taskData);
-      
-      // Get task requests with properly joined profile data
-      const { data: requestsData, error: requestsError } = await supabase
-        .from('task_requests')
-        .select(`
-          *,
-          profiles(username, did)
-        `)
-        .eq('task', taskId);
-      
-      console.log("Requests data:", { requestsData, requestsError });
-      
-      if (requestsError) {
-        console.error("Error fetching task requests:", requestsError);
-      }
-      
-      if (requestsData) {
-        console.log("Requests data:", requestsData);
-        // If profiles are not loaded, fetch them separately
-        const requestsWithProfiles = await Promise.all(requestsData.map(async (request) => {
-          if (!request.profiles) {
-            console.log("Fetching profile for request applicant:", request.applicant);
-            const { data: profileData, error: profileError } = await supabase
-              .from('profiles')
-              .select('username, did')
-              .eq('id', request.applicant)
-              .single();
-            
-            if (!profileError && profileData) {
-              console.log("Profile data fetched:", profileData);
-              return { ...request, profiles: profileData };
-            } else {
-              console.log("Profile fetch error:", profileError);
-              // Even if we can't get the full profile, we should at least show the username
-              // Let's try to get just the username
-              const { data: usernameData, error: usernameError } = await supabase
+      try {
+        // Get task details with skills data
+        const { data: taskData, error: taskError } = await supabase
+          .from('tasks')
+          .select(`
+            *,
+            skills_data:skills(id, label, description)
+          `)
+          .eq('id', taskId)
+          .single();
+        
+        console.log("Task data:", { taskData, taskError });
+        
+        if (taskError) {
+          console.error("Error fetching task:", taskError);
+          router.push("/e/tasks");
+          return;
+        }
+        
+        if (!taskData) {
+          console.log("No task data found");
+          router.push("/e/tasks");
+          return;
+        }
+        
+        setTask(taskData);
+        
+        // Get task requests with properly joined profile data
+        const { data: requestsData, error: requestsError } = await supabase
+          .from('task_requests')
+          .select(`
+            *,
+            profiles(username, did)
+          `)
+          .eq('task', taskId);
+        
+        console.log("Requests data:", { requestsData, requestsError });
+        
+        if (requestsError) {
+          console.error("Error fetching task requests:", requestsError);
+        }
+        
+        if (requestsData) {
+          console.log("Requests data:", requestsData);
+          // If profiles are not loaded, fetch them separately
+          const requestsWithProfiles = await Promise.all(requestsData.map(async (request) => {
+            if (!request.profiles) {
+              console.log("Fetching profile for request applicant:", request.applicant);
+              const { data: profileData, error: profileError } = await supabase
                 .from('profiles')
-                .select('username')
+                .select('username, did')
                 .eq('id', request.applicant)
                 .single();
               
-              if (!usernameError && usernameData) {
-                return { ...request, profiles: { username: usernameData.username, did: '' } };
+              if (!profileError && profileData) {
+                console.log("Profile data fetched:", profileData);
+                return { ...request, profiles: profileData };
+              } else {
+                console.log("Profile fetch error:", profileError);
+                // Even if we can't get the full profile, we should at least show the username
+                // Let's try to get just the username
+                const { data: usernameData, error: usernameError } = await supabase
+                  .from('profiles')
+                  .select('username')
+                  .eq('id', request.applicant)
+                  .single();
+                
+                if (!usernameError && usernameData) {
+                  return { ...request, profiles: { username: usernameData.username, did: '' } };
+                }
               }
             }
-          }
-          return request;
-        }));
-        setRequests(requestsWithProfiles);
-      }
-      
-      // Get task assignments with properly joined profile data
-      const { data: assignmentsData, error: assignmentsError } = await supabase
-        .from('task_assignments')
-        .select(`
-          *,
-          profiles(username, did)
-        `)
-        .eq('task', taskId);
-      
-      console.log("Assignments data:", { assignmentsData, assignmentsError });
-      
-      if (assignmentsError) {
-        console.error("Error fetching task assignments:", assignmentsError);
-      }
-      
-      if (assignmentsData) {
-        console.log("Assignments data:", assignmentsData);
-        // If profiles are not loaded, fetch them separately
-        const assignmentsWithProfiles = await Promise.all(assignmentsData.map(async (assignment) => {
-          if (!assignment.profiles) {
-            console.log("Fetching profile for assignment assignee:", assignment.assignee);
-            const { data: profileData, error: profileError } = await supabase
-              .from('profiles')
-              .select('username, did')
-              .eq('id', assignment.assignee)
-              .single();
-            
-            if (!profileError && profileData) {
-              console.log("Profile data fetched:", profileData);
-              return { ...assignment, profiles: profileData };
-            } else {
-              console.log("Profile fetch error:", profileError);
-              // Even if we can't get the full profile, we should at least show the username
-              // Let's try to get just the username
-              const { data: usernameData, error: usernameError } = await supabase
+            return request;
+          }));
+          setRequests(requestsWithProfiles);
+        }
+        
+        // Get task assignments with properly joined profile data
+        const { data: assignmentsData, error: assignmentsError } = await supabase
+          .from('task_assignments')
+          .select(`
+            *,
+            profiles(username, did)
+          `)
+          .eq('task', taskId);
+        
+        console.log("Assignments data:", { assignmentsData, assignmentsError });
+        
+        if (assignmentsError) {
+          console.error("Error fetching task assignments:", assignmentsError);
+        }
+        
+        if (assignmentsData) {
+          console.log("Assignments data:", assignmentsData);
+          // If profiles are not loaded, fetch them separately
+          const assignmentsWithProfiles = await Promise.all(assignmentsData.map(async (assignment) => {
+            if (!assignment.profiles) {
+              console.log("Fetching profile for assignment assignee:", assignment.assignee);
+              const { data: profileData, error: profileError } = await supabase
                 .from('profiles')
-                .select('username')
+                .select('username, did')
                 .eq('id', assignment.assignee)
                 .single();
               
-              if (!usernameError && usernameData) {
-                return { ...assignment, profiles: { username: usernameData.username, did: '' } };
+              if (!profileError && profileData) {
+                console.log("Profile data fetched:", profileData);
+                return { ...assignment, profiles: profileData };
+              } else {
+                console.log("Profile fetch error:", profileError);
+                // Even if we can't get the full profile, we should at least show the username
+                // Let's try to get just the username
+                const { data: usernameData, error: usernameError } = await supabase
+                  .from('profiles')
+                  .select('username')
+                  .eq('id', assignment.assignee)
+                  .single();
+                
+                if (!usernameError && usernameData) {
+                  return { ...assignment, profiles: { username: usernameData.username, did: '' } };
+                }
               }
             }
-          }
-          return assignment;
-        }));
-        setAssignments(assignmentsWithProfiles);
-      }
-      
-      // Get submissions
-      const { data: submissionsData, error: submissionsError } = await supabase
-        .from('submissions')
-        .select(`
-          *,
-          profiles(username)
-        `)
-        .eq('task', taskId);
-      
-      console.log("Submissions data:", { submissionsData, submissionsError });
-      
-      if (submissionsError) {
-        console.error("Error fetching submissions:", submissionsError);
-      } else if (submissionsData) {
-        setSubmissions(submissionsData);
+            return assignment;
+          }));
+          setAssignments(assignmentsWithProfiles);
+        }
+        
+        // Get submissions
+        const { data: submissionsData, error: submissionsError } = await supabase
+          .from('submissions')
+          .select(`
+            *,
+            profiles(username)
+          `)
+          .eq('task', taskId);
+        
+        console.log("Submissions data:", { submissionsData, submissionsError });
+        
+        if (submissionsError) {
+          console.error("Error fetching submissions:", submissionsError);
+        } else if (submissionsData) {
+          setSubmissions(submissionsData);
+        }
+      } catch (error) {
+        console.error("Unexpected error fetching task data:", error);
+        router.push("/e/tasks");
       }
       
       setLoading(false);
@@ -297,12 +302,12 @@ export default function TaskDetail() {
         }
       }
       
-      // Create task assignment using username
+      // Create task assignment using both UUID and username for compatibility
       const { error: assignError, data: assignmentData } = await supabase
         .from('task_assignments')
         .insert({
           task: taskId,
-          assignee: applicantId, // Keep UUID for backward compatibility
+          assignee: applicantId, // Keep UUID for backward compatibility and RLS policies
           assignee_username: applicantUsername // Add username for new approach
         })
         .select();
