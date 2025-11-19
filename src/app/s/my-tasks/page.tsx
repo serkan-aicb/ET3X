@@ -34,7 +34,7 @@ export default function StudentMyTasks() {
     
     console.log("Current user:", user);
     
-    // Try the original query approach
+    // Try the original query approach with proper joins
     const { data: originalData, error: originalError } = await supabase
       .from('tasks')
       .select(`
@@ -93,7 +93,24 @@ export default function StudentMyTasks() {
         setTasks([]);
       }
     } else {
-      setTasks([]);
+      // Final fallback: try to get tasks where the user is the assignee
+      const { data: fallbackData, error: fallbackError } = await supabase
+        .from('tasks')
+        .select(`
+          *,
+          task_assignments(id)
+        `)
+        .eq('task_assignments.assignee', user.id)
+        .in('status', ['assigned', 'delivered', 'rated'])
+        .order('created_at', { ascending: false });
+      
+      console.log("Fallback query result:", { fallbackData, fallbackError });
+      
+      if (!fallbackError && fallbackData) {
+        setTasks(fallbackData);
+      } else {
+        setTasks([]);
+      }
     }
     
     setLoading(false);

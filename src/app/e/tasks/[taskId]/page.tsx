@@ -62,7 +62,7 @@ export default function TaskDetail() {
       
       setTask(taskData);
       
-      // Get task requests
+      // Get task requests with properly joined profile data
       const { data: requestsData, error: requestsError } = await supabase
         .from('task_requests')
         .select(`
@@ -79,10 +79,25 @@ export default function TaskDetail() {
       
       if (requestsData) {
         console.log("Requests data:", requestsData);
-        setRequests(requestsData);
+        // If profiles are not loaded, fetch them separately
+        const requestsWithProfiles = await Promise.all(requestsData.map(async (request) => {
+          if (!request.profiles) {
+            const { data: profileData, error: profileError } = await supabase
+              .from('profiles')
+              .select('username, did')
+              .eq('id', request.applicant)
+              .single();
+            
+            if (!profileError && profileData) {
+              return { ...request, profiles: profileData };
+            }
+          }
+          return request;
+        }));
+        setRequests(requestsWithProfiles);
       }
       
-      // Get task assignments
+      // Get task assignments with properly joined profile data
       const { data: assignmentsData, error: assignmentsError } = await supabase
         .from('task_assignments')
         .select(`
@@ -99,7 +114,22 @@ export default function TaskDetail() {
       
       if (assignmentsData) {
         console.log("Assignments data:", assignmentsData);
-        setAssignments(assignmentsData);
+        // If profiles are not loaded, fetch them separately
+        const assignmentsWithProfiles = await Promise.all(assignmentsData.map(async (assignment) => {
+          if (!assignment.profiles) {
+            const { data: profileData, error: profileError } = await supabase
+              .from('profiles')
+              .select('username, did')
+              .eq('id', assignment.assignee)
+              .single();
+            
+            if (!profileError && profileData) {
+              return { ...assignment, profiles: profileData };
+            }
+          }
+          return assignment;
+        }));
+        setAssignments(assignmentsWithProfiles);
       }
       
       // Get submissions
@@ -115,9 +145,7 @@ export default function TaskDetail() {
       
       if (submissionsError) {
         console.error("Error fetching submissions:", submissionsError);
-      }
-      
-      if (submissionsData) {
+      } else if (submissionsData) {
         setSubmissions(submissionsData);
       }
       
@@ -133,7 +161,7 @@ export default function TaskDetail() {
   const verifyAssignments = async () => {
     const supabase = createClient();
     
-    // Get current assignments for this task
+    // Get current assignments for this task with profile data
     const { data: currentAssignments, error } = await supabase
       .from('task_assignments')
       .select(`
@@ -145,7 +173,22 @@ export default function TaskDetail() {
     console.log("Verification - Current assignments:", { currentAssignments, error });
     
     if (!error) {
-      setAssignments(currentAssignments || []);
+      // If profiles are not loaded, fetch them separately
+      const assignmentsWithProfiles = await Promise.all(currentAssignments.map(async (assignment) => {
+        if (!assignment.profiles) {
+          const { data: profileData, error: profileError } = await supabase
+            .from('profiles')
+            .select('username, did')
+            .eq('id', assignment.assignee)
+            .single();
+          
+          if (!profileError && profileData) {
+            return { ...assignment, profiles: profileData };
+          }
+        }
+        return assignment;
+      }));
+      setAssignments(assignmentsWithProfiles);
     }
   };
 

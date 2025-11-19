@@ -1,5 +1,3 @@
-"use client";
-
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -9,7 +7,11 @@ import { createClient } from "@/lib/supabase/client";
 import { Tables } from '@/lib/supabase/types';
 import Link from "next/link";
 
-type Task = Tables<'tasks'>;
+type Task = Tables<'tasks'> & {
+  profiles?: {
+    username: string;
+  } | null;
+};
 
 export default function EducatorTasks() {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -24,11 +26,13 @@ export default function EducatorTasks() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       
-      // Get tasks created by this educator
+      // Get ALL tasks in the system (not just those created by this educator)
       const { data, error } = await supabase
         .from('tasks')
-        .select('*')
-        .eq('creator', user.id)
+        .select(`
+          *,
+          profiles(username)
+        `)
         .order('created_at', { ascending: false });
       
       if (!error && data) {
@@ -153,9 +157,9 @@ export default function EducatorTasks() {
       <main className="container mx-auto px-4 py-8 flex-grow">
         <div className="mb-8 flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">My Tasks</h1>
+            <h1 className="text-3xl font-bold text-gray-900">All Tasks</h1>
             <p className="text-gray-600">
-              Manage tasks you{`'`}ve created
+              View all tasks in the system
             </p>
           </div>
           <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => router.push("/e/tasks/create")}>
@@ -166,13 +170,7 @@ export default function EducatorTasks() {
         {tasks.length === 0 ? (
           <Card className="shadow-lg">
             <CardContent className="py-8 text-center">
-              <p className="text-gray-600">You haven{`'`}t created any tasks yet.</p>
-              <Button 
-                className="mt-4 bg-blue-600 hover:bg-blue-700"
-                onClick={() => router.push("/e/tasks/create")}
-              >
-                Create Your First Task
-              </Button>
+              <p className="text-gray-600">No tasks found in the system.</p>
             </CardContent>
           </Card>
         ) : (
@@ -183,6 +181,11 @@ export default function EducatorTasks() {
                   <CardTitle className="text-lg text-gray-900">{task.title}</CardTitle>
                   {task.module && (
                     <CardDescription className="text-gray-600">{task.module}</CardDescription>
+                  )}
+                  {task.profiles && (
+                    <div className="text-sm text-gray-500 mt-1">
+                      Created by: {task.profiles.username}
+                    </div>
                   )}
                 </CardHeader>
                 <CardContent>
