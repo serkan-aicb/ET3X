@@ -144,6 +144,14 @@ CREATE POLICY "Public can view open tasks" ON tasks
 CREATE POLICY "Creators can view their own tasks" ON tasks
   FOR SELECT USING (auth.uid() = creator);
 
+CREATE POLICY "Assignees can view their assigned tasks" ON tasks
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM task_assignments ta
+      WHERE ta.task = tasks.id AND ta.assignee = auth.uid()
+    )
+  );
+
 CREATE POLICY "Creators can insert their own tasks" ON tasks
   FOR INSERT WITH CHECK (auth.uid() = creator);
 

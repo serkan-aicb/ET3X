@@ -24,12 +24,16 @@ export default function StudentTaskDetail() {
     const fetchTask = async () => {
       const supabase = createClient();
       
+      console.log("Fetching task details for:", taskId);
+      
       // First, get the task regardless of status to check if it's a group task
       const { data: taskData, error: taskError } = await supabase
         .from('tasks')
         .select('*')
         .eq('id', taskId)
         .single();
+      
+      console.log("Task data:", { taskData, taskError });
       
       if (taskError) {
         setLoading(false);
@@ -38,21 +42,33 @@ export default function StudentTaskDetail() {
       
       // For group tasks, check if there are available seats
       if (taskData && taskData.seats && taskData.seats > 1) {
+        console.log("This is a group task with", taskData.seats, "seats");
+        
         // Get current assignments for this task
-        const { data: assignments } = await supabase
+        const { data: assignments, error: assignmentsError } = await supabase
           .from('task_assignments')
           .select('id')
           .eq('task', taskId);
         
+        console.log("Current assignments:", { assignments, assignmentsError });
+        
         // If there are available seats, show the task even if it's assigned
         const assignedCount = assignments ? assignments.length : 0;
+        console.log("Assigned count:", assignedCount);
+        
         if (assignedCount < taskData.seats) {
+          console.log("Showing task - has available seats");
           setTask(taskData);
+        } else {
+          console.log("Not showing task - all seats filled");
         }
       } 
       // For non-group tasks, only show if open
       else if (taskData && taskData.status === 'open') {
+        console.log("Showing individual task - status is open");
         setTask(taskData);
+      } else {
+        console.log("Not showing task - not open or group task logic didn't match");
       }
       
       setLoading(false);
@@ -78,12 +94,20 @@ export default function StudentTaskDetail() {
         return;
       }
       
+      console.log("Requesting task for user:", { user, taskId });
+      
       // Check if user already requested this task
-      const { data: existingRequests } = await supabase
+      const { data: existingRequests, error: checkError } = await supabase
         .from('task_requests')
         .select('id')
         .eq('task', taskId)
         .eq('applicant', user.id);
+      
+      console.log("Existing requests check:", { existingRequests, checkError });
+      
+      if (checkError) {
+        throw checkError;
+      }
       
       if (existingRequests && existingRequests.length > 0) {
         setMessage("You have already requested this task.");
@@ -92,21 +116,25 @@ export default function StudentTaskDetail() {
       }
       
       // Create task request
-      const { error } = await supabase
+      const { data: requestData, error: insertError } = await supabase
         .from('task_requests')
         .insert({
           task: taskId,
           applicant: user.id,
           status: 'requested'
-        });
+        })
+        .select();
       
-      if (error) {
-        throw error;
+      console.log("Task request creation result:", { requestData, insertError });
+      
+      if (insertError) {
+        throw insertError;
       }
       
       // Show success message
       setMessage("Task requested successfully! The educator will review your request.");
     } catch (error: unknown) {
+      console.error("Error requesting task:", error);
       if (error instanceof Error) {
         setMessage(`Error: ${error.message}`);
       } else {

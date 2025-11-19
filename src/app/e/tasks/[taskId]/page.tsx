@@ -43,12 +43,16 @@ export default function TaskDetail() {
     const fetchData = async () => {
       const supabase = createClient();
       
+      console.log("Fetching task data for:", taskId);
+      
       // Get task details
       const { data: taskData, error: taskError } = await supabase
         .from('tasks')
         .select('*')
         .eq('id', taskId)
         .single();
+      
+      console.log("Task data:", { taskData, taskError });
       
       if (taskError) {
         console.error("Error fetching task:", taskError);
@@ -66,6 +70,8 @@ export default function TaskDetail() {
           profiles(username, did)
         `)
         .eq('task', taskId);
+      
+      console.log("Requests data:", { requestsData, requestsError });
       
       if (requestsError) {
         console.error("Error fetching task requests:", requestsError);
@@ -85,6 +91,8 @@ export default function TaskDetail() {
         `)
         .eq('task', taskId);
       
+      console.log("Assignments data:", { assignmentsData, assignmentsError });
+      
       if (assignmentsError) {
         console.error("Error fetching task assignments:", assignmentsError);
       }
@@ -103,6 +111,8 @@ export default function TaskDetail() {
         `)
         .eq('task', taskId);
       
+      console.log("Submissions data:", { submissionsData, submissionsError });
+      
       if (submissionsError) {
         console.error("Error fetching submissions:", submissionsError);
       }
@@ -119,18 +129,44 @@ export default function TaskDetail() {
     }
   }, [taskId, router]);
 
+  // Function to verify task assignments
+  const verifyAssignments = async () => {
+    const supabase = createClient();
+    
+    // Get current assignments for this task
+    const { data: currentAssignments, error } = await supabase
+      .from('task_assignments')
+      .select(`
+        *,
+        profiles(username, did)
+      `)
+      .eq('task', taskId);
+    
+    console.log("Verification - Current assignments:", { currentAssignments, error });
+    
+    if (!error) {
+      setAssignments(currentAssignments || []);
+    }
+  };
+
+  // Add verification after assignment operations
   const handleAssignTask = async (applicantId: string) => {
     const supabase = createClient();
     
     try {
+      console.log("Assigning task to applicant:", { taskId, applicantId });
+      
       // Check if this is a group task and if we need to assign multiple students
       // For now, we'll implement the basic assignment and then extend it for group tasks
-      const { error: assignError } = await supabase
+      const { error: assignError, data: assignmentData } = await supabase
         .from('task_assignments')
         .insert({
           task: taskId,
           assignee: applicantId
-        });
+        })
+        .select();
+      
+      console.log("Assignment result:", { assignError, assignmentData });
       
       if (assignError) {
         throw new Error(`Error assigning task: ${assignError.message}`);
@@ -139,19 +175,22 @@ export default function TaskDetail() {
       // For group tasks, check if all seats are filled before changing status
       if (task && task.seats && task.seats > 1) {
         // Get current assignments for this task
-        const { data: currentAssignments } = await supabase
+        const { data: currentAssignments, error: countError } = await supabase
           .from('task_assignments')
           .select('id')
           .eq('task', taskId);
         
+        console.log("Current assignments:", { currentAssignments, countError });
+        
         // If all seats are filled, update task status to 'assigned'
         if (currentAssignments && currentAssignments.length >= task.seats) {
-          await supabase
+          const { error: updateError } = await supabase
             .from('tasks')
             .update({ status: 'assigned' })
             .eq('id', taskId);
           
-          // Set message indicating task is fully assigned
+          console.log("Task status update result:", updateError);
+          
           setMessage(`Task assigned successfully! All ${task.seats} seats filled.`);
         } else {
           // Task still has available seats
@@ -161,23 +200,28 @@ export default function TaskDetail() {
         }
       } else {
         // For individual tasks, update status immediately
-        await supabase
+        const { error: updateError } = await supabase
           .from('tasks')
           .update({ status: 'assigned' })
           .eq('id', taskId);
+        
+        console.log("Task status update result:", updateError);
         
         setMessage("Task assigned successfully!");
       }
       
       // Update request status
-      await supabase
+      const { error: requestError } = await supabase
         .from('task_requests')
         .update({ status: 'selected' })
         .eq('task', taskId)
         .eq('applicant', applicantId);
       
-      // Refresh data after a short delay to ensure database consistency
+      console.log("Request status update result:", requestError);
+      
+      // Verify assignments after a short delay
       setTimeout(() => {
+        verifyAssignments();
         router.refresh();
       }, 500);
       
@@ -197,15 +241,20 @@ export default function TaskDetail() {
     const supabase = createClient();
     
     try {
+      console.log("Assigning task to group:", { taskId, applicantIds });
+      
       // Create task assignments for all selected students
       const assignments = applicantIds.map(applicantId => ({
         task: taskId,
         assignee: applicantId
       }));
       
-      const { error: assignError } = await supabase
+      const { error: assignError, data: assignmentData } = await supabase
         .from('task_assignments')
-        .insert(assignments);
+        .insert(assignments)
+        .select();
+      
+      console.log("Group assignment result:", { assignError, assignmentData });
       
       if (assignError) {
         throw new Error(`Error assigning task to group: ${assignError.message}`);
@@ -214,19 +263,22 @@ export default function TaskDetail() {
       // For group tasks, check if all seats are filled
       if (task && task.seats && task.seats > 1) {
         // Get current assignments for this task
-        const { data: currentAssignments } = await supabase
+        const { data: currentAssignments, error: countError } = await supabase
           .from('task_assignments')
           .select('id')
           .eq('task', taskId);
         
+        console.log("Current assignments for group task:", { currentAssignments, countError });
+        
         // If all seats are filled, update task status to 'assigned'
         if (currentAssignments && currentAssignments.length >= task.seats) {
-          await supabase
+          const { error: updateError } = await supabase
             .from('tasks')
             .update({ status: 'assigned' })
             .eq('id', taskId);
           
-          // Set message indicating task is fully assigned
+          console.log("Task status update result:", updateError);
+          
           setMessage(`Task assigned successfully to ${applicantIds.length} students! All ${task.seats} seats filled.`);
         } else {
           // Task still has available seats
@@ -236,23 +288,28 @@ export default function TaskDetail() {
         }
       } else {
         // For individual tasks or if all seats filled, update status
-        await supabase
+        const { error: updateError } = await supabase
           .from('tasks')
           .update({ status: 'assigned' })
           .eq('id', taskId);
+        
+        console.log("Task status update result:", updateError);
         
         setMessage(`Task assigned successfully to ${applicantIds.length} students!`);
       }
       
       // Update request status for all selected students
-      await supabase
+      const { error: requestError } = await supabase
         .from('task_requests')
         .update({ status: 'selected' })
         .eq('task', taskId)
         .in('applicant', applicantIds);
       
-      // Refresh data after a short delay to ensure database consistency
+      console.log("Request status update result:", requestError);
+      
+      // Verify assignments after a short delay
       setTimeout(() => {
+        verifyAssignments();
         router.refresh();
       }, 500);
       
@@ -281,15 +338,20 @@ export default function TaskDetail() {
     const supabase = createClient();
     
     try {
+      console.log("Assigning group of applicants:", { taskId, group });
+      
       // Create task assignments for all students in the group
       const assignments = group.map(applicant => ({
         task: taskId,
         assignee: applicant.applicant
       }));
       
-      const { error: assignError } = await supabase
+      const { error: assignError, data: assignmentData } = await supabase
         .from('task_assignments')
-        .insert(assignments);
+        .insert(assignments)
+        .select();
+      
+      console.log("Group assignment result:", { assignError, assignmentData });
       
       if (assignError) {
         throw new Error(`Error assigning task to group: ${assignError.message}`);
@@ -299,17 +361,22 @@ export default function TaskDetail() {
       let message = "";
       if (task && task.seats) {
         // Get current assignments for this task
-        const { data: currentAssignments } = await supabase
+        const { data: currentAssignments, error: countError } = await supabase
           .from('task_assignments')
           .select('id')
           .eq('task', taskId);
         
+        console.log("Current assignments:", { currentAssignments, countError });
+        
         // If all seats are filled, update task status to 'assigned'
         if (currentAssignments && currentAssignments.length >= task.seats) {
-          await supabase
+          const { data: updateData, error: updateError } = await supabase
             .from('tasks')
             .update({ status: 'assigned' })
-            .eq('id', taskId);
+            .eq('id', taskId)
+            .select();
+          
+          console.log("Task status update result:", { updateData, updateError });
           
           message = `Group of ${group.length} students assigned successfully! All ${task.seats} seats filled.`;
         } else {
@@ -324,17 +391,20 @@ export default function TaskDetail() {
       
       // Update request status for all students in the group
       const applicantIds = group.map(applicant => applicant.applicant);
-      await supabase
+      const { error: requestError } = await supabase
         .from('task_requests')
         .update({ status: 'selected' })
         .eq('task', taskId)
         .in('applicant', applicantIds);
       
+      console.log("Request status update result:", requestError);
+      
       // Set success message
       setMessage(message);
       
-      // Refresh data after a short delay to ensure database consistency
+      // Verify assignments after a short delay
       setTimeout(() => {
+        verifyAssignments();
         router.refresh();
       }, 500);
       
@@ -350,21 +420,31 @@ export default function TaskDetail() {
   // Function to assign all applicants in groups of 5
   const handleAssignAllInGroups = async () => {
     try {
+      console.log("Assigning all applicants in groups of 5");
+      
       // Filter only requested applicants
       const requestedApplicants = requests.filter(req => req.status === 'requested');
+      console.log("Requested applicants:", requestedApplicants);
       
       // Group them into groups of 5
       const groups = groupApplicants(requestedApplicants, 5);
+      console.log("Groups:", groups);
       
       // Assign each group and collect messages
       const messages = [];
       for (const group of groups) {
+        console.log("Assigning group:", group);
         const message = await handleAssignGroupOfApplicants(group);
         messages.push(message);
       }
       
       // Set final message
       setMessage(`Successfully assigned all applicants in ${groups.length} groups of 5!`);
+      
+      // Verify assignments after a short delay
+      setTimeout(() => {
+        verifyAssignments();
+      }, 500);
       
       // Clear message after 5 seconds
       setTimeout(() => setMessage(""), 5000);

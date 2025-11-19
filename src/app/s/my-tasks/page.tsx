@@ -19,36 +19,87 @@ export default function StudentMyTasks() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
-
-  useEffect(() => {
-    const fetchTasks = async () => {
-      const supabase = createClient();
+  
+  // Make fetchTasks a module-level function so it can be called from elsewhere
+  const fetchTasks = async () => {
+    const supabase = createClient();
+    
+    // Get current user
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) {
+      console.error("Error getting user:", userError);
+      router.push("/stud");
+      return;
+    }
+    
+    console.log("Current user:", user);
+    
+    // Try the original query approach
+    const { data: originalData, error: originalError } = await supabase
+      .from('tasks')
+      .select(`
+        *,
+        task_assignments(id)
+      `)
+      .eq('task_assignments.assignee', user.id)
+      .in('status', ['assigned', 'delivered', 'rated']) // Include all relevant statuses
+      .order('created_at', { ascending: false });
+    
+    console.log("Original query result:", { originalData, originalError });
+    
+    // Also try the alternative approach
+    const { data: assignments, error: assignmentsError } = await supabase
+      .from('task_assignments')
+      .select('task')
+      .eq('assignee', user.id);
+    
+    console.log("Alternative approach - assignments:", { assignments, assignmentsError });
+    
+    if (originalError) {
+      console.error("Original query failed:", originalError);
+    }
+    
+    if (assignmentsError) {
+      console.error("Alternative approach failed:", assignmentsError);
+    }
+    
+    // Use whichever approach worked
+    if (!originalError && originalData) {
+      console.log("Using original query data");
+      setTasks(originalData);
+    } else if (!assignmentsError && assignments && assignments.length > 0) {
+      // Extract task IDs
+      const taskIds = assignments.map(assignment => assignment.task);
+      console.log("Task IDs to fetch:", taskIds);
       
-      // Get current user
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        router.push("/stud");
-        return;
-      }
-      
-      // Get tasks assigned to this student
-      const { data, error } = await supabase
+      // Get tasks with these IDs and relevant statuses
+      const { data: tasksData, error: tasksError } = await supabase
         .from('tasks')
-        .select(`
-          *,
-          task_assignments(id)
-        `)
-        .eq('task_assignments.assignee', user.id)
-        .in('status', ['assigned', 'delivered', 'rated']) // Include all relevant statuses
+        .select('*')
+        .in('id', taskIds)
+        .in('status', ['assigned', 'delivered', 'rated'])
         .order('created_at', { ascending: false });
       
-      if (!error && data) {
-        setTasks(data);
-      }
+      console.log("Tasks data from alternative approach:", { tasksData, tasksError });
       
-      setLoading(false);
-    };
+      if (!tasksError && tasksData) {
+        // Add assignment info to each task for consistency with existing code
+        const tasksWithAssignments = tasksData.map(task => ({
+          ...task,
+          task_assignments: [{ id: 'dummy' }] // We don't need the actual assignment ID for display
+        }));
+        setTasks(tasksWithAssignments);
+      } else {
+        setTasks([]);
+      }
+    } else {
+      setTasks([]);
+    }
     
+    setLoading(false);
+  };
+
+  useEffect(() => {
     fetchTasks();
   }, []);
 

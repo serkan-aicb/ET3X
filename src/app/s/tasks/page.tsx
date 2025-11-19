@@ -20,12 +20,16 @@ export default function StudentTasks() {
     const fetchTasks = async () => {
       const supabase = createClient();
       
+      console.log("Fetching available tasks for student");
+      
       // Get open tasks
       const { data, error } = await supabase
         .from('tasks')
         .select('*')
         .eq('status', 'open')
         .order('created_at', { ascending: false });
+      
+      console.log("Open tasks:", { data, error });
       
       if (!error && data) {
         // Also get assigned tasks that are group tasks with available seats
@@ -36,20 +40,26 @@ export default function StudentTasks() {
           .gt('seats', 1)
           .order('created_at', { ascending: false });
         
+        console.log("Assigned group tasks:", { assignedGroupTasks, assignedError });
+        
         if (!assignedError && assignedGroupTasks) {
           // For each assigned group task, check if it has available seats
           const tasksWithAvailableSeats = [];
           for (const task of assignedGroupTasks) {
-            const { data: assignments } = await supabase
+            const { data: assignments, error: assignmentsError } = await supabase
               .from('task_assignments')
               .select('id')
               .eq('task', task.id);
+            
+            console.log("Assignments for task", task.id, ":", { assignments, assignmentsError });
             
             const assignedCount = assignments ? assignments.length : 0;
             if (assignedCount < task.seats) {
               tasksWithAvailableSeats.push(task);
             }
           }
+          
+          console.log("Tasks with available seats:", tasksWithAvailableSeats);
           
           // Combine open tasks with assigned group tasks that have available seats
           setTasks([...data, ...tasksWithAvailableSeats]);
