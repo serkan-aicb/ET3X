@@ -38,32 +38,44 @@ export default function DebugTest() {
       // Fetch all task requests for this task
       const { data: requestsData, error: requestsError } = await supabase
         .from('task_requests')
-        .select('*')
+        .select(`
+          *,
+          profiles!task_requests_applicant_fkey(username, did)
+        `)
         .eq('task', taskId);
       
-      info += "Requests data: " + JSON.stringify({ requestsData, requestsError }, null, 2) + "\n";
+      console.log("Requests data:", { requestsData, requestsError });
       
       // Fetch all task assignments for this task
       const { data: assignmentsData, error: assignmentsError } = await supabase
         .from('task_assignments')
-        .select('*')
+        .select(`
+          *,
+          profiles!task_assignments_assignee_fkey(username, did)
+        `)
         .eq('task', taskId);
       
-      info += "Assignments data: " + JSON.stringify({ assignmentsData, assignmentsError }, null, 2) + "\n";
+      console.log("Assignments data:", { assignmentsData, assignmentsError });
       
       // Fetch all task requests (no filter)
       const { data: allRequests, error: allRequestsError } = await supabase
         .from('task_requests')
-        .select('*');
+        .select(`
+          *,
+          profiles!task_requests_applicant_fkey(username, did)
+        `);
       
-      info += "All requests: " + JSON.stringify({ allRequests, allRequestsError }, null, 2) + "\n";
+      console.log("All requests:", { allRequests, allRequestsError });
       
       // Fetch all task assignments (no filter)
       const { data: allAssignments, error: allAssignmentsError } = await supabase
         .from('task_assignments')
-        .select('*');
+        .select(`
+          *,
+          profiles!task_assignments_assignee_fkey(username, did)
+        `);
       
-      info += "All assignments: " + JSON.stringify({ allAssignments, allAssignmentsError }, null, 2) + "\n";
+      console.log("All assignments:", { allAssignments, allAssignmentsError });
       
       setDebugInfo(info);
       setLoading(false);

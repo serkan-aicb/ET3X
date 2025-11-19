@@ -223,14 +223,20 @@ export default function TaskDetail() {
             // Fetch all task requests (no filters)
             const { data: allTaskRequests, error: allTaskRequestsError } = await supabase
               .from('task_requests')
-              .select('*');
+              .select(`
+                *,
+                profiles!task_requests_applicant_fkey(username, did)
+              `);
             
             console.log("ALL task requests in database:", { allTaskRequests, allTaskRequestsError });
             
             // Fetch all task assignments (no filters)
             const { data: allTaskAssignments, error: allTaskAssignmentsError } = await supabase
               .from('task_assignments')
-              .select('*');
+              .select(`
+                *,
+                profiles!task_assignments_assignee_fkey(username, did)
+              `);
             
             console.log("ALL task assignments in database:", { allTaskAssignments, allTaskAssignmentsError });
             
@@ -242,7 +248,7 @@ export default function TaskDetail() {
               .from('task_requests')
               .select(`
                 *,
-                profiles(username, did)
+                profiles!task_requests_applicant_fkey(username, did)
               `)
               .eq('task', taskId);
             
@@ -259,7 +265,7 @@ export default function TaskDetail() {
               .from('task_requests')
               .select(`
                 *,
-                profiles(username, did)
+                profiles!task_requests_applicant_fkey(username, did)
               `)
               .eq('task', taskId);
             
@@ -337,7 +343,7 @@ export default function TaskDetail() {
               .from('task_assignments')
               .select(`
                 *,
-                profiles(username, did)
+                profiles!task_assignments_assignee_fkey(username, did)
               `)
               .eq('task', taskId);
             
@@ -354,7 +360,7 @@ export default function TaskDetail() {
               .from('task_assignments')
               .select(`
                 *,
-                profiles(username, did)
+                profiles!task_assignments_assignee_fkey(username, did)
               `)
               .eq('task', taskId);
             
@@ -423,7 +429,7 @@ export default function TaskDetail() {
               .from('submissions')
               .select(`
                 *,
-                profiles(username)
+                profiles!submissions_submitter_fkey(username)
               `)
               .eq('task', taskId);
             
@@ -465,7 +471,7 @@ export default function TaskDetail() {
       .from('task_assignments')
       .select(`
         *,
-        profiles(username, did)
+        profiles!task_assignments_assignee_fkey(username, did)
       `)
       .eq('task', taskId);
     
