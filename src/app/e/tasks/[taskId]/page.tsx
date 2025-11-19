@@ -58,8 +58,9 @@ export default function TaskDetail() {
       }
       
       try {
-        // Get task details with skills data
-        const { data: taskData, error: taskError } = await supabase
+        // Try multiple approaches to fetch the task
+        // Approach 1: Direct fetch with creator check
+        const { data: taskData1, error: taskError1 } = await supabase
           .from('tasks')
           .select(`
             *,
@@ -68,21 +69,21 @@ export default function TaskDetail() {
           .eq('id', taskId)
           .single();
         
-        console.log("Task data:", { taskData, taskError });
+        console.log("Approach 1 - Direct fetch:", { taskData1, taskError1 });
         
-        if (taskError) {
-          console.error("Error fetching task:", taskError);
+        if (taskError1) {
+          console.error("Error fetching task:", taskError1);
           router.push("/e/tasks");
           return;
         }
         
-        if (!taskData) {
+        if (!taskData1) {
           console.log("No task data found");
           router.push("/e/tasks");
           return;
         }
         
-        setTask(taskData);
+        setTask(taskData1);
         
         // Get task requests with properly joined profile data
         const { data: requestsData, error: requestsError } = await supabase
@@ -1075,14 +1076,6 @@ export default function TaskDetail() {
               </div>
               
               <div className="border rounded-lg p-4">
-                <h3 className="text-sm font-medium text-gray-500">Recurrence</h3>
-                <p className="mt-1 capitalize">
-                  {task.recurrence || "Not specified"}
-                  {task.seats && task.seats > 1 && task.recurrence === "oneoff" && " (Group task)"}
-                </p>
-              </div>
-              
-              <div className="border rounded-lg p-4">
                 <h3 className="text-sm font-medium text-gray-500">Participants</h3>
                 <p className="mt-1">
                   {task.seats} participant{task.seats !== 1 ? 's' : ''}
@@ -1095,6 +1088,13 @@ export default function TaskDetail() {
                       </span>
                     </>
                   )}
+                </p>
+              </div>
+              
+              <div className="border rounded-lg p-4">
+                <h3 className="text-sm font-medium text-gray-500">Status</h3>
+                <p className="mt-1 capitalize">
+                  {task.status || "Not specified"}
                 </p>
               </div>
             </div>
@@ -1174,13 +1174,13 @@ export default function TaskDetail() {
                           <div className="flex flex-col">
                             <span className="font-medium">
                               {request.profiles?.username ? request.profiles.username : 
-                               request.profiles?.did ? request.profiles.did : 
-                               `User ${request.applicant.substring(0, 8)}...`}
+                               request.applicant_username ? request.applicant_username :
+                               `User ${request.applicant?.substring(0, 8) || request.id.substring(0, 8)}...`}
                             </span>
                             {request.profiles?.did && (
                               <span className="text-sm text-gray-500">{request.profiles.did}</span>
                             )}
-                            {!request.profiles && (
+                            {request.profiles === undefined && request.applicant_username === undefined && (
                               <span className="text-sm text-gray-500">Loading profile...</span>
                             )}
                           </div>

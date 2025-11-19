@@ -49,8 +49,9 @@ export default function StudentTaskDetail() {
         
         console.log("Current user:", user);
         
-        // Try to fetch the task - the RLS policies should handle access control
-        const { data: taskData, error: taskError } = await supabase
+        // Try multiple approaches to fetch the task
+        // Approach 1: Direct fetch (should work for open tasks and tasks assigned to the user)
+        const { data: taskData1, error: taskError1 } = await supabase
           .from('tasks')
           .select(`
             *,
@@ -59,44 +60,95 @@ export default function StudentTaskDetail() {
           .eq('id', taskId)
           .single();
         
-        console.log("Task fetch result:", { taskData, taskError });
+        console.log("Approach 1 - Direct fetch:", { taskData1, taskError1 });
         
-        if (taskData && !taskError) {
-          // Check if this is a group task with available seats
-          if (taskData.seats && taskData.seats > 1) {
-            console.log("This is a group task with", taskData.seats, "seats");
-            
-            // Get current assignments for this task
-            const { data: assignments, error: assignmentsError } = await supabase
-              .from('task_assignments')
-              .select('id')
-              .eq('task', taskId);
-            
-            console.log("Current assignments:", { assignments, assignmentsError });
-            
-            // If there are available seats, show the task even if it's assigned
-            const assignedCount = assignments ? assignments.length : 0;
-            console.log("Assigned count:", assignedCount);
-            
-            if (assignedCount < taskData.seats) {
-              console.log("Showing task - has available seats");
-              setTask(taskData);
-            } else {
-              console.log("Not showing task - all seats filled");
-              // Still show the task but indicate it's full
-              setTask(taskData);
-            }
-          } else {
-            // For individual tasks or tasks with no seat limit, show the task
-            console.log("Showing task - individual task or no seat limit");
-            setTask(taskData);
+        if (taskData1 && !taskError1) {
+          setTask(taskData1);
+          setLoading(false);
+          return;
+        }
+        
+        // Approach 2: Check if user has requested this task
+        const { data: requestData, error: requestError } = await supabase
+          .from('task_requests')
+          .select('id')
+          .eq('task', taskId)
+          .eq('applicant', user.id);
+        
+        console.log("Approach 2 - Request check:", { requestData, requestError });
+        
+        if (requestData && requestData.length > 0 && !requestError) {
+          // User has requested this task, try to fetch it again
+          const { data: taskData2, error: taskError2 } = await supabase
+            .from('tasks')
+            .select(`
+              *,
+              skills_data:skills(id, label, description)
+            `)
+            .eq('id', taskId)
+            .single();
+          
+          console.log("Approach 2 - Fetch after request check:", { taskData2, taskError2 });
+          
+          if (taskData2 && !taskError2) {
+            setTask(taskData2);
+            setLoading(false);
+            return;
           }
-        } else if (taskError) {
-          console.log("Error fetching task:", taskError);
-          // Even if we get an error, we might still want to show a message
+        }
+        
+        // Approach 3: Check if user is assigned to this task
+        const { data: assignmentData, error: assignmentError } = await supabase
+          .from('task_assignments')
+          .select('id')
+          .eq('task', taskId)
+          .eq('assignee', user.id);
+        
+        console.log("Approach 3 - Assignment check:", { assignmentData, assignmentError });
+        
+        if (assignmentData && assignmentData.length > 0 && !assignmentError) {
+          // User is assigned to this task, try to fetch it again
+          const { data: taskData3, error: taskError3 } = await supabase
+            .from('tasks')
+            .select(`
+              *,
+              skills_data:skills(id, label, description)
+            `)
+            .eq('id', taskId)
+            .single();
+          
+          console.log("Approach 3 - Fetch after assignment check:", { taskData3, taskError3 });
+          
+          if (taskData3 && !taskError3) {
+            setTask(taskData3);
+            setLoading(false);
+            return;
+          }
+        }
+        
+        // If none of the approaches worked, try fetching open tasks only
+        const { data: openTaskData, error: openTaskError } = await supabase
+          .from('tasks')
+          .select(`
+            *,
+            skills_data:skills(id, label, description)
+          `)
+          .eq('id', taskId)
+          .eq('status', 'open')
+          .single();
+        
+        console.log("Approach 4 - Open task fetch:", { openTaskData, openTaskError });
+        
+        if (openTaskData && !openTaskError) {
+          setTask(openTaskData);
+        } else {
+          console.log("Task not accessible or not found");
+          // Set task to null to show the "Task not found" message
+          setTask(null);
         }
       } catch (error) {
         console.error("Unexpected error fetching task:", error);
+        setTask(null);
       }
       
       setLoading(false);
@@ -398,14 +450,6 @@ export default function StudentTaskDetail() {
               </div>
               
               <div className="border rounded-lg p-4">
-                <h3 className="text-sm font-medium text-gray-500">Recurrence</h3>
-                <p className="mt-1 capitalize">
-                  {task.recurrence || "Not specified"}
-                  {task.seats && task.seats > 1 && " (Group task)"}
-                </p>
-              </div>
-              
-              <div className="border rounded-lg p-4">
                 <h3 className="text-sm font-medium text-gray-500">Participants</h3>
                 <p className="mt-1">
                   {task.seats} participant{task.seats !== 1 ? 's' : ''}
@@ -419,8 +463,15 @@ export default function StudentTaskDetail() {
                   )}
                 </p>
               </div>
+              
+              <div className="border rounded-lg p-4">
+                <h3 className="text-sm font-medium text-gray-500">Status</h3>
+                <p className="mt-1 capitalize">
+                  {task.status || "Not specified"}
+                </p>
+              </div>
             </div>
-            
+
             {/* Required Skills Section */}
             {task.skills_data && task.skills_data.length > 0 && (
               <div className="pt-6">

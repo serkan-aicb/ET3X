@@ -193,18 +193,21 @@ export type Database = {
           task: string
           assignee: string
           created_at: string
+          assignee_username: string
         }
         Insert: {
           id?: string
           task: string
           assignee: string
           created_at?: string
+          assignee_username: string
         }
         Update: {
           id?: string
           task?: string
           assignee?: string
           created_at?: string
+          assignee_username?: string
         }
         Relationships: [
           {
@@ -230,6 +233,7 @@ export type Database = {
           applicant: string
           created_at: string
           status: Database["public"]["Enums"]["request_status"]
+          applicant_username: string
         }
         Insert: {
           id?: string
@@ -237,6 +241,7 @@ export type Database = {
           applicant: string
           created_at?: string
           status?: Database["public"]["Enums"]["request_status"]
+          applicant_username: string
         }
         Update: {
           id?: string
@@ -244,6 +249,7 @@ export type Database = {
           applicant?: string
           created_at?: string
           status?: Database["public"]["Enums"]["request_status"]
+          applicant_username?: string
         }
         Relationships: [
           {
