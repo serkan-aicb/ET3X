@@ -624,6 +624,7 @@ export default function TaskDetail() {
       }
       
       // Create task assignment using both UUID and username for compatibility
+      console.log("Creating task assignment:", { taskId, applicantId, applicantUsername });
       const { error: assignError, data: assignmentData } = await supabase
         .from('task_assignments')
         .insert({
@@ -639,18 +640,87 @@ export default function TaskDetail() {
         throw new Error(`Error assigning task: ${assignError.message}`);
       }
       
+      // Log the created assignment for debugging
+      if (assignmentData && assignmentData.length > 0) {
+        console.log("Created assignment:", assignmentData[0]);
+      }
+      
       // Update task status to 'assigned' as soon as the first student is assigned
       if (task) {
+        console.log("Updating task status to 'assigned':", taskId);
         const { error: updateError } = await supabase
           .from('tasks')
           .update({ status: 'assigned' })
           .eq('id', taskId);
         
         console.log("Task status update result:", updateError);
+        
+        // Verify the task status was updated
+        const { data: verifyTask, error: verifyError } = await supabase
+          .from('tasks')
+          .select('status')
+          .eq('id', taskId)
+          .single();
+        
+        console.log("Task status verification:", { verifyTask, verifyError });
       }
       
-      setMessage("Task assigned successfully!");
-      
+      // For group tasks, check if all seats are filled
+      if (task && task.seats && task.seats > 1) {
+        // Get current assignments for this task
+        const { data: currentAssignments, error: countError } = await supabase
+          .from('task_assignments')
+          .select('id')
+          .eq('task', taskId);
+        
+        console.log("Current assignments for group task:", { currentAssignments, countError });
+        
+        // If all seats are filled, update task status to 'assigned'
+        if (currentAssignments && currentAssignments.length >= task.seats) {
+          const { error: updateError } = await supabase
+            .from('tasks')
+            .update({ status: 'assigned' })
+            .eq('id', taskId);
+          
+          console.log("Task status update result:", updateError);
+          
+          // Verify the task status was updated
+          const { data: verifyTask, error: verifyError } = await supabase
+            .from('tasks')
+            .select('status')
+            .eq('id', taskId)
+            .single();
+          
+          console.log("Task status verification:", { verifyTask, verifyError });
+          
+          setMessage(`Task assigned successfully to ${currentAssignments.length} students! All ${task.seats} seats filled.`);
+        } else {
+          // Task still has available seats
+          const assignedCount = currentAssignments ? currentAssignments.length : 0;
+          const remainingSeats = task.seats - assignedCount;
+          setMessage(`Task assigned successfully to ${assignedCount} students! ${remainingSeats} seats still available.`);
+        }
+      } else {
+        // For individual tasks or if all seats filled, update status
+        const { error: updateError } = await supabase
+          .from('tasks')
+          .update({ status: 'assigned' })
+          .eq('id', taskId);
+        
+        console.log("Task status update result:", updateError);
+        
+        // Verify the task status was updated
+        const { data: verifyTask, error: verifyError } = await supabase
+          .from('tasks')
+          .select('status')
+          .eq('id', taskId)
+          .single();
+        
+        console.log("Task status verification:", { verifyTask, verifyError });
+        
+        setMessage("Task assigned successfully!");
+      }
+       
       // Update request status
       const { error: requestError } = await supabase
         .from('task_requests')
@@ -781,6 +851,7 @@ export default function TaskDetail() {
       
       // Update task status to 'assigned' as soon as the first student is assigned
       if (task) {
+        console.log("Updating task status to 'assigned':", taskId);
         const { error: updateError } = await supabase
           .from('tasks')
           .update({ status: 'assigned' })
@@ -878,6 +949,7 @@ export default function TaskDetail() {
       
       // Update task status to 'assigned' as soon as the first student is assigned
       if (task) {
+        console.log("Updating task status to 'assigned':", taskId);
         const { error: updateError } = await supabase
           .from('tasks')
           .update({ status: 'assigned' })

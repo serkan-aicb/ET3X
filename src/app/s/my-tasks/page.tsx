@@ -40,6 +40,7 @@ export default function StudentMyTasks() {
       console.log("Current user:", user);
       
       try {
+        console.log("Fetching task assignments for user:", user.id);
         // Students can only see assignments where task_assignments.assignee = auth.uid()
         const { data: assignments, error: assignmentsError } = await supabase
           .from('task_assignments')
@@ -56,12 +57,15 @@ export default function StudentMyTasks() {
           return;
         }
         
+        console.log("Number of assignments found:", assignments?.length || 0);
+        
         if (assignments && assignments.length > 0) {
           // Extract task IDs
           const taskIds = assignments.map(assignment => assignment.task);
           console.log("Task IDs to fetch:", taskIds);
           
           // Get tasks with these IDs and relevant statuses
+          console.log("Fetching tasks with statuses ['assigned', 'delivered', 'rated']");
           const { data: tasksData, error: tasksError } = await supabase
             .from('tasks')
             .select('*')
@@ -72,11 +76,14 @@ export default function StudentMyTasks() {
           console.log("Tasks data:", { tasksData, tasksError });
           
           if (!tasksError && tasksData && isMounted) {
+            console.log("Setting tasks:", tasksData.length);
             setTasks(tasksData);
           } else if (isMounted) {
+            console.log("No tasks found or error occurred");
             setTasks([]);
           }
         } else if (isMounted) {
+          console.log("No assignments found for user");
           setTasks([]);
         }
       } catch (error) {

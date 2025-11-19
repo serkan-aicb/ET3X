@@ -57,6 +57,7 @@ export default function StudentDashboard() {
       });
       
       // Get task statistics
+      console.log("Fetching task assignments for user:", user.id);
       const { data: assignments, error: assignmentsError } = await supabase
         .from('task_assignments')
         .select(`
@@ -64,6 +65,8 @@ export default function StudentDashboard() {
           tasks(status)
         `)
         .eq('assignee', user.id);
+      
+      console.log("Assignments data:", { assignments, assignmentsError });
       
       if (!assignmentsError && assignments) {
         // Count tasks by status
@@ -82,6 +85,8 @@ export default function StudentDashboard() {
             }
           }
         });
+        
+        console.log("Task statistics:", { totalTasks, completedTasks, pendingTasks });
         
         setStats({
           totalTasks,
