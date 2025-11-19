@@ -37,7 +37,7 @@ export default function ViewSubmissions() {
         .from('submissions')
         .select(`
           *,
-          profiles(username)
+          profiles!submissions_submitter_fkey(username)
         `)
         .eq('task', taskId);
       

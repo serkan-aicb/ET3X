@@ -51,7 +51,7 @@ export default function RateTask() {
         .from('task_assignments')
         .select(`
           *,
-          profiles(id, username)
+          profiles!task_assignments_assignee_fkey(id, username)
         `)
         .eq('task', taskId);
       
