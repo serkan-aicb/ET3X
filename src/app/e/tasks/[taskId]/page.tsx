@@ -42,25 +42,28 @@ export default function TaskDetail() {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState(""); // Add this state for messages
   const [errorMessage, setErrorMessage] = useState(""); // Add this state for error messages
+  const [selectedApplicants, setSelectedApplicants] = useState<string[]>([]); // For group assignment
   const router = useRouter();
   const params = useParams();
   const taskId = params.taskId as string;
 
   useEffect(() => {
-    // Add safety check to prevent infinite loops
+    console.log("TaskDetail component mounted with taskId:", taskId);
+    
+    // Add a safety check to prevent infinite loops
     let isMounted = true;
     let localErrorMessage = "";
     
     const fetchData = async () => {
       const supabase = createClient();
       
-      console.log("Fetching task data for:", taskId);
+      console.log("Fetching task details for:", taskId);
       
       if (!taskId) {
         console.log("No task ID provided");
         localErrorMessage = "No task ID provided";
-        // Don't redirect immediately, show error instead
         if (isMounted) {
+          setTask(null);
           setErrorMessage(localErrorMessage);
           setLoading(false);
         }
@@ -72,9 +75,9 @@ export default function TaskDetail() {
         const { data: { user }, error: userError } = await supabase.auth.getUser();
         if (userError || !user) {
           console.log("No user logged in");
-          localErrorMessage = "No user logged in";
-          // Don't redirect immediately, show error instead
+          localErrorMessage = "You must be logged in to view this page.";
           if (isMounted) {
+            setTask(null);
             setErrorMessage(localErrorMessage);
             setLoading(false);
           }
@@ -164,6 +167,18 @@ export default function TaskDetail() {
             setTask(taskData);
             
             // Get task requests with properly joined profile data
+            // First, let's try fetching without any filters to see if requests exist at all
+            const { data: allRequestsData, error: allRequestsError } = await supabase
+              .from('task_requests')
+              .select(`
+                *,
+                profiles(username, did)
+              `)
+              .eq('task', taskId);
+            
+            console.log("All requests data (no filters):", { allRequestsData, allRequestsError });
+            
+            // Now fetch with the original query
             const { data: requestsData, error: requestsError } = await supabase
               .from('task_requests')
               .select(`
@@ -233,6 +248,18 @@ export default function TaskDetail() {
             }
             
             // Get task assignments with properly joined profile data
+            // First, let's try fetching without any filters to see if assignments exist at all
+            const { data: allAssignmentsData, error: allAssignmentsError } = await supabase
+              .from('task_assignments')
+              .select(`
+                *,
+                profiles(username, did)
+              `)
+              .eq('task', taskId);
+            
+            console.log("All assignments data (no filters):", { allAssignmentsData, allAssignmentsError });
+            
+            // Now fetch with the original query
             const { data: assignmentsData, error: assignmentsError } = await supabase
               .from('task_assignments')
               .select(`
@@ -249,36 +276,49 @@ export default function TaskDetail() {
             
             if (assignmentsData) {
               console.log("Assignments data:", assignmentsData);
-              // If profiles are not loaded, fetch them separately
+              // Process assignments to ensure profile data is available
               const assignmentsWithProfiles = await Promise.all(assignmentsData.map(async (assignment) => {
-                if (!assignment.profiles) {
-                  console.log("Fetching profile for assignment assignee:", assignment.assignee);
-                  const { data: profileData, error: profileError } = await supabase
+                console.log("Processing assignment:", assignment);
+                
+                // If we already have profile data from the join, use it
+                if (assignment.profiles) {
+                  return assignment;
+                }
+                
+                // If we don't have profile data, try to fetch it
+                console.log("Fetching profile for assignment assignee:", assignment.assignee);
+                const { data: profileData, error: profileError } = await supabase
+                  .from('profiles')
+                  .select('username, did')
+                  .eq('id', assignment.assignee)
+                  .single();
+                
+                console.log("Profile data fetch result:", { profileData, profileError });
+                
+                if (!profileError && profileData) {
+                  console.log("Profile data fetched:", profileData);
+                  return { ...assignment, profiles: profileData };
+                } else {
+                  console.log("Profile fetch error:", profileError);
+                  // Even if we can't get the full profile, we should at least show the username
+                  // Let's try to get just the username
+                  const { data: usernameData, error: usernameError } = await supabase
                     .from('profiles')
-                    .select('username, did')
+                    .select('username')
                     .eq('id', assignment.assignee)
                     .single();
                   
-                  if (!profileError && profileData) {
-                    console.log("Profile data fetched:", profileData);
-                    return { ...assignment, profiles: profileData };
-                  } else {
-                    console.log("Profile fetch error:", profileError);
-                    // Even if we can't get the full profile, we should at least show the username
-                    // Let's try to get just the username
-                    const { data: usernameData, error: usernameError } = await supabase
-                      .from('profiles')
-                      .select('username')
-                      .eq('id', assignment.assignee)
-                      .single();
-                    
-                    if (!usernameError && usernameData) {
-                      return { ...assignment, profiles: { username: usernameData.username, did: '' } };
-                    }
+                  console.log("Username data fetch result:", { usernameData, usernameError });
+                  
+                  if (!usernameError && usernameData) {
+                    return { ...assignment, profiles: { username: usernameData.username, did: '' } };
                   }
+                  
+                  // If we can't get any profile data, at least show the assignee ID
+                  return { ...assignment, profiles: null };
                 }
-                return assignment;
               }));
+              console.log("AssignmentsWithProfiles:", assignmentsWithProfiles);
               setAssignments(assignmentsWithProfiles);
             }
             
@@ -370,14 +410,29 @@ export default function TaskDetail() {
     }
   };
 
-  // Add verification after assignment operations
+  const toggleApplicantSelection = (applicantId: string) => {
+    setSelectedApplicants(prev => 
+      prev.includes(applicantId) 
+        ? prev.filter(id => id !== applicantId) 
+        : [...prev, applicantId]
+    );
+  };
+
   const handleAssignTask = async (applicantId: string) => {
     const supabase = createClient();
     
     try {
-      console.log("Assigning task to applicant:", { taskId, applicantId });
+      console.log("Assigning task:", { taskId, applicantId });
       
-      // First, get the username for the applicant
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setMessage("You must be logged in to assign tasks.");
+        setTimeout(() => setMessage(""), 5000);
+        return;
+      }
+      
+      // Get the username for the applicant
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('username')
@@ -385,25 +440,47 @@ export default function TaskDetail() {
         .single();
       
       if (profileError || !profileData) {
-        throw new Error(`Error fetching applicant username: ${profileError?.message || 'Profile not found'}`);
+        setMessage("Error fetching applicant information.");
+        setTimeout(() => setMessage(""), 5000);
+        return;
       }
       
       const applicantUsername = profileData.username;
       
-      // First, check if this is a single-person task and if there's already an assignment
-      if (task && task.seats === 1) {
-        // Check if there's already an assignment for this task
-        const { data: existingAssignments, error: checkError } = await supabase
+      // Check if this student is already assigned to this task
+      const { data: existingAssignments, error: checkError } = await supabase
+        .from('task_assignments')
+        .select('id')
+        .eq('task', taskId)
+        .eq('assignee', applicantId);
+      
+      console.log("Existing assignments check:", { existingAssignments, checkError });
+      
+      if (checkError) {
+        throw new Error(`Error checking existing assignments: ${checkError.message}`);
+      }
+      
+      if (existingAssignments && existingAssignments.length > 0) {
+        setMessage("This student is already assigned to this task.");
+        setTimeout(() => setMessage(""), 5000);
+        return;
+      }
+      
+      // For group tasks, check if all seats are filled
+      if (task && task.seats && task.seats > 1) {
+        // Get current assignments for this task
+        const { data: currentAssignments, error: countError } = await supabase
           .from('task_assignments')
           .select('id')
           .eq('task', taskId);
         
-        if (checkError) {
-          throw new Error(`Error checking existing assignments: ${checkError.message}`);
+        if (countError) {
+          throw new Error(`Error checking current assignments: ${countError.message}`);
         }
         
-        if (existingAssignments && existingAssignments.length > 0) {
-          setMessage("This single-person task already has an assigned student.");
+        const currentCount = currentAssignments ? currentAssignments.length : 0;
+        if (currentCount >= task.seats) {
+          setMessage(`All ${task.seats} seats for this task are already filled.`);
           setTimeout(() => setMessage(""), 5000);
           return;
         }
@@ -606,56 +683,115 @@ export default function TaskDetail() {
         router.refresh();
       }, 500);
       
+      // Clear selected applicants
+      setSelectedApplicants([]);
+      
       // Clear message after 5 seconds
       setTimeout(() => setMessage(""), 5000);
     } catch (error) {
-      console.error("Error assigning group task:", error);
-      setMessage(`Error assigning group task: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error("Error assigning task to group:", error);
+      setMessage(`Error assigning task to group: ${error instanceof Error ? error.message : 'Unknown error'}`);
       
       // Clear message after 5 seconds
       setTimeout(() => setMessage(""), 5000);
     }
   };
 
-  // Function to group applicants into groups of specified size
-  const groupApplicants = (applicants: TaskRequest[], groupSize: number) => {
-    const groups = [];
-    for (let i = 0; i < applicants.length; i += groupSize) {
-      groups.push(applicants.slice(i, i + groupSize));
-    }
-    return groups;
-  };
-
-  // Function to assign a group of applicants to the task
-  const handleAssignGroupOfApplicants = async (group: TaskRequest[]) => {
+  // Add a new function to handle assigning all applicants in groups of 5
+  const handleAssignAllInGroups = async () => {
     const supabase = createClient();
     
     try {
-      console.log("Assigning group of applicants:", { taskId, group });
+      console.log("Assigning all applicants in groups:", { taskId, requests });
       
-      // First, check if this is a single-person task
-      if (task && task.seats === 1) {
-        setMessage("This is a single-person task. You can only assign it to one student.");
+      // Get all requested applicants
+      const requestedApplicants = requests
+        .filter(req => req.status === 'requested')
+        .map(req => req.applicant);
+      
+      console.log("Requested applicants:", requestedApplicants);
+      
+      if (requestedApplicants.length === 0) {
+        setMessage("No requests to assign.");
         setTimeout(() => setMessage(""), 5000);
         return;
       }
       
-      // Get usernames for all applicants in the group
-      const usernames = await Promise.all(group.map(async (applicant) => {
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('username')
-          .eq('id', applicant.applicant)
-          .single();
-        
-        if (profileError || !profileData) {
-          throw new Error(`Error fetching username for applicant ${applicant.applicant}: ${profileError?.message || 'Profile not found'}`);
+      // Group applicants in groups of 5
+      const groups = [];
+      for (let i = 0; i < requestedApplicants.length; i += 5) {
+        groups.push(requestedApplicants.slice(i, i + 5));
+      }
+      
+      console.log("Groups to assign:", groups);
+      
+      // Assign each group
+      for (const group of groups) {
+        // Check if we have enough seats for this group
+        if (task && task.seats && task.seats > 1) {
+          // Get current assignments for this task
+          const { data: currentAssignments, error: countError } = await supabase
+            .from('task_assignments')
+            .select('id')
+            .eq('task', taskId);
+          
+          if (countError) {
+            throw new Error(`Error checking current assignments: ${countError.message}`);
+          }
+          
+          const currentCount = currentAssignments ? currentAssignments.length : 0;
+          const availableSeats = task.seats - currentCount;
+          
+          if (group.length > availableSeats) {
+            setMessage(`Not enough seats available for the last group. Only ${availableSeats} seats left.`);
+            setTimeout(() => setMessage(""), 5000);
+            break;
+          }
         }
         
-        return { id: applicant.applicant, username: profileData.username };
-      }));
+        // Get usernames for all applicants in this group
+        const usernames = await Promise.all(group.map(async (applicantId) => {
+          const { data: profileData, error: profileError } = await supabase
+            .from('profiles')
+            .select('username')
+            .eq('id', applicantId)
+            .single();
+          
+          if (profileError || !profileData) {
+            throw new Error(`Error fetching username for applicant ${applicantId}: ${profileError?.message || 'Profile not found'}`);
+          }
+          
+          return { id: applicantId, username: profileData.username };
+        }));
+        
+        // Create task assignments for this group
+        const assignments = usernames.map(({ id, username }) => ({
+          task: taskId,
+          assignee: id,
+          assignee_username: username
+        }));
+        
+        const { error: assignError } = await supabase
+          .from('task_assignments')
+          .insert(assignments);
+        
+        if (assignError) {
+          throw new Error(`Error assigning group: ${assignError.message}`);
+        }
+        
+        // Update request status for all applicants in this group
+        const { error: requestError } = await supabase
+          .from('task_requests')
+          .update({ status: 'selected' })
+          .eq('task', taskId)
+          .in('applicant', group);
+        
+        if (requestError) {
+          console.error("Error updating request status:", requestError);
+        }
+      }
       
-      // For group tasks, check if we're trying to assign more students than available seats
+      // Update task status to 'assigned' if all seats are filled
       if (task && task.seats && task.seats > 1) {
         // Get current assignments for this task
         const { data: currentAssignments, error: countError } = await supabase
@@ -663,82 +799,20 @@ export default function TaskDetail() {
           .select('id')
           .eq('task', taskId);
         
-        if (countError) {
-          throw new Error(`Error checking current assignments: ${countError.message}`);
-        }
-        
-        const currentCount = currentAssignments ? currentAssignments.length : 0;
-        const availableSeats = task.seats - currentCount;
-        
-        if (group.length > availableSeats) {
-          setMessage(`You're trying to assign ${group.length} students, but only ${availableSeats} seats are available.`);
-          setTimeout(() => setMessage(""), 5000);
-          return;
-        }
-      }
-      
-      // Create task assignments for all students in the group using usernames
-      const assignments = usernames.map(({ id, username }) => ({
-        task: taskId,
-        assignee: id,          // MUST NOT be NULL
-        assignee_username: username
-      }));
-      
-      const { error: assignError, data: assignmentData } = await supabase
-        .from('task_assignments')
-        .insert(assignments)
-        .select();
-      
-      console.log("Group assignment result:", { assignError, assignmentData });
-      
-      if (assignError) {
-        throw new Error(`Error assigning task to group: ${assignError.message}`);
-      }
-      
-      // Update task status if all seats are filled
-      let message = "";
-      if (task && task.seats) {
-        // Get current assignments for this task
-        const { data: currentAssignments, error: countError } = await supabase
-          .from('task_assignments')
-          .select('id')
-          .eq('task', taskId);
-        
-        console.log("Current assignments:", { currentAssignments, countError });
+        console.log("Current assignments for group task:", { currentAssignments, countError });
         
         // If all seats are filled, update task status to 'assigned'
         if (currentAssignments && currentAssignments.length >= task.seats) {
-          const { data: updateData, error: updateError } = await supabase
+          const { error: updateError } = await supabase
             .from('tasks')
             .update({ status: 'assigned' })
-            .eq('id', taskId)
-            .select();
+            .eq('id', taskId);
           
-          console.log("Task status update result:", { updateData, updateError });
-          
-          message = `Group of ${group.length} students assigned successfully! All ${task.seats} seats filled.`;
-        } else {
-          // Task still has available seats
-          const assignedCount = currentAssignments ? currentAssignments.length : 0;
-          const remainingSeats = task.seats - assignedCount;
-          message = `Group of ${group.length} students assigned successfully! ${remainingSeats} seats still available.`;
+          console.log("Task status update result:", updateError);
         }
-      } else {
-        message = `Group of ${group.length} students assigned successfully!`;
       }
       
-      // Update request status for all students in the group
-      const applicantIds = group.map(applicant => applicant.applicant);
-      const { error: requestError } = await supabase
-        .from('task_requests')
-        .update({ status: 'selected' })
-        .eq('task', taskId)
-        .in('applicant', applicantIds);
-      
-      console.log("Request status update result:", requestError);
-      
-      // Set success message
-      setMessage(message);
+      setMessage(`All applicants assigned successfully in groups of 5!`);
       
       // Verify assignments after a short delay
       setTimeout(() => {
@@ -746,107 +820,18 @@ export default function TaskDetail() {
         router.refresh();
       }, 500);
       
-      // Clear message after 5 seconds
-      setTimeout(() => setMessage(""), 5000);
-    } catch (error) {
-      console.error("Error assigning group of applicants:", error);
-      setMessage(`Error assigning group: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      
-      // Clear message after 5 seconds
-      setTimeout(() => setMessage(""), 5000);
-    }
-  };
-
-  // Function to assign all applicants in groups of specified size
-  const handleAssignAllInGroups = async () => {
-    const supabase = createClient();
-    
-    try {
-      console.log("Assigning all applicants in groups");
-      
-      // First, check if this is a single-person task
-      if (task && task.seats === 1) {
-        setMessage("This is a single-person task. You can only assign it to one student.");
-        setTimeout(() => setMessage(""), 5000);
-        return;
-      }
-      
-      // Filter to only requested applicants
-      const requestedApplicants = requests.filter(req => req.status === 'requested');
-      
-      // Group applicants into groups of 5 or based on available seats
-      let groupSize = 5;
-      
-      // If task has limited seats, adjust group size accordingly
-      if (task && task.seats) {
-        // Get current assignments for this task
-        const { data: currentAssignments, error: countError } = await supabase
-          .from('task_assignments')
-          .select('id')
-          .eq('task', taskId);
-        
-        if (countError) {
-          throw new Error(`Error checking current assignments: ${countError.message}`);
-        }
-        
-        const currentCount = currentAssignments ? currentAssignments.length : 0;
-        const availableSeats = task.seats - currentCount;
-        
-        // Adjust group size to not exceed available seats
-        groupSize = Math.min(groupSize, availableSeats);
-        
-        if (groupSize <= 0) {
-          setMessage("All available seats for this task have been filled.");
-          setTimeout(() => setMessage(""), 5000);
-          return;
-        }
-      }
-      
-      const groups = groupApplicants(requestedApplicants, groupSize);
-      
-      // Process each group
-      let successCount = 0;
-      let errorCount = 0;
-      
-      for (const group of groups) {
-        try {
-          const result = await handleAssignGroupOfApplicants(group);
-          successCount++;
-        } catch (error) {
-          console.error("Error assigning group:", error);
-          errorCount++;
-        }
-      }
-      
-      if (errorCount === 0) {
-        setMessage(`Successfully assigned all applicants in ${successCount} group(s)!`);
-      } else {
-        setMessage(`Assigned ${successCount} group(s) successfully, but ${errorCount} group(s) failed.`);
-      }
+      // Clear selected applicants
+      setSelectedApplicants([]);
       
       // Clear message after 5 seconds
       setTimeout(() => setMessage(""), 5000);
     } catch (error) {
-      console.error("Error assigning all applicants in groups:", error);
+      console.error("Error assigning all applicants:", error);
       setMessage(`Error assigning all applicants: ${error instanceof Error ? error.message : 'Unknown error'}`);
       
       // Clear message after 5 seconds
       setTimeout(() => setMessage(""), 5000);
     }
-  };
-
-  // Add state for group selection
-  const [selectedApplicants, setSelectedApplicants] = useState<string[]>([]);
-  
-  // Function to toggle applicant selection
-  const toggleApplicantSelection = (applicantId: string) => {
-    setSelectedApplicants(prev => {
-      if (prev.includes(applicantId)) {
-        return prev.filter(id => id !== applicantId);
-      } else {
-        return [...prev, applicantId];
-      }
-    });
   };
 
   const handleDeclineRequest = async (applicantId: string) => {
@@ -910,36 +895,23 @@ export default function TaskDetail() {
         goal: task?.goal || null,
         context: task?.context || null,
         deliverables: task?.deliverables || null,
-        seats: task?.seats || 1,
+        seats: task?.seats || null,
         skill_level: task?.skill_level || null,
         license: task?.license || null,
-        recurrence: null,
         skills: task?.skills || null,
         due_date: task?.due_date || null,
-        status: 'draft' // New task starts as draft
+        status: 'draft' // Always create as draft
       });
     
-    if (error) {
-      console.error("Error duplicating task:", error);
-      // Show error message to user
-      setMessage("Error duplicating task. Please try again.");
-      setTimeout(() => setMessage(""), 3000);
-      return;
+    if (!error) {
+      router.push('/e/tasks');
     }
-    
-    // Show success message
-    setMessage("Task duplicated successfully!");
-    setTimeout(() => setMessage(""), 3000);
-    
-    // Redirect to tasks page after a short delay
-    setTimeout(() => {
-      router.push("/e/tasks");
-    }, 1000);
   };
 
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col">
+        {/* Header */}
         <header className="bg-white shadow-sm">
           <div className="container mx-auto px-4 py-4 flex justify-between items-center">
             <Link href="/e/dashboard" className="flex items-center space-x-2">
@@ -950,21 +922,22 @@ export default function TaskDetail() {
             </Link>
             <div className="flex space-x-2">
               <Button variant="outline" onClick={() => router.push("/e/tasks")}>
-                View Tasks
+                My Tasks
               </Button>
-              <Button variant="outline" onClick={async () => {
-                const supabase = createClient();
-                await supabase.auth.signOut();
-                router.push("/");
-              }}>
-                Logout
+              <Button variant="outline" onClick={() => router.push("/e/dashboard")}>
+                Dashboard
               </Button>
             </div>
           </div>
         </header>
-        
+
+        {/* Main Content */}
         <main className="container mx-auto px-4 py-8 flex-grow">
-          <Card>
+          <div className="mb-6">
+            <Skeleton className="h-10 w-32" />
+          </div>
+          
+          <Card className="shadow-lg">
             <CardHeader>
               <Skeleton className="h-8 w-64" />
               <Skeleton className="h-4 w-96 mt-2" />
@@ -977,9 +950,79 @@ export default function TaskDetail() {
                 <Skeleton className="h-32 w-full mt-6" />
               </div>
             </CardContent>
+            <CardFooter>
+              <Skeleton className="h-10 w-full" />
+            </CardFooter>
           </Card>
         </main>
-        
+
+        {/* Footer */}
+        <footer className="py-6 px-4 bg-white border-t mt-auto">
+          <div className="container mx-auto">
+            <div className="flex flex-col md:flex-row justify-between items-center">
+              <div className="text-center md:text-left mb-4 md:mb-0">
+                <p className="text-gray-500">© {new Date().getFullYear()} Talent3X. Oulu Pilot.</p>
+              </div>
+              <div className="flex space-x-6">
+                <Link href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
+                  Terms of Use
+                </Link>
+                <Link href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
+                  Disclaimer
+                </Link>
+                <Link href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
+                  Privacy Policy
+                </Link>
+              </div>
+            </div>
+          </div>
+        </footer>
+      </div>
+    );
+  }
+
+  if (errorMessage) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col">
+        {/* Header */}
+        <header className="bg-white shadow-sm">
+          <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+            <Link href="/e/dashboard" className="flex items-center space-x-2">
+              <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center">
+                <span className="text-white font-bold text-xl">T</span>
+              </div>
+              <span className="text-2xl font-bold text-blue-800">Talent3X</span>
+            </Link>
+            <div className="flex space-x-2">
+              <Button variant="outline" onClick={() => router.push("/e/tasks")}>
+                My Tasks
+              </Button>
+              <Button variant="outline" onClick={() => router.push("/e/dashboard")}>
+                Dashboard
+              </Button>
+            </div>
+          </div>
+        </header>
+
+        {/* Main Content */}
+        <main className="container mx-auto px-4 py-8 flex-grow">
+          <Card className="shadow-lg max-w-2xl mx-auto">
+            <CardHeader>
+              <CardTitle className="text-red-600">Error</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-600">{errorMessage}</p>
+              <Button 
+                className="mt-4 bg-blue-600 hover:bg-blue-700"
+                onClick={() => router.push("/e/tasks")}
+              >
+                Back to Tasks
+              </Button>
+            </CardContent>
+          </Card>
+        </main>
+
+        {/* Footer */}
         <footer className="py-6 px-4 bg-white border-t mt-auto">
           <div className="container mx-auto">
             <div className="flex flex-col md:flex-row justify-between items-center">
@@ -1007,6 +1050,7 @@ export default function TaskDetail() {
   if (!task) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col">
+        {/* Header */}
         <header className="bg-white shadow-sm">
           <div className="container mx-auto px-4 py-4 flex justify-between items-center">
             <Link href="/e/dashboard" className="flex items-center space-x-2">
@@ -1017,33 +1061,31 @@ export default function TaskDetail() {
             </Link>
             <div className="flex space-x-2">
               <Button variant="outline" onClick={() => router.push("/e/tasks")}>
-                View Tasks
+                My Tasks
               </Button>
-              <Button variant="outline" onClick={async () => {
-                const supabase = createClient();
-                await supabase.auth.signOut();
-                router.push("/");
-              }}>
-                Logout
+              <Button variant="outline" onClick={() => router.push("/e/dashboard")}>
+                Dashboard
               </Button>
             </div>
           </div>
         </header>
-        
+
+        {/* Main Content */}
         <main className="container mx-auto px-4 py-8 flex-grow">
-          <Card>
+          <Card className="shadow-lg">
             <CardContent className="py-8 text-center">
-              <p className="text-muted-foreground">{errorMessage || "Task not found or you don{`'`}t have permission to view this task."}</p>
+              <p className="text-gray-600">Task not found or not available.</p>
               <Button 
-                className="mt-4 bg-blue-600 hover:bg-blue-700" 
+                className="mt-4 bg-blue-600 hover:bg-blue-700"
                 onClick={() => router.push("/e/tasks")}
               >
-                Back to Tasks
+                My Tasks
               </Button>
             </CardContent>
           </Card>
         </main>
-        
+
+        {/* Footer */}
         <footer className="py-6 px-4 bg-white border-t mt-auto">
           <div className="container mx-auto">
             <div className="flex flex-col md:flex-row justify-between items-center">
@@ -1081,14 +1123,10 @@ export default function TaskDetail() {
           </Link>
           <div className="flex space-x-2">
             <Button variant="outline" onClick={() => router.push("/e/tasks")}>
-              View Tasks
+              My Tasks
             </Button>
-            <Button variant="outline" onClick={async () => {
-              const supabase = createClient();
-              await supabase.auth.signOut();
-              router.push("/");
-            }}>
-              Logout
+            <Button variant="outline" onClick={() => router.push("/e/dashboard")}>
+              Dashboard
             </Button>
           </div>
         </div>
@@ -1102,13 +1140,13 @@ export default function TaskDetail() {
           </Button>
         </div>
         
-        {/* Add message display */}
+        {/* Display messages */}
         {message && (
-          <div className={`p-3 rounded-lg mb-4 ${message.includes("successfully") ? "bg-green-50 text-green-700 border border-green-200" : "bg-red-50 text-red-700 border border-red-200"}`}>
+          <div className="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded">
             {message}
           </div>
         )}
-        
+
         <Card className="shadow-lg rounded-xl overflow-hidden mb-8">
           <CardHeader className="bg-gray-50">
             <div className="flex justify-between items-start">
@@ -1349,7 +1387,6 @@ export default function TaskDetail() {
                       </p>
                     </div>
                   )}
-
                 </div>
               )}
             </CardContent>
@@ -1379,6 +1416,9 @@ export default function TaskDetail() {
                         </span>
                         {assignment.profiles?.did && (
                           <span className="text-sm text-gray-500">{assignment.profiles.did}</span>
+                        )}
+                        {assignment.profiles === null && (
+                          <span className="text-sm text-gray-500">Profile loading failed</span>
                         )}
                         {!assignment.profiles && (
                           <span className="text-sm text-gray-500">Loading profile...</span>
