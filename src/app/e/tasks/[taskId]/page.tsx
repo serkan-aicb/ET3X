@@ -535,19 +535,54 @@ export default function TaskDetail() {
       }
       
       // Get the username for the applicant
-      const { data: profileData, error: profileError } = await supabase
+      console.log("Fetching profile for applicant ID:", applicantId);
+      const { data: profileDataResult, error: profileError } = await supabase
         .from('profiles')
         .select('username')
         .eq('id', applicantId)
         .single();
       
+      let profileData = profileDataResult;
+      
       if (profileError || !profileData) {
-        setMessage("Error fetching applicant information.");
-        setTimeout(() => setMessage(""), 5000);
-        return;
+        console.error("Error fetching applicant profile:", { profileError, profileData, applicantId });
+        // Try a fallback approach to get at least the username
+        console.log("Trying fallback profile fetch for applicant ID:", applicantId);
+        const { data: fallbackProfileData, error: fallbackProfileError } = await supabase
+          .from('profiles')
+          .select('username')
+          .eq('id', applicantId)
+          .single();
+        
+        if (fallbackProfileError || !fallbackProfileData) {
+          console.error("Fallback profile fetch also failed:", { fallbackProfileError, fallbackProfileData, applicantId });
+          // Let's also try to see if the profile exists at all
+          const { data: existenceCheck, error: existenceError } = await supabase
+            .from('profiles')
+            .select('id, username')
+            .eq('id', applicantId);
+          
+          console.log("Profile existence check:", { existenceCheck, existenceError });
+          
+          // Try one more approach - check if we can get any data from the profiles table
+          const { data: allProfiles, error: allProfilesError } = await supabase
+            .from('profiles')
+            .select('id, username')
+            .limit(5);
+          
+          console.log("Sample profiles data:", { allProfiles, allProfilesError });
+          
+          setMessage(`Error fetching applicant information: ${profileError?.message || fallbackProfileError?.message || existenceError?.message || 'Profile not found'}`);
+          setTimeout(() => setMessage(""), 5000);
+          return;
+        }
+        
+        // Use fallback data
+        profileData = fallbackProfileData;
       }
       
       const applicantUsername = profileData.username;
+      console.log("Successfully fetched applicant username:", applicantUsername);
       
       // Check if this student is already assigned to this task
       const { data: existingAssignments, error: checkError } = await supabase
@@ -679,6 +714,7 @@ export default function TaskDetail() {
       
       // Get usernames for all applicants
       const usernames = await Promise.all(applicantIds.map(async (applicantId) => {
+        console.log("Fetching profile for group applicant ID:", applicantId);
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('username')
@@ -686,9 +722,41 @@ export default function TaskDetail() {
           .single();
         
         if (profileError || !profileData) {
-          throw new Error(`Error fetching username for applicant ${applicantId}: ${profileError?.message || 'Profile not found'}`);
+          console.error("Error fetching profile for applicant:", { profileError, profileData, applicantId });
+          // Try a fallback approach
+          console.log("Trying fallback profile fetch for group applicant ID:", applicantId);
+          const { data: fallbackProfileData, error: fallbackProfileError } = await supabase
+            .from('profiles')
+            .select('username')
+            .eq('id', applicantId)
+            .single();
+          
+          if (fallbackProfileError || !fallbackProfileData) {
+            console.error("Fallback profile fetch also failed for group applicant:", { fallbackProfileError, fallbackProfileData, applicantId });
+            // Check if profile exists at all
+            const { data: existenceCheck, error: existenceError } = await supabase
+              .from('profiles')
+              .select('id, username')
+              .eq('id', applicantId);
+            
+            console.log("Group applicant profile existence check:", { existenceCheck, existenceError });
+            
+            // Try one more approach - check if we can get any data from the profiles table
+            const { data: allProfiles, error: allProfilesError } = await supabase
+              .from('profiles')
+              .select('id, username')
+              .limit(5);
+            
+            console.log("Sample profiles data for group assignment:", { allProfiles, allProfilesError });
+            
+            throw new Error(`Error fetching username for applicant ${applicantId}: ${profileError?.message || fallbackProfileError?.message || existenceError?.message || 'Profile not found'}`);
+          }
+          
+          // Use fallback data
+          return { id: applicantId, username: fallbackProfileData.username };
         }
         
+        console.log("Successfully fetched group applicant username:", profileData.username);
         return { id: applicantId, username: profileData.username };
       }));
       
