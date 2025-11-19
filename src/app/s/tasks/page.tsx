@@ -17,6 +17,9 @@ export default function StudentTasks() {
   const router = useRouter();
 
   useEffect(() => {
+    // Add safety check to prevent state updates on unmounted component
+    let isMounted = true;
+    
     const fetchTasks = async () => {
       const supabase = createClient();
       
@@ -33,7 +36,7 @@ export default function StudentTasks() {
       
       if (openError) {
         console.error("Error fetching open tasks:", openError);
-        setLoading(false);
+        if (isMounted) setLoading(false);
         return;
       }
       
@@ -49,8 +52,10 @@ export default function StudentTasks() {
       
       if (groupError) {
         console.error("Error fetching group tasks:", groupError);
-        setTasks(openTasks || []);
-        setLoading(false);
+        if (isMounted) {
+          setTasks(openTasks || []);
+          setLoading(false);
+        }
         return;
       }
       
@@ -73,14 +78,22 @@ export default function StudentTasks() {
       console.log("Tasks with available seats:", enriched);
       
       // Combine open tasks with assigned group tasks that have available seats
-      setTasks([...(openTasks || []), ...enriched]);
-      setLoading(false);
+      if (isMounted) {
+        setTasks([...(openTasks || []), ...enriched]);
+        setLoading(false);
+      }
     };
     
     fetchTasks();
+    
+    // Cleanup function
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const handleViewTask = (taskId: string) => {
+    console.log("Navigating to task:", taskId);
     router.push(`/s/tasks/${taskId}`);
   };
 

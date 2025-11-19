@@ -27,6 +27,9 @@ export default function StudentTaskDetail() {
   const taskId = params.taskId as string;
 
   useEffect(() => {
+    // Add a safety check to prevent infinite loops
+    let isMounted = true;
+    
     const fetchTask = async () => {
       const supabase = createClient();
       
@@ -34,7 +37,7 @@ export default function StudentTaskDetail() {
       
       if (!taskId) {
         console.log("No task ID provided");
-        setLoading(false);
+        if (isMounted) setLoading(false);
         return;
       }
       
@@ -43,7 +46,7 @@ export default function StudentTaskDetail() {
         const { data: { user }, error: userError } = await supabase.auth.getUser();
         if (userError || !user) {
           console.log("No user logged in");
-          setLoading(false);
+          if (isMounted) setLoading(false);
           return;
         }
         
@@ -63,18 +66,23 @@ export default function StudentTaskDetail() {
         
         console.log("Task fetch result:", { taskData, error });
         
-        if (!error && taskData) {
-          setTask(taskData);
-        } else {
-          console.log("Task not accessible or not found");
-          setTask(null);
+        if (isMounted) {
+          if (!error && taskData) {
+            setTask(taskData);
+          } else {
+            console.log("Task not accessible or not found");
+            // Set task to null to show error UI, but don't redirect automatically
+            setTask(null);
+          }
+          setLoading(false);
         }
       } catch (error) {
         console.error("Unexpected error fetching task:", error);
-        setTask(null);
+        if (isMounted) {
+          setTask(null);
+          setLoading(false);
+        }
       }
-      
-      setLoading(false);
     };
     
     if (taskId) {
@@ -82,6 +90,11 @@ export default function StudentTaskDetail() {
     } else {
       setLoading(false);
     }
+    
+    // Cleanup function to prevent state updates on unmounted component
+    return () => {
+      isMounted = false;
+    };
   }, [taskId]);
 
   const handleRequestTask = async () => {
