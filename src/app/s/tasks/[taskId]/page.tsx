@@ -177,6 +177,21 @@ export default function StudentTaskDetail() {
         throw insertError;
       }
       
+      // Verify the request was created
+      if (requestData && requestData.length > 0) {
+        const createdRequest = requestData[0];
+        console.log("Created request:", createdRequest);
+        
+        // Verify the request can be fetched
+        const { data: verifyData, error: verifyError } = await supabase
+          .from('task_requests')
+          .select('*')
+          .eq('id', createdRequest.id)
+          .single();
+        
+        console.log("Verification fetch result:", { verifyData, verifyError });
+      }
+      
       // Show success message
       setMessage("Task requested successfully! The educator will review your request.");
     } catch (error: unknown) {

@@ -179,37 +179,56 @@ export default function TaskDetail() {
             }
             
             if (requestsData) {
-              console.log("Requests data:", requestsData);
-              // If profiles are not loaded, fetch them separately
-              const requestsWithProfiles = await Promise.all(requestsData.map(async (request) => {
-                if (!request.profiles) {
-                  console.log("Fetching profile for request applicant:", request.applicant);
-                  const { data: profileData, error: profileError } = await supabase
+              console.log("Number of requests fetched:", requestsData.length);
+              console.log("Requests before filtering:", requestsData);
+              // Filter to only show requested status
+              const requestedRequests = requestsData.filter(req => req.status === 'requested');
+              console.log("Number of requested status requests:", requestedRequests.length);
+              console.log("Requested status requests:", requestedRequests);
+              
+              // Process requests to ensure profile data is available
+              const requestsWithProfiles = await Promise.all(requestedRequests.map(async (request) => {
+                console.log("Processing request:", request);
+                
+                // If we already have profile data from the join, use it
+                if (request.profiles) {
+                  return request;
+                }
+                
+                // If we don't have profile data, try to fetch it
+                console.log("Fetching profile for request applicant:", request.applicant);
+                const { data: profileData, error: profileError } = await supabase
+                  .from('profiles')
+                  .select('username, did')
+                  .eq('id', request.applicant)
+                  .single();
+                
+                console.log("Profile data fetch result:", { profileData, profileError });
+                
+                if (!profileError && profileData) {
+                  console.log("Profile data fetched:", profileData);
+                  return { ...request, profiles: profileData };
+                } else {
+                  console.log("Profile fetch error:", profileError);
+                  // Even if we can't get the full profile, we should at least show the username
+                  // Let's try to get just the username
+                  const { data: usernameData, error: usernameError } = await supabase
                     .from('profiles')
-                    .select('username, did')
+                    .select('username')
                     .eq('id', request.applicant)
                     .single();
                   
-                  if (!profileError && profileData) {
-                    console.log("Profile data fetched:", profileData);
-                    return { ...request, profiles: profileData };
-                  } else {
-                    console.log("Profile fetch error:", profileError);
-                    // Even if we can't get the full profile, we should at least show the username
-                    // Let's try to get just the username
-                    const { data: usernameData, error: usernameError } = await supabase
-                      .from('profiles')
-                      .select('username')
-                      .eq('id', request.applicant)
-                      .single();
-                    
-                    if (!usernameError && usernameData) {
-                      return { ...request, profiles: { username: usernameData.username, did: '' } };
-                    }
+                  console.log("Username data fetch result:", { usernameData, usernameError });
+                  
+                  if (!usernameError && usernameData) {
+                    return { ...request, profiles: { username: usernameData.username, did: '' } };
                   }
+                  
+                  // If we can't get any profile data, at least show the applicant ID
+                  return { ...request, profiles: null };
                 }
-                return request;
               }));
+              console.log("RequestsWithProfiles:", requestsWithProfiles);
               setRequests(requestsWithProfiles);
             }
             
@@ -1247,7 +1266,10 @@ export default function TaskDetail() {
               ) : (
                 <div className="space-y-4">
                   {requests
-                    .filter(req => req.status === 'requested')
+                    .filter(req => {
+                      console.log("Filtering request:", req);
+                      return req.status === 'requested';
+                    })
                     .map((request) => (
                       <div key={request.id} className="flex items-center justify-between p-4 border rounded-lg">
                         <div className="flex items-center space-x-3">
@@ -1267,7 +1289,10 @@ export default function TaskDetail() {
                             {request.profiles?.did && (
                               <span className="text-sm text-gray-500">{request.profiles.did}</span>
                             )}
-                            {request.profiles === undefined && request.applicant_username === undefined && (
+                            {request.profiles === null && (
+                              <span className="text-sm text-gray-500">Profile loading failed</span>
+                            )}
+                            {!request.profiles && !request.applicant_username && (
                               <span className="text-sm text-gray-500">Loading profile...</span>
                             )}
                           </div>
