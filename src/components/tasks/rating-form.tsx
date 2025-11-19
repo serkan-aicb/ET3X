@@ -85,7 +85,6 @@ export function RatingForm({
           scores: skillScores,
           level: (task.skill_level as Level) || "Novice",
           seats: task.seats || 1,
-          isRecurring: task.recurrence === "recurring",
           submittedAt: new Date(),
           dueAt: task.due_date ? new Date(task.due_date) : null
         });

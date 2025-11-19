@@ -7,7 +7,6 @@ const LEVEL_MULT: Record<Level, number> = {
   Novice: 1.0, Skilled: 1.2, Expert: 1.5, Master: 1.8
 };
 const GROUP_DAMP_MAX = 0.40;            // max dampening for big groups
-const RECURRENCE_DAMP = 0.90;           // recurring tasks slightly less XP
 const ON_TIME_BONUS = 1.10;             // submitted on/before due date
 const XP_MIN_MAX = [25, 600] as const;  // clamp
 
@@ -21,7 +20,6 @@ export function computeXP(opts: {
   scores: SkillScore[];
   level: Level;
   seats: number;            // number of participants in the task
-  isRecurring: boolean;
   submittedAt: Date;
   dueAt?: Date | null;
 }) {
@@ -39,7 +37,6 @@ export function computeXP(opts: {
     STAR_MULT * starsAvg;                      // core
   xp *= LEVEL_MULT[opts.level];                // difficulty
   xp *= groupFactor;                           // group damp
-  if (opts.isRecurring) xp *= RECURRENCE_DAMP; // recurring damp
   if (onTime) xp *= ON_TIME_BONUS;             // timeliness
 
   // clamp + integerize

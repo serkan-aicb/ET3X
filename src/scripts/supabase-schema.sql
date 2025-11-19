@@ -8,7 +8,6 @@ CREATE TYPE user_role AS ENUM ('student', 'educator', 'admin');
 CREATE TYPE request_status AS ENUM ('requested', 'declined', 'selected');
 CREATE TYPE skill_level AS ENUM ('Novice', 'Skilled', 'Expert', 'Master');
 CREATE TYPE license_type AS ENUM ('CC BY 4.0', 'CC0 1.0');
-CREATE TYPE recurrence_type AS ENUM ('oneoff', 'recurring');
 CREATE TYPE task_status AS ENUM ('draft', 'open', 'assigned', 'delivered', 'rated');
 
 -- Create skills table
@@ -42,7 +41,6 @@ CREATE TABLE tasks (
   seats INTEGER,
   skill_level skill_level,
   license license_type,
-  recurrence recurrence_type,
   skills INTEGER[],
   due_date TIMESTAMP WITH TIME ZONE,
   status task_status DEFAULT 'draft',

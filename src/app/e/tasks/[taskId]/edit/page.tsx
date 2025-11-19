@@ -112,7 +112,7 @@ export default function EditTask() {
     try {
       const supabase = createClient();
       
-      // Update task - always use 'oneoff' since we removed the recurrence option
+      // Update task - remove recurrence since we removed the column
       const { error } = await supabase
         .from('tasks')
         .update({
@@ -124,7 +124,6 @@ export default function EditTask() {
           seats,
           skill_level: skillLevel,
           license,
-          recurrence: 'oneoff', // Always set to 'oneoff' since we removed the option
           skills,
           due_date: dueDate || null
         })

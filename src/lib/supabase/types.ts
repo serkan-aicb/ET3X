@@ -280,7 +280,6 @@ export type Database = {
           seats: number | null
           skill_level: Database["public"]["Enums"]["skill_level"] | null
           license: Database["public"]["Enums"]["license_type"] | null
-          recurrence: Database["public"]["Enums"]["recurrence_type"] | null
           skills: number[] | null
           due_date: string | null
           status: Database["public"]["Enums"]["task_status"]
@@ -298,7 +297,6 @@ export type Database = {
           seats?: number | null
           skill_level?: Database["public"]["Enums"]["skill_level"] | null
           license?: Database["public"]["Enums"]["license_type"] | null
-          recurrence?: Database["public"]["Enums"]["recurrence_type"] | null
           skills?: number[] | null
           due_date?: string | null
           status?: Database["public"]["Enums"]["task_status"]
@@ -316,7 +314,6 @@ export type Database = {
           seats?: number | null
           skill_level?: Database["public"]["Enums"]["skill_level"] | null
           license?: Database["public"]["Enums"]["license_type"] | null
-          recurrence?: Database["public"]["Enums"]["recurrence_type"] | null
           skills?: number[] | null
           due_date?: string | null
           status?: Database["public"]["Enums"]["task_status"]
@@ -342,7 +339,6 @@ export type Database = {
     }
     Enums: {
       license_type: "CC BY 4.0" | "CC0 1.0"
-      recurrence_type: "oneoff" | "recurring"
       request_status: "requested" | "declined" | "selected"
       skill_level: "Novice" | "Skilled" | "Expert" | "Master"
       task_status: "draft" | "open" | "assigned" | "delivered" | "rated"

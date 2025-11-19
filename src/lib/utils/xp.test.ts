@@ -33,7 +33,6 @@ describe('XP Computation', () => {
       scores,
       level: "Novice",
       seats: 1,
-      isRecurring: false,
       submittedAt: new Date(),
       dueAt: null
     });
@@ -56,7 +55,6 @@ describe('XP Computation', () => {
       scores,
       level: "Expert",
       seats: 1,
-      isRecurring: false,
       submittedAt: new Date(),
       dueAt: null
     });
@@ -80,7 +78,6 @@ describe('XP Computation', () => {
       scores,
       level: "Novice",
       seats: 3,
-      isRecurring: false,
       submittedAt: new Date(),
       dueAt: null
     });
@@ -105,7 +102,6 @@ describe('XP Computation', () => {
       scores,
       level: "Novice",
       seats: 1,
-      isRecurring: false,
       submittedAt: new Date(),
       dueAt: new Date(Date.now() + 86400000) // Due tomorrow
     });
@@ -127,7 +123,6 @@ describe('XP Computation', () => {
       scores,
       level: "Novice",
       seats: 10, // High group dampening
-      isRecurring: true, // Recurrence dampening
       submittedAt: new Date(),
       dueAt: null
     });
@@ -137,11 +132,10 @@ describe('XP Computation', () => {
     // Group dampening = 9 * 0.05 = 0.45, capped at 0.4
     // Group factor = 1 - 0.4 = 0.6
     // XP after group = 80 * 0.6 = 48
-    // Recurrence dampening = 48 * 0.9 = 43.2
-    // On-time bonus = 43.2 * 1.1 = 47.52
-    // Rounded = 48 (but clamped to minimum 25)
+    // On-time bonus = 48 * 1.1 = 52.8
+    // Rounded = 53 (but clamped to minimum 25)
     expect(result.starsAvg).toBe(1.0);
-    expect(result.xp).toBe(48); // Actually 48, not clamped since it's above minimum
+    expect(result.xp).toBe(53); // Actually 53, not clamped since it's above minimum
   });
 
   test('computeXP clamps XP to maximum', () => {
@@ -157,7 +151,6 @@ describe('XP Computation', () => {
       scores,
       level: "Master",
       seats: 1,
-      isRecurring: false,
       submittedAt: new Date(),
       dueAt: new Date(Date.now() + 86400000) // On time
     });

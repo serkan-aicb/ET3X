@@ -85,7 +85,7 @@ export default function CreateTask() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("User not found");
       
-      // Create task - always use 'oneoff' since we removed the recurrence option
+      // Create task - remove recurrence since we removed the column
       const { error } = await supabase
         .from('tasks')
         .insert({
@@ -98,7 +98,6 @@ export default function CreateTask() {
           seats,
           skill_level: skillLevel,
           license,
-          recurrence: 'oneoff', // Always set to 'oneoff' since we removed the option
           skills,
           due_date: dueDate || null,
           status: 'open'

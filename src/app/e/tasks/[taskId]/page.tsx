@@ -815,7 +815,7 @@ export default function TaskDetail() {
         seats: task?.seats || 1,
         skill_level: task?.skill_level || null,
         license: task?.license || null,
-        recurrence: task?.recurrence || null,
+        recurrence: null,
         skills: task?.skills || null,
         due_date: task?.due_date || null,
         status: 'draft' // New task starts as draft
