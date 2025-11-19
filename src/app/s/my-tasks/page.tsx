@@ -40,27 +40,11 @@ export default function StudentMyTasks() {
       console.log("Current user:", user);
       
       try {
-        // Use the most reliable approach - first get task assignments, then get the tasks
-        // Try using username first, fallback to UUID if needed
-        const { data: assignmentsByUsername, error: assignmentsByUsernameError } = await supabase
+        // Students can only see assignments where task_assignments.assignee = auth.uid()
+        const { data: assignments, error: assignmentsError } = await supabase
           .from('task_assignments')
           .select('task')
-          .eq('assignee_username', user.email); // Using email as username for now
-        
-        let assignments = assignmentsByUsername;
-        let assignmentsError = assignmentsByUsernameError;
-        
-        // If username-based query fails or returns no results, fallback to UUID-based query
-        if (assignmentsByUsernameError || !assignmentsByUsername || assignmentsByUsername.length === 0) {
-          console.log("Falling back to UUID-based query for assignments");
-          const { data: assignmentsByUUID, error: assignmentsByUUIDError } = await supabase
-            .from('task_assignments')
-            .select('task')
-            .eq('assignee', user.id);
-          
-          assignments = assignmentsByUUID;
-          assignmentsError = assignmentsByUUIDError;
-        }
+          .eq('assignee', user.id);
         
         console.log("Assignments:", { assignments, assignmentsError });
         

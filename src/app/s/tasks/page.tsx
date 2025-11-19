@@ -23,51 +23,57 @@ export default function StudentTasks() {
       console.log("Fetching available tasks for student");
       
       // Get open tasks
-      const { data, error } = await supabase
+      const { data: openTasks, error: openError } = await supabase
         .from('tasks')
         .select('*')
         .eq('status', 'open')
         .order('created_at', { ascending: false });
       
-      console.log("Open tasks:", { data, error });
+      console.log("Open tasks:", { openTasks, openError });
       
-      if (!error && data) {
-        // Also get assigned tasks that are group tasks with available seats
-        const { data: assignedGroupTasks, error: assignedError } = await supabase
-          .from('tasks')
-          .select('*')
-          .eq('status', 'assigned')
-          .gt('seats', 1)
-          .order('created_at', { ascending: false });
+      if (openError) {
+        console.error("Error fetching open tasks:", openError);
+        setLoading(false);
+        return;
+      }
+      
+      // Get assigned tasks with more than 1 seat (group tasks)
+      const { data: groupTasks, error: groupError } = await supabase
+        .from('tasks')
+        .select('*')
+        .eq('status', 'assigned')
+        .gt('seats', 1)
+        .order('created_at', { ascending: false });
+      
+      console.log("Assigned group tasks:", { groupTasks, groupError });
+      
+      if (groupError) {
+        console.error("Error fetching group tasks:", groupError);
+        setTasks(openTasks || []);
+        setLoading(false);
+        return;
+      }
+      
+      // For each assigned group task, check if it has available seats
+      const enriched = [];
+      
+      for (const t of groupTasks || []) {
+        const { data: count, error: countError } = await supabase
+          .from('task_assignments')
+          .select('id')
+          .eq('task', t.id);
         
-        console.log("Assigned group tasks:", { assignedGroupTasks, assignedError });
+        console.log("Assignments for task", t.id, ":", { count, countError });
         
-        if (!assignedError && assignedGroupTasks) {
-          // For each assigned group task, check if it has available seats
-          const tasksWithAvailableSeats = [];
-          for (const task of assignedGroupTasks) {
-            const { data: assignments, error: assignmentsError } = await supabase
-              .from('task_assignments')
-              .select('id')
-              .eq('task', task.id);
-            
-            console.log("Assignments for task", task.id, ":", { assignments, assignmentsError });
-            
-            const assignedCount = assignments ? assignments.length : 0;
-            if (assignedCount < task.seats) {
-              tasksWithAvailableSeats.push(task);
-            }
-          }
-          
-          console.log("Tasks with available seats:", tasksWithAvailableSeats);
-          
-          // Combine open tasks with assigned group tasks that have available seats
-          setTasks([...data, ...tasksWithAvailableSeats]);
-        } else {
-          setTasks(data);
+        if (!countError && (count?.length ?? 0) < t.seats) {
+          enriched.push(t);
         }
       }
       
+      console.log("Tasks with available seats:", enriched);
+      
+      // Combine open tasks with assigned group tasks that have available seats
+      setTasks([...(openTasks || []), ...enriched]);
       setLoading(false);
     };
     

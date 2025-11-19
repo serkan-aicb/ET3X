@@ -49,9 +49,10 @@ export default function StudentTaskDetail() {
         
         console.log("Current user:", user);
         
-        // Try multiple approaches to fetch the task
-        // Approach 1: Direct fetch (should work for open tasks and tasks assigned to the user)
-        const { data: taskData1, error: taskError1 } = await supabase
+        // Always fetch with RLS - will automatically allow access if:
+        // 1. task is open, OR
+        // 2. student is assignee
+        const { data: taskData, error } = await supabase
           .from('tasks')
           .select(`
             *,
@@ -60,90 +61,12 @@ export default function StudentTaskDetail() {
           .eq('id', taskId)
           .single();
         
-        console.log("Approach 1 - Direct fetch:", { taskData1, taskError1 });
+        console.log("Task fetch result:", { taskData, error });
         
-        if (taskData1 && !taskError1) {
-          setTask(taskData1);
-          setLoading(false);
-          return;
-        }
-        
-        // Approach 2: Check if user has requested this task
-        const { data: requestData, error: requestError } = await supabase
-          .from('task_requests')
-          .select('id')
-          .eq('task', taskId)
-          .eq('applicant', user.id);
-        
-        console.log("Approach 2 - Request check:", { requestData, requestError });
-        
-        if (requestData && requestData.length > 0 && !requestError) {
-          // User has requested this task, try to fetch it again
-          const { data: taskData2, error: taskError2 } = await supabase
-            .from('tasks')
-            .select(`
-              *,
-              skills_data:skills(id, label, description)
-            `)
-            .eq('id', taskId)
-            .single();
-          
-          console.log("Approach 2 - Fetch after request check:", { taskData2, taskError2 });
-          
-          if (taskData2 && !taskError2) {
-            setTask(taskData2);
-            setLoading(false);
-            return;
-          }
-        }
-        
-        // Approach 3: Check if user is assigned to this task
-        const { data: assignmentData, error: assignmentError } = await supabase
-          .from('task_assignments')
-          .select('id')
-          .eq('task', taskId)
-          .eq('assignee', user.id);
-        
-        console.log("Approach 3 - Assignment check:", { assignmentData, assignmentError });
-        
-        if (assignmentData && assignmentData.length > 0 && !assignmentError) {
-          // User is assigned to this task, try to fetch it again
-          const { data: taskData3, error: taskError3 } = await supabase
-            .from('tasks')
-            .select(`
-              *,
-              skills_data:skills(id, label, description)
-            `)
-            .eq('id', taskId)
-            .single();
-          
-          console.log("Approach 3 - Fetch after assignment check:", { taskData3, taskError3 });
-          
-          if (taskData3 && !taskError3) {
-            setTask(taskData3);
-            setLoading(false);
-            return;
-          }
-        }
-        
-        // If none of the approaches worked, try fetching open tasks only
-        const { data: openTaskData, error: openTaskError } = await supabase
-          .from('tasks')
-          .select(`
-            *,
-            skills_data:skills(id, label, description)
-          `)
-          .eq('id', taskId)
-          .eq('status', 'open')
-          .single();
-        
-        console.log("Approach 4 - Open task fetch:", { openTaskData, openTaskError });
-        
-        if (openTaskData && !openTaskError) {
-          setTask(openTaskData);
+        if (!error && taskData) {
+          setTask(taskData);
         } else {
           console.log("Task not accessible or not found");
-          // Set task to null to show the "Task not found" message
           setTask(null);
         }
       } catch (error) {
@@ -217,8 +140,8 @@ export default function StudentTaskDetail() {
         .from('task_requests')
         .insert({
           task: taskId,
-          applicant: user.id, // Keep UUID for backward compatibility and RLS policies
-          applicant_username: applicantUsername // Add username for new approach
+          applicant: user.id,
+          applicant_username: applicantUsername
         })
         .select();
       

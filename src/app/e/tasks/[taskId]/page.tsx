@@ -58,32 +58,40 @@ export default function TaskDetail() {
       }
       
       try {
-        // Try multiple approaches to fetch the task
-        // Approach 1: Direct fetch with creator check
-        const { data: taskData1, error: taskError1 } = await supabase
+        // Get current user
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        if (userError || !user) {
+          console.log("No user logged in");
+          router.push("/e/tasks");
+          return;
+        }
+        
+        // Educators must always fetch their own tasks
+        const { data: taskData, error } = await supabase
           .from('tasks')
           .select(`
             *,
             skills_data:skills(id, label, description)
           `)
           .eq('id', taskId)
+          .eq('creator', user.id)
           .single();
         
-        console.log("Approach 1 - Direct fetch:", { taskData1, taskError1 });
+        console.log("Task fetch result:", { taskData, error });
         
-        if (taskError1) {
-          console.error("Error fetching task:", taskError1);
+        if (error) {
+          console.error("Error fetching task:", error);
           router.push("/e/tasks");
           return;
         }
         
-        if (!taskData1) {
+        if (!taskData) {
           console.log("No task data found");
           router.push("/e/tasks");
           return;
         }
         
-        setTask(taskData1);
+        setTask(taskData);
         
         // Get task requests with properly joined profile data
         const { data: requestsData, error: requestsError } = await supabase
@@ -308,8 +316,8 @@ export default function TaskDetail() {
         .from('task_assignments')
         .insert({
           task: taskId,
-          assignee: applicantId, // Keep UUID for backward compatibility and RLS policies
-          assignee_username: applicantUsername // Add username for new approach
+          assignee: applicantId,          // MUST NOT be NULL
+          assignee_username: applicantUsername
         })
         .select();
       
@@ -432,8 +440,8 @@ export default function TaskDetail() {
       // Create task assignments for all selected students using usernames
       const assignments = usernames.map(({ id, username }) => ({
         task: taskId,
-        assignee: id, // Keep UUID for backward compatibility
-        assignee_username: username // Add username for new approach
+        assignee: id,          // MUST NOT be NULL
+        assignee_username: username
       }));
       
       const { error: assignError, data: assignmentData } = await supabase
@@ -574,8 +582,8 @@ export default function TaskDetail() {
       // Create task assignments for all students in the group using usernames
       const assignments = usernames.map(({ id, username }) => ({
         task: taskId,
-        assignee: id, // Keep UUID for backward compatibility
-        assignee_username: username // Add username for new approach
+        assignee: id,          // MUST NOT be NULL
+        assignee_username: username
       }));
       
       const { error: assignError, data: assignmentData } = await supabase

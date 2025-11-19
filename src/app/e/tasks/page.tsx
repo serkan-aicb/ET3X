@@ -28,13 +28,14 @@ export default function EducatorTasks() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       
-      // Get ALL tasks in the system (not just those created by this educator)
+      // Get tasks where creator = auth.uid() (educator's own tasks only)
       const { data, error } = await supabase
         .from('tasks')
         .select(`
           *,
-          profiles(username)
+          profiles:creator(username)
         `)
+        .eq('creator', user.id)
         .order('created_at', { ascending: false });
       
       if (!error && data) {
