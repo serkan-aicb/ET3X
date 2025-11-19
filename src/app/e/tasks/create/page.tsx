@@ -77,13 +77,15 @@ export default function CreateTask() {
     e.preventDefault();
     setLoading(true);
     setMessage("");
-
+    
     try {
       const supabase = createClient();
       
       // Get current user
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("User not found");
+      
+      console.log("Creating task for user:", user.id);
       
       // Create task - remove recurrence since we removed the column
       const { error } = await supabase
@@ -102,9 +104,11 @@ export default function CreateTask() {
           due_date: dueDate || null,
           status: 'open'
         });
-
+      
+      console.log("Task creation result:", error);
+      
       if (error) throw error;
-
+      
       setMessage("Task created and published successfully!");
       router.push("/e/tasks");
     } catch (error: unknown) {

@@ -41,6 +41,7 @@ export default function TaskDetail() {
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState(""); // Add this state for messages
+  const [errorMessage, setErrorMessage] = useState(""); // Add this state for error messages
   const router = useRouter();
   const params = useParams();
   const taskId = params.taskId as string;
@@ -48,6 +49,7 @@ export default function TaskDetail() {
   useEffect(() => {
     // Add safety check to prevent infinite loops
     let isMounted = true;
+    let localErrorMessage = "";
     
     const fetchData = async () => {
       const supabase = createClient();
@@ -56,8 +58,10 @@ export default function TaskDetail() {
       
       if (!taskId) {
         console.log("No task ID provided");
+        localErrorMessage = "No task ID provided";
         // Don't redirect immediately, show error instead
         if (isMounted) {
+          setErrorMessage(localErrorMessage);
           setLoading(false);
         }
         return;
@@ -68,14 +72,19 @@ export default function TaskDetail() {
         const { data: { user }, error: userError } = await supabase.auth.getUser();
         if (userError || !user) {
           console.log("No user logged in");
+          localErrorMessage = "No user logged in";
           // Don't redirect immediately, show error instead
           if (isMounted) {
+            setErrorMessage(localErrorMessage);
             setLoading(false);
           }
           return;
         }
         
+        console.log("Current user:", user);
+        
         // Educators must always fetch their own tasks
+        console.log("Fetching task with filters:", { taskId, userId: user.id });
         const { data: taskData, error } = await supabase
           .from('tasks')
           .select(`
@@ -83,20 +92,46 @@ export default function TaskDetail() {
             skills_data:skills(id, label, description)
           `)
           .eq('id', taskId)
-          .eq('creator', user.id)
+          .eq('creator', user.id)  // This ensures educators can only view their own tasks
           .single();
         
         console.log("Task fetch result:", { taskData, error });
+        console.log("Task creator:", taskData?.creator);
+        console.log("User ID:", user.id);
+        console.log("IDs match:", taskData?.creator === user.id);
         
         if (isMounted) {
           if (error) {
             console.error("Error fetching task:", error);
+            localErrorMessage = `Error fetching task: ${error.message || 'Unknown error'}`;
             // Show error in UI instead of redirecting
             setTask(null);
+            setErrorMessage(localErrorMessage);
           } else if (!taskData) {
             console.log("No task data found");
+            // Let's also try fetching without the creator filter to see if the task exists at all
+            const { data: anyTaskData, error: anyTaskError } = await supabase
+              .from('tasks')
+              .select(`
+                *,
+                skills_data:skills(id, label, description)
+              `)
+              .eq('id', taskId)
+              .single();
+            
+            console.log("Any task fetch result:", { anyTaskData, anyTaskError });
+            
+            if (anyTaskData) {
+              console.log("Task exists but doesn't belong to current user");
+              console.log("Task creator:", anyTaskData.creator);
+              console.log("Current user ID:", user.id);
+              localErrorMessage = "You don't have permission to view this task. This task belongs to another educator.";
+            } else {
+              localErrorMessage = "Task not found.";
+            }
             // Show error in UI instead of redirecting
             setTask(null);
+            setErrorMessage(localErrorMessage);
           } else {
             setTask(taskData);
             
@@ -221,8 +256,10 @@ export default function TaskDetail() {
         }
       } catch (error) {
         console.error("Unexpected error:", error);
+        localErrorMessage = `Unexpected error: ${error instanceof Error ? error.message : 'Unknown error'}`;
         if (isMounted) {
           setTask(null);
+          setErrorMessage(localErrorMessage);
           setLoading(false);
         }
       }
@@ -949,7 +986,7 @@ export default function TaskDetail() {
         <main className="container mx-auto px-4 py-8 flex-grow">
           <Card>
             <CardContent className="py-8 text-center">
-              <p className="text-muted-foreground">Task not found or you don{`'`}t have permission to view this task.</p>
+              <p className="text-muted-foreground">{errorMessage || "Task not found or you don{`'`}t have permission to view this task."}</p>
               <Button 
                 className="mt-4 bg-blue-600 hover:bg-blue-700" 
                 onClick={() => router.push("/e/tasks")}

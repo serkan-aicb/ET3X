@@ -28,6 +28,8 @@ export default function EducatorTasks() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       
+      console.log("Fetching tasks for user:", user.id);
+      
       // Get tasks where creator = auth.uid() (educator's own tasks only)
       const { data, error } = await supabase
         .from('tasks')
@@ -37,6 +39,8 @@ export default function EducatorTasks() {
         `)
         .eq('creator', user.id)
         .order('created_at', { ascending: false });
+      
+      console.log("Tasks fetch result:", { data, error });
       
       if (!error && data) {
         setTasks(data);
