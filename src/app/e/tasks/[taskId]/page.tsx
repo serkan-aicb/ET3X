@@ -88,8 +88,7 @@ export default function TaskDetail() {
         const { data: taskData, error } = await supabase
           .from('tasks')
           .select(`
-            *,
-            skills_data:skills(id, label, description)
+            *
           `)
           .eq('id', taskId)
           .eq('creator', user.id)  // This ensures educators can only view their own tasks
@@ -99,6 +98,21 @@ export default function TaskDetail() {
         console.log("Task creator:", taskData?.creator);
         console.log("User ID:", user.id);
         console.log("IDs match:", taskData?.creator === user.id);
+        
+        // If we successfully fetched the task, also fetch the skills data separately
+        if (taskData && taskData.skills && Array.isArray(taskData.skills) && taskData.skills.length > 0) {
+          console.log("Fetching skills data for skill IDs:", taskData.skills);
+          const { data: skillsData, error: skillsError } = await supabase
+            .from('skills')
+            .select('id, label, description')
+            .in('id', taskData.skills);
+          
+          console.log("Skills data fetch result:", { skillsData, skillsError });
+          
+          if (!skillsError && skillsData) {
+            taskData.skills_data = skillsData;
+          }
+        }
         
         if (isMounted) {
           if (error) {
@@ -113,13 +127,27 @@ export default function TaskDetail() {
             const { data: anyTaskData, error: anyTaskError } = await supabase
               .from('tasks')
               .select(`
-                *,
-                skills_data:skills(id, label, description)
+                *
               `)
               .eq('id', taskId)
               .single();
             
             console.log("Any task fetch result:", { anyTaskData, anyTaskError });
+            
+            // If we successfully fetched the task, also fetch the skills data separately
+            if (anyTaskData && anyTaskData.skills && Array.isArray(anyTaskData.skills) && anyTaskData.skills.length > 0) {
+              console.log("Fetching skills data for skill IDs:", anyTaskData.skills);
+              const { data: skillsData, error: skillsError } = await supabase
+                .from('skills')
+                .select('id, label, description')
+                .in('id', anyTaskData.skills);
+              
+              console.log("Skills data fetch result:", { skillsData, skillsError });
+              
+              if (!skillsError && skillsData) {
+                anyTaskData.skills_data = skillsData;
+              }
+            }
             
             if (anyTaskData) {
               console.log("Task exists but doesn't belong to current user");

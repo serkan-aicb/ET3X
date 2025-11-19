@@ -58,15 +58,28 @@ export default function StudentTaskDetail() {
         const { data: taskData, error } = await supabase
           .from('tasks')
           .select(`
-            *,
-            skills_data:skills(id, label, description)
+            *
           `)
           .eq('id', taskId)
           .single();
         
         console.log("Task fetch result:", { taskData, error });
         
+        // If we successfully fetched the task, also fetch the skills data separately
         if (isMounted) {
+          if (taskData && taskData.skills && Array.isArray(taskData.skills) && taskData.skills.length > 0) {
+            console.log("Fetching skills data for skill IDs:", taskData.skills);
+            const { data: skillsData, error: skillsError } = await supabase
+              .from('skills')
+              .select('id, label, description')
+              .in('id', taskData.skills);
+            
+            console.log("Skills data fetch result:", { skillsData, skillsError });
+            
+            if (!skillsError && skillsData) {
+              taskData.skills_data = skillsData;
+            }
+          }
           if (!error && taskData) {
             setTask(taskData);
           } else {

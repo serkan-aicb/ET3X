@@ -9,7 +9,13 @@ import { createClient } from "@/lib/supabase/client";
 import { Tables } from '@/lib/supabase/types';
 import Link from "next/link";
 
-type Task = Tables<'tasks'>;
+type Task = Tables<'tasks'> & {
+  skills_data?: {
+    id: number;
+    label: string;
+    description: string | null;
+  }[];
+};
 
 export default function StudentTasks() {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -36,7 +42,7 @@ export default function StudentTasks() {
       
       if (openError) {
         console.error("Error fetching open tasks:", openError);
-        if (isMounted) setLoading(false);
+        setLoading(false);
         return;
       }
       
@@ -52,10 +58,8 @@ export default function StudentTasks() {
       
       if (groupError) {
         console.error("Error fetching group tasks:", groupError);
-        if (isMounted) {
-          setTasks(openTasks || []);
-          setLoading(false);
-        }
+        setTasks(openTasks || []);
+        setLoading(false);
         return;
       }
       
@@ -78,10 +82,44 @@ export default function StudentTasks() {
       console.log("Tasks with available seats:", enriched);
       
       // Combine open tasks with assigned group tasks that have available seats
-      if (isMounted) {
-        setTasks([...(openTasks || []), ...enriched]);
-        setLoading(false);
+      const allTasks = [...(openTasks || []), ...enriched];
+      
+      // Fetch skills data for all tasks
+      if (allTasks.length > 0) {
+        // Get all unique skill IDs from all tasks
+        const allSkillIds = [...new Set(allTasks.flatMap((task: Task) => 
+          task.skills && Array.isArray(task.skills) ? task.skills : []
+        ))].filter((id): id is number => id !== undefined && id !== null);
+        
+        console.log("All skill IDs to fetch:", allSkillIds);
+        
+        if (allSkillIds.length > 0) {
+          const { data: skillsData, error: skillsError } = await supabase
+            .from('skills')
+            .select('id, label, description')
+            .in('id', allSkillIds);
+          
+          console.log("Skills data fetch result:", { skillsData, skillsError });
+          
+          if (!skillsError && skillsData) {
+            // Create a map of skill ID to skill data
+            const skillsMap: Record<number, { id: number; label: string; description: string | null }> = {};
+            skillsData.forEach((skill) => {
+              skillsMap[skill.id] = skill;
+            });
+            
+            // Add skills_data to each task
+            allTasks.forEach((task: Task) => {
+              if (task.skills && Array.isArray(task.skills)) {
+                task.skills_data = task.skills.map((skillId: number) => skillsMap[skillId]).filter(Boolean);
+              }
+            });
+          }
+        }
       }
+      
+      setTasks(allTasks);
+      setLoading(false);
     };
     
     fetchTasks();

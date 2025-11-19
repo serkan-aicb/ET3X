@@ -13,6 +13,11 @@ type Task = Tables<'tasks'> & {
   profiles?: {
     username: string;
   } | null;
+  skills_data?: {
+    id: number;
+    label: string;
+    description: string | null;
+  }[];
 };
 
 export default function EducatorTasks() {
@@ -34,13 +39,46 @@ export default function EducatorTasks() {
       const { data, error } = await supabase
         .from('tasks')
         .select(`
-          *,
-          profiles:creator(username)
+          *
         `)
         .eq('creator', user.id)
         .order('created_at', { ascending: false });
       
       console.log("Tasks fetch result:", { data, error });
+      
+      // If we have tasks, fetch skills data for each task
+      if (!error && data && data.length > 0) {
+        // Get all unique skill IDs from all tasks
+        const allSkillIds = [...new Set(data.flatMap((task: Task) => 
+          task.skills && Array.isArray(task.skills) ? task.skills : []
+        ))].filter((id): id is number => id !== undefined && id !== null);
+        
+        console.log("All skill IDs to fetch:", allSkillIds);
+        
+        if (allSkillIds.length > 0) {
+          const { data: skillsData, error: skillsError } = await supabase
+            .from('skills')
+            .select('id, label, description')
+            .in('id', allSkillIds);
+          
+          console.log("Skills data fetch result:", { skillsData, skillsError });
+          
+          if (!skillsError && skillsData) {
+            // Create a map of skill ID to skill data
+            const skillsMap: Record<number, { id: number; label: string; description: string | null }> = {};
+            skillsData.forEach((skill) => {
+              skillsMap[skill.id] = skill;
+            });
+            
+            // Add skills_data to each task
+            data.forEach((task: Task) => {
+              if (task.skills && Array.isArray(task.skills)) {
+                task.skills_data = task.skills.map((skillId: number) => skillsMap[skillId]).filter(Boolean);
+              }
+            });
+          }
+        }
+      }
       
       if (!error && data) {
         setTasks(data);
