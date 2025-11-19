@@ -32,6 +32,12 @@ export default function StudentTaskDetail() {
       
       console.log("Fetching task details for:", taskId);
       
+      if (!taskId) {
+        console.log("No task ID provided");
+        setLoading(false);
+        return;
+      }
+      
       // First, get the task regardless of status to check if it's a group task
       const { data: taskData, error: taskError } = await supabase
         .from('tasks')
@@ -45,6 +51,13 @@ export default function StudentTaskDetail() {
       console.log("Task data:", { taskData, taskError });
       
       if (taskError) {
+        console.log("Error fetching task:", taskError);
+        setLoading(false);
+        return;
+      }
+      
+      if (!taskData) {
+        console.log("No task data found");
         setLoading(false);
         return;
       }
@@ -78,6 +91,9 @@ export default function StudentTaskDetail() {
         setTask(taskData);
       } else {
         console.log("Not showing task - not open or group task logic didn't match");
+        // Even if not open, we should still show the task to the student
+        // This allows them to see tasks they've requested or been assigned to
+        setTask(taskData);
       }
       
       setLoading(false);
@@ -85,6 +101,8 @@ export default function StudentTaskDetail() {
     
     if (taskId) {
       fetchTask();
+    } else {
+      setLoading(false);
     }
   }, [taskId]);
 

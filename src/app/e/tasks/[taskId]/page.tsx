@@ -51,6 +51,12 @@ export default function TaskDetail() {
       
       console.log("Fetching task data for:", taskId);
       
+      if (!taskId) {
+        console.log("No task ID provided");
+        router.push("/e/tasks");
+        return;
+      }
+      
       // Get task details with skills data
       const { data: taskData, error: taskError } = await supabase
         .from('tasks')
@@ -65,6 +71,12 @@ export default function TaskDetail() {
       
       if (taskError) {
         console.error("Error fetching task:", taskError);
+        router.push("/e/tasks");
+        return;
+      }
+      
+      if (!taskData) {
+        console.log("No task data found");
         router.push("/e/tasks");
         return;
       }
