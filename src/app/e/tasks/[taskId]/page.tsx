@@ -49,6 +49,8 @@ export default function TaskDetail() {
 
   useEffect(() => {
     console.log("TaskDetail component mounted with taskId:", taskId);
+    console.log("TaskId type:", typeof taskId);
+    console.log("TaskId length:", taskId ? taskId.length : 0);
     
     // Add a safety check to prevent infinite loops
     let isMounted = true;
@@ -70,11 +72,24 @@ export default function TaskDetail() {
         return;
       }
       
+      // Validate taskId format
+      if (taskId && taskId.length !== 36) {
+        console.log("Invalid task ID format");
+        localErrorMessage = "Invalid task ID format";
+        if (isMounted) {
+          setTask(null);
+          setErrorMessage(localErrorMessage);
+          setLoading(false);
+        }
+        return;
+      }
+      
       try {
         // Get current user
         const { data: { user }, error: userError } = await supabase.auth.getUser();
         if (userError || !user) {
           console.log("No user logged in");
+          console.log("User error:", userError);
           localErrorMessage = "You must be logged in to view this page.";
           if (isMounted) {
             setTask(null);
@@ -85,6 +100,39 @@ export default function TaskDetail() {
         }
         
         console.log("Current user:", user);
+        console.log("User ID:", user.id);
+        console.log("User role:", user.role);
+        
+        // Check if user has educator role
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .single();
+        
+        console.log("User profile data:", { profileData, profileError });
+        
+        if (profileError || !profileData) {
+          console.log("Error fetching user profile");
+          localErrorMessage = "Error fetching user profile.";
+          if (isMounted) {
+            setTask(null);
+            setErrorMessage(localErrorMessage);
+            setLoading(false);
+          }
+          return;
+        }
+        
+        if (profileData.role !== 'educator') {
+          console.log("User is not an educator");
+          localErrorMessage = "You must be an educator to view this page.";
+          if (isMounted) {
+            setTask(null);
+            setErrorMessage(localErrorMessage);
+            setLoading(false);
+          }
+          return;
+        }
         
         // Educators must always fetch their own tasks
         console.log("Fetching task with filters:", { taskId, userId: user.id });
@@ -98,9 +146,11 @@ export default function TaskDetail() {
           .single();
         
         console.log("Task fetch result:", { taskData, error });
-        console.log("Task creator:", taskData?.creator);
-        console.log("User ID:", user.id);
-        console.log("IDs match:", taskData?.creator === user.id);
+        if (taskData) {
+          console.log("Task creator:", taskData.creator);
+          console.log("User ID:", user.id);
+          console.log("IDs match:", taskData.creator === user.id);
+        }
         
         // If we successfully fetched the task, also fetch the skills data separately
         if (taskData && taskData.skills && Array.isArray(taskData.skills) && taskData.skills.length > 0) {
@@ -125,7 +175,7 @@ export default function TaskDetail() {
             setTask(null);
             setErrorMessage(localErrorMessage);
           } else if (!taskData) {
-            console.log("No task data found");
+            console.log("No task data found with creator filter");
             // Let's also try fetching without the creator filter to see if the task exists at all
             const { data: anyTaskData, error: anyTaskError } = await supabase
               .from('tasks')
@@ -135,7 +185,7 @@ export default function TaskDetail() {
               .eq('id', taskId)
               .single();
             
-            console.log("Any task fetch result:", { anyTaskData, anyTaskError });
+            console.log("Any task fetch result (without creator filter):", { anyTaskData, anyTaskError });
             
             // If we successfully fetched the task, also fetch the skills data separately
             if (anyTaskData && anyTaskData.skills && Array.isArray(anyTaskData.skills) && anyTaskData.skills.length > 0) {
@@ -156,6 +206,7 @@ export default function TaskDetail() {
               console.log("Task exists but doesn't belong to current user");
               console.log("Task creator:", anyTaskData.creator);
               console.log("Current user ID:", user.id);
+              console.log("Creator matches user:", anyTaskData.creator === user.id);
               localErrorMessage = "You don't have permission to view this task. This task belongs to another educator.";
             } else {
               localErrorMessage = "Task not found.";
@@ -166,8 +217,27 @@ export default function TaskDetail() {
           } else {
             setTask(taskData);
             
+            // DEBUG: Let's try fetching ALL task requests and assignments to see if there's an RLS issue
+            console.log("DEBUG: Fetching ALL task requests and assignments to check RLS");
+            
+            // Fetch all task requests (no filters)
+            const { data: allTaskRequests, error: allTaskRequestsError } = await supabase
+              .from('task_requests')
+              .select('*');
+            
+            console.log("ALL task requests in database:", { allTaskRequests, allTaskRequestsError });
+            
+            // Fetch all task assignments (no filters)
+            const { data: allTaskAssignments, error: allTaskAssignmentsError } = await supabase
+              .from('task_assignments')
+              .select('*');
+            
+            console.log("ALL task assignments in database:", { allTaskAssignments, allTaskAssignmentsError });
+            
             // Get task requests with properly joined profile data
             // First, let's try fetching without any filters to see if requests exist at all
+            console.log("Attempting to fetch all task requests for task ID:", taskId);
+            
             const { data: allRequestsData, error: allRequestsError } = await supabase
               .from('task_requests')
               .select(`
@@ -177,6 +247,12 @@ export default function TaskDetail() {
               .eq('task', taskId);
             
             console.log("All requests data (no filters):", { allRequestsData, allRequestsError });
+            
+            // Log the raw data to see what we're getting
+            if (allRequestsData) {
+              console.log("Raw requests data length:", allRequestsData.length);
+              console.log("Raw requests data:", JSON.stringify(allRequestsData, null, 2));
+            }
             
             // Now fetch with the original query
             const { data: requestsData, error: requestsError } = await supabase
@@ -191,6 +267,12 @@ export default function TaskDetail() {
             
             if (requestsError) {
               console.error("Error fetching task requests:", requestsError);
+              console.error("Error details:", {
+                message: requestsError.message,
+                code: requestsError.code,
+                details: requestsError.details,
+                hint: requestsError.hint
+              });
             }
             
             if (requestsData) {
@@ -249,6 +331,8 @@ export default function TaskDetail() {
             
             // Get task assignments with properly joined profile data
             // First, let's try fetching without any filters to see if assignments exist at all
+            console.log("Attempting to fetch all task assignments for task ID:", taskId);
+            
             const { data: allAssignmentsData, error: allAssignmentsError } = await supabase
               .from('task_assignments')
               .select(`
@@ -258,6 +342,12 @@ export default function TaskDetail() {
               .eq('task', taskId);
             
             console.log("All assignments data (no filters):", { allAssignmentsData, allAssignmentsError });
+            
+            // Log the raw data to see what we're getting
+            if (allAssignmentsData) {
+              console.log("Raw assignments data length:", allAssignmentsData.length);
+              console.log("Raw assignments data:", JSON.stringify(allAssignmentsData, null, 2));
+            }
             
             // Now fetch with the original query
             const { data: assignmentsData, error: assignmentsError } = await supabase
@@ -272,6 +362,12 @@ export default function TaskDetail() {
             
             if (assignmentsError) {
               console.error("Error fetching task assignments:", assignmentsError);
+              console.error("Error details:", {
+                message: assignmentsError.message,
+                code: assignmentsError.code,
+                details: assignmentsError.details,
+                hint: assignmentsError.hint
+              });
             }
             
             if (assignmentsData) {
