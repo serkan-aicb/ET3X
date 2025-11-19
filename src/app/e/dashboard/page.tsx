@@ -265,6 +265,134 @@ export default function EducatorDashboard() {
             </CardContent>
           </Card>
         </div>
+        
+        {/* Educational Blockchain and IPFS Visualizations */}
+        <div className="mt-12">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">How Student Data is Protected and Verified</h2>
+          
+          <div className="grid gap-8 md:grid-cols-3">
+            {/* Rating Process Visualization */}
+            <Card className="shadow-lg rounded-xl overflow-hidden border-blue-200 border-2">
+              <CardHeader className="bg-blue-50">
+                <CardTitle className="text-blue-800 flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Student Rating Process
+                </CardTitle>
+                <CardDescription className="text-blue-600">How student work gets rated and verified</CardDescription>
+              </CardHeader>
+              <CardContent className="pt-4">
+                <div className="space-y-4">
+                  <div className="flex items-start">
+                    <div className="flex-shrink-0 h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
+                      <span className="text-blue-800 font-bold text-sm">1</span>
+                    </div>
+                    <p className="ml-3 text-gray-700">Students complete and submit tasks you assign</p>
+                  </div>
+                  <div className="flex items-start">
+                    <div className="flex-shrink-0 h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
+                      <span className="text-blue-800 font-bold text-sm">2</span>
+                    </div>
+                    <p className="ml-3 text-gray-700">You review and rate their work using the rating system</p>
+                  </div>
+                  <div className="flex items-start">
+                    <div className="flex-shrink-0 h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
+                      <span className="text-blue-800 font-bold text-sm">3</span>
+                    </div>
+                    <p className="ml-3 text-gray-700">Ratings become verifiable credentials for students</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            {/* Blockchain Verification Visualization */}
+            <Card className="shadow-lg rounded-xl overflow-hidden border-purple-200 border-2">
+              <CardHeader className="bg-purple-50">
+                <CardTitle className="text-purple-800 flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                  </svg>
+                  Blockchain Verification
+                </CardTitle>
+                <CardDescription className="text-purple-600">How student credentials are secured</CardDescription>
+              </CardHeader>
+              <CardContent className="pt-4">
+                <div className="space-y-4">
+                  <div className="flex items-start">
+                    <div className="flex-shrink-0 h-8 w-8 rounded-full bg-purple-100 flex items-center justify-center">
+                      <span className="text-purple-800 font-bold text-sm">1</span>
+                    </div>
+                    <p className="ml-3 text-gray-700">Student ratings are stored as Content Identifiers (CIDs)</p>
+                  </div>
+                  <div className="flex items-start">
+                    <div className="flex-shrink-0 h-8 w-8 rounded-full bg-purple-100 flex items-center justify-center">
+                      <span className="text-purple-800 font-bold text-sm">2</span>
+                    </div>
+                    <p className="ml-3 text-gray-700">CIDs are anchored to the Polygon blockchain</p>
+                  </div>
+                  <div className="flex items-start">
+                    <div className="flex-shrink-0 h-8 w-8 rounded-full bg-purple-100 flex items-center justify-center">
+                      <span className="text-purple-800 font-bold text-sm">3</span>
+                    </div>
+                    <p className="ml-3 text-gray-700">Credentials become permanently verifiable</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            {/* IPFS Storage Visualization */}
+            <Card className="shadow-lg rounded-xl overflow-hidden border-green-200 border-2">
+              <CardHeader className="bg-green-50">
+                <CardTitle className="text-green-800 flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
+                  </svg>
+                  Decentralized Storage
+                </CardTitle>
+                <CardDescription className="text-green-600">How student data is stored securely</CardDescription>
+              </CardHeader>
+              <CardContent className="pt-4">
+                <div className="space-y-4">
+                  <div className="flex items-start">
+                    <div className="flex-shrink-0 h-8 w-8 rounded-full bg-green-100 flex items-center justify-center">
+                      <span className="text-green-800 font-bold text-sm">1</span>
+                    </div>
+                    <p className="ml-3 text-gray-700">Student rating data is stored on IPFS</p>
+                  </div>
+                  <div className="flex items-start">
+                    <div className="flex-shrink-0 h-8 w-8 rounded-full bg-green-100 flex items-center justify-center">
+                      <span className="text-green-800 font-bold text-sm">2</span>
+                    </div>
+                    <p className="ml-3 text-gray-700">Content is identified by a unique CID</p>
+                  </div>
+                  <div className="flex items-start">
+                    <div className="flex-shrink-0 h-8 w-8 rounded-full bg-green-100 flex items-center justify-center">
+                      <span className="text-green-800 font-bold text-sm">3</span>
+                    </div>
+                    <p className="ml-3 text-gray-700">Data is distributed across multiple nodes</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+          
+          <div className="mt-8 p-6 bg-blue-50 rounded-xl border border-blue-200">
+            <h3 className="text-lg font-bold text-blue-800 mb-2">Why This Matters for Educators</h3>
+            <p className="text-gray-700">
+              This decentralized system ensures that student achievements are:
+            </p>
+            <ul className="mt-2 list-disc list-inside text-gray-700 space-y-1">
+              <li><span className="font-semibold">Tamper-proof</span> - Cannot be altered once recorded</li>
+              <li><span className="font-semibold">Permanent</span> - Available anytime, anywhere</li>
+              <li><span className="font-semibold">Verifiable</span> - Anyone can confirm their authenticity</li>
+              <li><span className="font-semibold">Portable</span> - Students own and control their credentials</li>
+            </ul>
+            <p className="mt-3 text-gray-700">
+              As an educator, you play a crucial role in anchoring student achievements to this secure, decentralized system.
+            </p>
+          </div>
+        </div>
       </main>
 
       {/* Footer */}

@@ -9,7 +9,13 @@ import { createClient } from "@/lib/supabase/client";
 import { Tables } from '@/lib/supabase/types';
 import Link from "next/link";
 
-type Task = Tables<'tasks'>;
+type Task = Tables<'tasks'> & {
+  skills_data?: {
+    id: number;
+    label: string;
+    description: string;
+  }[];
+};
 
 export default function StudentTaskDetail() {
   const [task, setTask] = useState<Task | null>(null);
@@ -29,7 +35,10 @@ export default function StudentTaskDetail() {
       // First, get the task regardless of status to check if it's a group task
       const { data: taskData, error: taskError } = await supabase
         .from('tasks')
-        .select('*')
+        .select(`
+          *,
+          skills_data:skills(id, label, description)
+        `)
         .eq('id', taskId)
         .single();
       
@@ -94,7 +103,22 @@ export default function StudentTaskDetail() {
         return;
       }
       
-      console.log("Requesting task for user:", { user, taskId });
+      // Get the username for the current user
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('username')
+        .eq('id', user.id)
+        .single();
+      
+      if (profileError || !profileData) {
+        setMessage("Error fetching your profile information.");
+        setRequesting(false);
+        return;
+      }
+      
+      const applicantUsername = profileData.username;
+      
+      console.log("Requesting task for user:", { user, taskId, applicantUsername });
       
       // Check if user already requested this task
       const { data: existingRequests, error: checkError } = await supabase
@@ -115,13 +139,13 @@ export default function StudentTaskDetail() {
         return;
       }
       
-      // Create task request
+      // Create task request using username
       const { data: requestData, error: insertError } = await supabase
         .from('task_requests')
         .insert({
           task: taskId,
-          applicant: user.id,
-          status: 'requested'
+          applicant: user.id, // Keep UUID for backward compatibility
+          applicant_username: applicantUsername // Add username for new approach
         })
         .select();
       
@@ -375,6 +399,24 @@ export default function StudentTaskDetail() {
                 </p>
               </div>
             </div>
+            
+            {/* Required Skills Section */}
+            {task.skills_data && task.skills_data.length > 0 && (
+              <div className="pt-6">
+                <h3 className="font-medium mb-3 text-gray-900">Required Skills</h3>
+                <div className="flex flex-wrap gap-2">
+                  {task.skills_data.map((skill) => (
+                    <span 
+                      key={skill.id} 
+                      className="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-800"
+                      title={skill.description}
+                    >
+                      {skill.label}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
             
             {/* Message display - this is already present but let's make sure it's styled properly */}
             {message && (

@@ -21,104 +21,108 @@ export default function StudentMyTasks() {
   const router = useRouter();
   
   // Make fetchTasks a module-level function so it can be called from elsewhere
-  const fetchTasks = async () => {
-    const supabase = createClient();
-    
-    // Get current user
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    if (userError || !user) {
-      console.error("Error getting user:", userError);
-      router.push("/stud");
-      return;
-    }
-    
-    console.log("Current user:", user);
-    
-    // Try the original query approach with proper joins
-    const { data: originalData, error: originalError } = await supabase
-      .from('tasks')
-      .select(`
-        *,
-        task_assignments(id)
-      `)
-      .eq('task_assignments.assignee', user.id)
-      .in('status', ['assigned', 'delivered', 'rated']) // Include all relevant statuses
-      .order('created_at', { ascending: false });
-    
-    console.log("Original query result:", { originalData, originalError });
-    
-    // Also try the alternative approach
-    const { data: assignments, error: assignmentsError } = await supabase
-      .from('task_assignments')
-      .select('task')
-      .eq('assignee', user.id);
-    
-    console.log("Alternative approach - assignments:", { assignments, assignmentsError });
-    
-    if (originalError) {
-      console.error("Original query failed:", originalError);
-    }
-    
-    if (assignmentsError) {
-      console.error("Alternative approach failed:", assignmentsError);
-    }
-    
-    // Use whichever approach worked
-    if (!originalError && originalData) {
-      console.log("Using original query data");
-      setTasks(originalData);
-    } else if (!assignmentsError && assignments && assignments.length > 0) {
-      // Extract task IDs
-      const taskIds = assignments.map(assignment => assignment.task);
-      console.log("Task IDs to fetch:", taskIds);
-      
-      // Get tasks with these IDs and relevant statuses
-      const { data: tasksData, error: tasksError } = await supabase
-        .from('tasks')
-        .select('*')
-        .in('id', taskIds)
-        .in('status', ['assigned', 'delivered', 'rated'])
-        .order('created_at', { ascending: false });
-      
-      console.log("Tasks data from alternative approach:", { tasksData, tasksError });
-      
-      if (!tasksError && tasksData) {
-        // Add assignment info to each task for consistency with existing code
-        const tasksWithAssignments = tasksData.map(task => ({
-          ...task,
-          task_assignments: [{ id: 'dummy' }] // We don't need the actual assignment ID for display
-        }));
-        setTasks(tasksWithAssignments);
-      } else {
-        setTasks([]);
-      }
-    } else {
-      // Final fallback: try to get tasks where the user is the assignee
-      const { data: fallbackData, error: fallbackError } = await supabase
-        .from('tasks')
-        .select(`
-          *,
-          task_assignments(id)
-        `)
-        .eq('task_assignments.assignee', user.id)
-        .in('status', ['assigned', 'delivered', 'rated'])
-        .order('created_at', { ascending: false });
-      
-      console.log("Fallback query result:", { fallbackData, fallbackError });
-      
-      if (!fallbackError && fallbackData) {
-        setTasks(fallbackData);
-      } else {
-        setTasks([]);
-      }
-    }
-    
-    setLoading(false);
-  };
-
   useEffect(() => {
+    let isMounted = true;
+    
+    const fetchTasks = async () => {
+      const supabase = createClient();
+      
+      // Get current user
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError || !user) {
+        console.error("Error getting user:", userError);
+        if (isMounted) {
+          router.push("/stud");
+        }
+        return;
+      }
+      
+      console.log("Current user:", user);
+      
+      // Get the username for the current user
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('username')
+        .eq('id', user.id)
+        .single();
+      
+      if (profileError || !profileData) {
+        console.error("Error fetching user profile:", profileError);
+        if (isMounted) {
+          router.push("/stud");
+        }
+        return;
+      }
+      
+      const currentUserUsername = profileData.username;
+      
+      // Use the most reliable approach - first get task assignments, then get the tasks
+      // Try using username first, fallback to UUID if needed
+      const { data: assignmentsByUsername, error: assignmentsByUsernameError } = await supabase
+        .from('task_assignments')
+        .select('task')
+        .eq('assignee_username', currentUserUsername);
+      
+      let assignments = assignmentsByUsername;
+      let assignmentsError = assignmentsByUsernameError;
+      
+      // If username-based query fails, fallback to UUID-based query
+      if (assignmentsByUsernameError || !assignmentsByUsername || assignmentsByUsername.length === 0) {
+        console.log("Falling back to UUID-based query for assignments");
+        const { data: assignmentsByUUID, error: assignmentsByUUIDError } = await supabase
+          .from('task_assignments')
+          .select('task')
+          .eq('assignee', user.id);
+        
+        assignments = assignmentsByUUID;
+        assignmentsError = assignmentsByUUIDError;
+      }
+      
+      console.log("Assignments:", { assignments, assignmentsError });
+      
+      if (assignmentsError) {
+        console.error("Error fetching assignments:", assignmentsError);
+        if (isMounted) {
+          setTasks([]);
+        }
+        return;
+      }
+      
+      if (assignments && assignments.length > 0) {
+        // Extract task IDs
+        const taskIds = assignments.map(assignment => assignment.task);
+        console.log("Task IDs to fetch:", taskIds);
+        
+        // Get tasks with these IDs and relevant statuses
+        const { data: tasksData, error: tasksError } = await supabase
+          .from('tasks')
+          .select('*')
+          .in('id', taskIds)
+          .in('status', ['assigned', 'delivered', 'rated'])
+          .order('created_at', { ascending: false });
+        
+        console.log("Tasks data:", { tasksData, tasksError });
+        
+        if (!tasksError && tasksData && isMounted) {
+          setTasks(tasksData);
+        } else if (isMounted) {
+          setTasks([]);
+        }
+      } else if (isMounted) {
+        setTasks([]);
+      }
+      
+      if (isMounted) {
+        setLoading(false);
+      }
+    };
+    
     fetchTasks();
-  }, []);
+    
+    return () => {
+      isMounted = false;
+    };
+  }, [router]);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
