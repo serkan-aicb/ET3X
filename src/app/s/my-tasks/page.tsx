@@ -66,47 +66,50 @@ export default function StudentMyTasks() {
           
           // Get tasks with these IDs and relevant statuses
           console.log("Fetching tasks with statuses ['assigned', 'delivered', 'rated']");
-          // Temporarily remove the status filter to debug
           const { data: tasksData, error: tasksError } = await supabase
-            .from('tasks')
-            .select('*')
-            .in('id', taskIds)
-            // .in('status', ['assigned', 'delivered', 'rated'])  // Temporarily commented out for debugging
-            .order('created_at', { ascending: false });
-          
-          console.log("Tasks data (without status filter):", { tasksData, tasksError });
-          
-          // Log the actual status of each task for debugging
-          if (tasksData) {
-            tasksData.forEach(task => {
-              console.log(`Task ${task.id} has status: ${task.status}`);
-            });
-          }
-          
-          // Additional debugging - let's also fetch with the status filter to see the difference
-          const { data: tasksDataWithStatus, error: tasksErrorWithStatus } = await supabase
             .from('tasks')
             .select('*')
             .in('id', taskIds)
             .in('status', ['assigned', 'delivered', 'rated'])
             .order('created_at', { ascending: false });
           
-          console.log("Tasks data (with status filter):", { tasksDataWithStatus, tasksErrorWithStatus });
-          
-          // Check if RLS is the issue by trying to bypass it (this is just for debugging)
-          // We'll fetch all tasks to see if the tasks exist at all
-          const { data: allTasksData, error: allTasksError } = await supabase
-            .from('tasks')
-            .select('*');
-          
-          console.log("All tasks in database:", { allTasksData, allTasksError });
+          console.log("Tasks data:", { tasksData, tasksError });
           
           if (!tasksError && tasksData && isMounted) {
             console.log("Setting tasks:", tasksData.length);
             setTasks(tasksData);
           } else if (isMounted) {
             console.log("No tasks found or error occurred");
-            setTasks([]);
+            // Try a different approach - fetch using a different query structure
+            const { data: alternativeTasksData, error: alternativeTasksError } = await supabase
+              .from('task_assignments')
+              .select(`
+                tasks!inner(*)
+              `)
+              .eq('assignee', user.id)
+              .in('tasks.status', ['assigned', 'delivered', 'rated']);
+            
+            console.log("Alternative tasks fetch:", { alternativeTasksData, alternativeTasksError });
+            
+            if (!alternativeTasksError && alternativeTasksData && isMounted) {
+              // Log the structure to understand it better
+              console.log("Alternative tasks data structure:", JSON.stringify(alternativeTasksData, null, 2));
+              
+              // Extract tasks from the joined result - simplified approach
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              const extractedTasks: any[] = [];
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              alternativeTasksData.forEach((item: any) => {
+                if (item.tasks) {
+                  extractedTasks.push(item.tasks);
+                }
+              });
+              console.log("Setting tasks from alternative query:", extractedTasks.length);
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              setTasks(extractedTasks as any);
+            } else {
+              setTasks([]);
+            }
           }
         } else if (isMounted) {
           console.log("No assignments found for user");
@@ -247,7 +250,7 @@ export default function StudentMyTasks() {
         {tasks.length === 0 ? (
           <Card className="shadow-lg">
             <CardContent className="py-8 text-center">
-              <p className="text-gray-600">You don{`'`}t have any assigned tasks yet.</p>
+              <p className="text-gray-600">You don{'\''}t have any assigned tasks yet.</p>
               <Button 
                 className="mt-4 bg-blue-600 hover:bg-blue-700"
                 onClick={() => router.push("/s/tasks")}
