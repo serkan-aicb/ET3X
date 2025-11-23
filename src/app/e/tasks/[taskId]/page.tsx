@@ -721,12 +721,19 @@ export default function TaskDetail() {
         setMessage("Task assigned successfully!");
       }
        
-      // Update request status
+      // Update request status to 'selected' so it disappears from requests list
       const { error: requestError } = await supabase
         .from('task_requests')
         .update({ status: 'selected' })
         .eq('task', taskId)
         .eq('applicant', applicantId);
+      
+      if (requestError) {
+        console.error("Error updating request status:", requestError);
+        setMessage(`Task assigned but error updating request status: ${requestError.message}`);
+      } else {
+        setMessage("Task assigned successfully!");
+      }
       
       console.log("Request status update result:", requestError);
       
@@ -1057,15 +1064,33 @@ export default function TaskDetail() {
   const handleDeclineRequest = async (applicantId: string) => {
     const supabase = createClient();
     
-    // Update request status
-    await supabase
-      .from('task_requests')
-      .update({ status: 'declined' })
-      .eq('task', taskId)
-      .eq('applicant', applicantId);
-    
-    // Refresh data
-    router.refresh();
+    try {
+      // Update request status
+      const { error } = await supabase
+        .from('task_requests')
+        .update({ status: 'declined' })
+        .eq('task', taskId)
+        .eq('applicant', applicantId);
+      
+      if (error) {
+        console.error("Error declining request:", error);
+        // Show error message to user
+        setMessage(`Error declining request: ${error.message}`);
+        setTimeout(() => setMessage(""), 5000);
+        return;
+      }
+      
+      // Show success message
+      setMessage("Request declined successfully");
+      setTimeout(() => setMessage(""), 5000);
+      
+      // Refresh data
+      router.refresh();
+    } catch (error) {
+      console.error("Unexpected error declining request:", error);
+      setMessage(`Unexpected error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      setTimeout(() => setMessage(""), 5000);
+    }
   };
 
   const handlePublishTask = async () => {
@@ -1112,9 +1137,7 @@ export default function TaskDetail() {
         creator: user.id,
         module: task?.module || null,
         title: `${task?.title} (Copy)`,
-        goal: task?.goal || null,
-        context: task?.context || null,
-        deliverables: task?.deliverables || null,
+        description: task?.description || null, // Use description instead of goal, context, deliverables
         seats: task?.seats || null,
         skill_level: task?.skill_level || null,
         license: task?.license || null,
@@ -1407,24 +1430,10 @@ export default function TaskDetail() {
             </div>
           </CardHeader>
           <CardContent className="space-y-6 pt-6">
-            {task.goal && (
+            {task.description && (
               <div>
-                <h3 className="font-medium mb-2 text-gray-900">Goal</h3>
-                <p className="text-gray-600">{task.goal}</p>
-              </div>
-            )}
-            
-            {task.context && (
-              <div>
-                <h3 className="font-medium mb-2 text-gray-900">Context</h3>
-                <p className="text-gray-600">{task.context}</p>
-              </div>
-            )}
-            
-            {task.deliverables && (
-              <div>
-                <h3 className="font-medium mb-2 text-gray-900">Deliverables</h3>
-                <p className="text-gray-600">{task.deliverables}</p>
+                <h3 className="font-medium mb-2 text-gray-900">Description</h3>
+                <p className="text-gray-600">{task.description}</p>
               </div>
             )}
             

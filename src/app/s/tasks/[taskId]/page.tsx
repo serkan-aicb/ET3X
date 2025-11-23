@@ -381,24 +381,10 @@ export default function StudentTaskDetail() {
             </div>
           </CardHeader>
           <CardContent className="space-y-6 pt-6">
-            {task.goal && (
+            {task.description && (
               <div>
-                <h3 className="font-medium mb-2 text-gray-900">Goal</h3>
-                <p className="text-gray-600">{task.goal}</p>
-              </div>
-            )}
-            
-            {task.context && (
-              <div>
-                <h3 className="font-medium mb-2 text-gray-900">Context</h3>
-                <p className="text-gray-600">{task.context}</p>
-              </div>
-            )}
-            
-            {task.deliverables && (
-              <div>
-                <h3 className="font-medium mb-2 text-gray-900">Deliverables</h3>
-                <p className="text-gray-600">{task.deliverables}</p>
+                <h3 className="font-medium mb-2 text-gray-900">Description</h3>
+                <p className="text-gray-600">{task.description}</p>
               </div>
             )}
             

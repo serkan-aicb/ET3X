@@ -234,9 +234,9 @@ export default function EducatorTasks() {
                   )}
                 </CardHeader>
                 <CardContent>
-                  {task.goal && (
+                  {task.description && (
                     <p className="text-sm text-gray-600 line-clamp-2">
-                      {task.goal}
+                      {task.description}
                     </p>
                   )}
                   <div className="mt-4 flex flex-wrap gap-2">

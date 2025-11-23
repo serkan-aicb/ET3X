@@ -25,9 +25,8 @@ type Task = Tables<'tasks'>;
 export default function EditTask() {
   const [title, setTitle] = useState("");
   const [module, setModule] = useState("");
-  const [goal, setGoal] = useState("");
-  const [context, setContext] = useState("");
-  const [deliverables, setDeliverables] = useState("");
+  const [description, setDescription] = useState("");
+  // Removed goal, context, and deliverables states
   const [seats, setSeats] = useState(1);
   const [skillLevel, setSkillLevel] = useState<"Novice" | "Skilled" | "Expert" | "Master">("Novice");
   const [license, setLicense] = useState<"CC BY 4.0" | "CC0 1.0">("CC BY 4.0");
@@ -74,9 +73,8 @@ export default function EditTask() {
           setTask(taskData);
           setTitle(taskData.title || "");
           setModule(taskData.module || "");
-          setGoal(taskData.goal || "");
-          setContext(taskData.context || "");
-          setDeliverables(taskData.deliverables || "");
+          setDescription(taskData.description || "");
+          // Removed goal, context, and deliverables
           setSeats(taskData.seats || 1);
           setSkillLevel(taskData.skill_level as "Novice" | "Skilled" | "Expert" | "Master" || "Novice");
           setLicense(taskData.license as "CC BY 4.0" | "CC0 1.0" || "CC BY 4.0");
@@ -118,9 +116,7 @@ export default function EditTask() {
         .update({
           title,
           module,
-          goal,
-          context,
-          deliverables,
+          description, // Use description instead of goal, context, deliverables
           seats,
           skill_level: skillLevel,
           license,
@@ -158,7 +154,7 @@ export default function EditTask() {
             </Link>
             <div className="flex space-x-2">
               <Button variant="outline" onClick={() => router.push("/e/tasks")}>
-                View Tasks
+                My Tasks
               </Button>
               <Button variant="outline" onClick={async () => {
                 const supabase = createClient();
@@ -173,16 +169,26 @@ export default function EditTask() {
 
         {/* Main Content */}
         <main className="container mx-auto px-4 py-8 flex-grow">
-          <Card className="shadow-lg rounded-xl overflow-hidden">
-            <CardContent className="py-8 text-center">
-              <p className="text-gray-600">Loading task or task not found...</p>
+          <Card className="shadow-lg max-w-2xl mx-auto">
+            <CardHeader>
+              <CardTitle className="text-gray-800">Task Not Found</CardTitle>
+              <CardDescription className="text-gray-600">
+                The requested task could not be found.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-600">
+                The task you{`'`}re looking for doesn{`'`}t exist or you don{`'`}t have permission to access it.
+              </p>
+            </CardContent>
+            <CardFooter>
               <Button 
-                className="mt-4 bg-blue-600 hover:bg-blue-700"
+                className="bg-blue-600 hover:bg-blue-700 w-full"
                 onClick={() => router.push("/e/tasks")}
               >
                 Back to Tasks
               </Button>
-            </CardContent>
+            </CardFooter>
           </Card>
         </main>
 
@@ -279,37 +285,13 @@ export default function EditTask() {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="goal">Goal</Label>
+                <Label htmlFor="description">Description</Label>
                 <Textarea
-                  id="goal"
-                  value={goal}
-                  onChange={(e) => setGoal(e.target.value)}
-                  placeholder="Describe the goal of this task"
-                  rows={3}
-                  className="py-3 px-4 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="context">Context</Label>
-                <Textarea
-                  id="context"
-                  value={context}
-                  onChange={(e) => setContext(e.target.value)}
-                  placeholder="Provide context for this task"
-                  rows={3}
-                  className="py-3 px-4 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="deliverables">Deliverables</Label>
-                <Textarea
-                  id="deliverables"
-                  value={deliverables}
-                  onChange={(e) => setDeliverables(e.target.value)}
-                  placeholder="Describe what students should deliver"
-                  rows={3}
+                  id="description"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Describe the task"
+                  rows={6}
                   className="py-3 px-4 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                 />
               </div>
@@ -419,7 +401,7 @@ export default function EditTask() {
               )}
             </CardContent>
             <CardFooter className="flex justify-between bg-gray-50">
-              <Button type="button" variant="outline" className="border-gray-600 text-gray-600 hover:bg-gray-50 py-3" onClick={() => router.push(`/e/tasks/${taskId}`)}>
+              <Button type="button" variant="outline" className="border-gray-600 text-gray-600 hover:bg-gray-50 py-3" onClick={() => router.back()}>
                 Cancel
               </Button>
               <Button type="submit" disabled={loading} className="bg-blue-600 hover:bg-blue-700 py-3">

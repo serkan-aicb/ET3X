@@ -24,9 +24,7 @@ type Skill = Tables<'skills'>;
 export default function CreateTask() {
   const [title, setTitle] = useState("");
   const [module, setModule] = useState("");
-  const [goal, setGoal] = useState("");
-  const [context, setContext] = useState("");
-  const [deliverables, setDeliverables] = useState("");
+  const [description, setDescription] = useState("");
   const [seats, setSeats] = useState(1);
   const [skillLevel, setSkillLevel] = useState<"Novice" | "Skilled" | "Expert" | "Master">("Novice");
   const [license, setLicense] = useState<"CC BY 4.0" | "CC0 1.0">("CC BY 4.0");
@@ -94,9 +92,7 @@ export default function CreateTask() {
           creator: user.id,
           title,
           module,
-          goal,
-          context,
-          deliverables,
+          description, // Use description instead of goal, context, deliverables
           seats,
           skill_level: skillLevel,
           license,
@@ -190,37 +186,13 @@ export default function CreateTask() {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="goal">Goal</Label>
+                <Label htmlFor="description">Description</Label>
                 <Textarea
-                  id="goal"
-                  value={goal}
-                  onChange={(e) => setGoal(e.target.value)}
-                  placeholder="Describe the goal of this task"
-                  rows={3}
-                  className="py-3 px-4 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="context">Context (Optional)</Label>
-                <Textarea
-                  id="context"
-                  value={context}
-                  onChange={(e) => setContext(e.target.value)}
-                  placeholder="Provide context for this task"
-                  rows={3}
-                  className="py-3 px-4 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="deliverables">Deliverables</Label>
-                <Textarea
-                  id="deliverables"
-                  value={deliverables}
-                  onChange={(e) => setDeliverables(e.target.value)}
-                  placeholder="Describe what students need to deliver"
-                  rows={3}
+                  id="description"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Describe the task"
+                  rows={6}
                   className="py-3 px-4 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                 />
               </div>

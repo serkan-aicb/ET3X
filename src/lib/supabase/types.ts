@@ -274,9 +274,7 @@ export type Database = {
           creator: string
           module: string | null
           title: string
-          goal: string | null
-          context: string | null
-          deliverables: string | null
+          description: string | null
           seats: number | null
           skill_level: Database["public"]["Enums"]["skill_level"] | null
           license: Database["public"]["Enums"]["license_type"] | null
@@ -291,9 +289,7 @@ export type Database = {
           creator: string
           module?: string | null
           title: string
-          goal?: string | null
-          context?: string | null
-          deliverables?: string | null
+          description?: string | null
           seats?: number | null
           skill_level?: Database["public"]["Enums"]["skill_level"] | null
           license?: Database["public"]["Enums"]["license_type"] | null
@@ -308,9 +304,7 @@ export type Database = {
           creator?: string
           module?: string | null
           title?: string
-          goal?: string | null
-          context?: string | null
-          deliverables?: string | null
+          description?: string | null
           seats?: number | null
           skill_level?: Database["public"]["Enums"]["skill_level"] | null
           license?: Database["public"]["Enums"]["license_type"] | null
