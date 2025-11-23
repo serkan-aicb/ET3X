@@ -140,14 +140,20 @@ export function RatingForm({
               };
               
               // Pin rating to IPFS
-              const cid = await pinJSONToIPFS(ratingDocument);
-              console.log('Rating pinned to IPFS with CID:', cid);
-              
-              // Update rating with CID
-              await supabase
-                .from('ratings')
-                .update({ cid: cid })
-                .eq('id', ratingData.id);
+              let cid: string | null = null;
+              try {
+                cid = await pinJSONToIPFS(ratingDocument);
+                console.log('Rating pinned to IPFS with CID:', cid);
+                
+                // Update rating with CID
+                await supabase
+                  .from('ratings')
+                  .update({ cid: cid })
+                  .eq('id', ratingData.id);
+              } catch (pinError) {
+                console.warn('Warning: Failed to pin rating to IPFS:', pinError);
+                // Continue with the process even if IPFS pinning fails
+              }
               
               // Simulate blockchain anchoring
               // Instead of calling anchorRating, we'll just log the simulation
