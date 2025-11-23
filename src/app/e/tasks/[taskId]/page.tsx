@@ -16,33 +16,29 @@ type Task = Tables<'tasks'> & {
     description: string;
   }[];
 };
-type TaskRequest = Tables<'task_requests'> & {
+type Request = Tables<'task_requests'> & {
   profiles: {
     username: string;
     did: string;
   } | null;
 };
-type TaskAssignment = Tables<'task_assignments'> & {
+type Assignment = Tables<'task_assignments'> & {
   profiles: {
     username: string;
     did: string;
   } | null;
 };
-type Submission = Tables<'submissions'> & {
-  profiles: {
-    username: string;
-  } | null;
-};
+type Submission = Tables<'submissions'>;
 
-export default function TaskDetail() {
+export default function EducatorTaskDetail() {
   const [task, setTask] = useState<Task | null>(null);
-  const [requests, setRequests] = useState<TaskRequest[]>([]);
-  const [assignments, setAssignments] = useState<TaskAssignment[]>([]);
+  const [requests, setRequests] = useState<Request[]>([]);
+  const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
-  const [message, setMessage] = useState(""); // Add this state for messages
-  const [errorMessage, setErrorMessage] = useState(""); // Add this state for error messages
-  const [selectedApplicants, setSelectedApplicants] = useState<string[]>([]); // For group assignment
+  const [errorMessage, setErrorMessage] = useState("");
+  const [message, setMessage] = useState("");
+  const [selectedApplicants, setSelectedApplicants] = useState<string[]>([]);
   const router = useRouter();
   const params = useParams();
   const taskId = params.taskId as string;
@@ -219,10 +215,10 @@ export default function TaskDetail() {
             
             // Get task requests with properly joined profile data
             const { data: requestsData, error: requestsError } = await supabase
-              .from('task_requests')
+              .from('requests')
               .select(`
                 *,
-                profiles!task_requests_applicant_fkey(username, did)
+                profiles!requests_applicant_fkey(username, did)
               `)
               .eq('task', taskId);
             
@@ -361,20 +357,20 @@ export default function TaskDetail() {
               setAssignments(assignmentsWithProfiles);
             }
             
-            // Get submissions
+            // Get submissions for this task
             const { data: submissionsData, error: submissionsError } = await supabase
               .from('submissions')
-              .select(`
-                *,
-                profiles!submissions_submitter_fkey(username)
-              `)
+              .select('*')
               .eq('task', taskId);
             
             console.log("Submissions data:", { submissionsData, submissionsError });
             
             if (submissionsError) {
-              console.error("Error fetching submissions:", submissionsError);
-            } else if (submissionsData) {
+              console.error("Error fetching task submissions:", submissionsError);
+            }
+            
+            if (submissionsData) {
+              console.log("Submissions data:", submissionsData);
               setSubmissions(submissionsData);
             }
           }
@@ -497,6 +493,18 @@ export default function TaskDetail() {
       }));
       setRequests(requestsWithProfiles);
     }
+    
+    // Fetch submissions for this task
+    const { data: submissionsData, error: submissionsError } = await supabase
+      .from('submissions')
+      .select('*')
+      .eq('task', taskId);
+    
+    console.log("Verification - Submissions data:", { submissionsData, submissionsError });
+    
+    if (!submissionsError && submissionsData) {
+      setSubmissions(submissionsData);
+    }
   };
 
   const toggleApplicantSelection = (applicantId: string) => {
@@ -557,6 +565,334 @@ export default function TaskDetail() {
             .select('id, username')
             .limit(5);
           
+          if (allProfilesError) {
+            console.error("Failed to fetch any profiles:", allProfilesError);
+            setMessage("Failed to fetch user profile. Please try again later.");
+            setTimeout(() => setMessage(""), 5000);
+            return;
+          }
+          
+          setMessage("Failed to fetch user profile. Please try again later.");
+          setTimeout(() => setMessage(""), 5000);
+          return;
+        }
+        profileData = fallbackProfileData;
+      }
+      
+      console.log("Profile data:", profileData);
+      
+      // Insert the assignment
+      const { data: assignmentData, error: assignmentError } = await supabase
+        .from('task_assignments')
+        .insert([
+          {
+            task: taskId,
+            assignee: applicantId,
+            assigned_by: user.id,
+            assigned_at: new Date().toISOString(),
+          },
+        ])
+        .select()
+        .single();
+      
+      if (assignmentError) {
+        console.error("Failed to insert assignment:", assignmentError);
+        setMessage("Failed to assign task. Please try again later.");
+        setTimeout(() => setMessage(""), 5000);
+        return;
+      }
+      
+      console.log("Assignment inserted:", assignmentData);
+      
+      // Update the task status to assigned
+      const { data: taskData, error: taskUpdateError } = await supabase
+        .from('tasks')
+        .update({ status: 'assigned' })
+        .eq('id', taskId)
+        .select()
+        .single();
+      
+      if (taskUpdateError) {
+        console.error("Failed to update task status:", taskUpdateError);
+        setMessage("Failed to update task status. Please try again later.");
+        setTimeout(() => setMessage(""), 5000);
+        return;
+      }
+      
+      console.log("Task status updated:", taskData);
+      
+      // Refresh the task data
+      fetchData();
+      verifyAssignments();
+    } catch (e) {
+      console.error("Unexpected error:", e);
+      setMessage("Unexpected error.");
+      setTimeout(() => setMessage(""), 5000);
+    }
+  };
+
+  const handleUnassignTask = async (assigneeId: string) => {
+    const supabase = createClient();
+    
+    try {
+      console.log("Unassigning task:", { taskId, assigneeId });
+      
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setMessage("You must be logged in to unassign tasks.");
+        setTimeout(() => setMessage(""), 5000);
+        return;
+      }
+      
+      // Delete the assignment
+      const { data: assignmentData, error: assignmentError } = await supabase
+        .from('task_assignments')
+        .delete()
+        .eq('task', taskId)
+        .eq('assignee', assigneeId)
+        .select()
+        .single();
+      
+      if (assignmentError) {
+        console.error("Failed to delete assignment:", assignmentError);
+        setMessage("Failed to unassign task. Please try again later.");
+        setTimeout(() => setMessage(""), 5000);
+        return;
+      }
+      
+      console.log("Assignment deleted:", assignmentData);
+      
+      // Refresh the task data
+      fetchData();
+      verifyAssignments();
+    } catch (e) {
+      console.error("Unexpected error:", e);
+      setMessage("Unexpected error.");
+      setTimeout(() => setMessage(""), 5000);
+    }
+  };
+
+  const handleApproveRequest = async (requestId: string) => {
+    const supabase = createClient();
+    
+    try {
+      console.log("Approving request:", { taskId, requestId });
+      
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setMessage("You must be logged in to approve requests.");
+        setTimeout(() => setMessage(""), 5000);
+        return;
+      }
+      
+      // Fetch the request
+      const { data: requestData, error: requestError } = await supabase
+        .from('task_requests')
+        .select('*')
+        .eq('id', requestId)
+        .single();
+      
+      if (requestError) {
+        console.error("Failed to fetch request:", requestError);
+        setMessage("Failed to fetch request. Please try again later.");
+        setTimeout(() => setMessage(""), 5000);
+        return;
+      }
+      
+      console.log("Request fetched:", requestData);
+      
+      // Check if the request is still in requested status
+      if (requestData.status !== 'requested') {
+        setMessage("Request is no longer in requested status. Please try again.");
+        setTimeout(() => setMessage(""), 5000);
+        return;
+      }
+      
+      // Fetch the applicant's profile
+      console.log("Fetching profile for applicant ID:", requestData.applicant);
+      const { data: profileDataResult, error: profileError } = await supabase
+        .from('profiles')
+        .select('username')
+        .eq('id', requestData.applicant)
+        .single();
+      
+      let profileData = profileDataResult;
+      
+      if (profileError || !profileData) {
+        console.error("Error fetching applicant profile:", { profileError, profileData, applicantId: requestData.applicant });
+        // Try a fallback approach to get at least the username
+        console.log("Trying fallback profile fetch for applicant ID:", requestData.applicant);
+        const { data: fallbackProfileData, error: fallbackProfileError } = await supabase
+          .from('profiles')
+          .select('username')
+          .eq('id', requestData.applicant)
+          .single();
+        
+        if (fallbackProfileError || !fallbackProfileData) {
+          console.error("Fallback profile fetch also failed:", { fallbackProfileError, fallbackProfileData, applicantId: requestData.applicant });
+          // Let's also try to see if the profile exists at all
+          const { data: existenceCheck, error: existenceError } = await supabase
+            .from('profiles')
+            .select('id, username')
+            .eq('id', requestData.applicant);
+          
+          console.log("Profile existence check:", { existenceCheck, existenceError });
+          
+          // Try one more approach - check if we can get any data from the profiles table
+          const { data: allProfiles, error: allProfilesError } = await supabase
+            .from('profiles')
+            .select('id, username')
+            .limit(5);
+          
+          if (allProfilesError) {
+            console.error("Failed to fetch any profiles:", allProfilesError);
+            setMessage("Failed to fetch user profile. Please try again later.");
+            setTimeout(() => setMessage(""), 5000);
+            return;
+          }
+          
+          setMessage("Failed to fetch user profile. Please try again later.");
+          setTimeout(() => setMessage(""), 5000);
+          return;
+        }
+        profileData = fallbackProfileData;
+      }
+      
+      console.log("Profile data:", profileData);
+      
+      // Insert the assignment
+      const { data: assignmentData, error: assignmentError } = await supabase
+        .from('task_assignments')
+        .insert([
+          {
+            task: taskId,
+            assignee: requestData.applicant,
+            assigned_by: user.id,
+            assigned_at: new Date().toISOString(),
+          },
+        ])
+        .select()
+        .single();
+      
+      if (assignmentError) {
+        console.error("Failed to insert assignment:", assignmentError);
+        setMessage("Failed to assign task. Please try again later.");
+        setTimeout(() => setMessage(""), 5000);
+        return;
+      }
+      
+      console.log("Assignment inserted:", assignmentData);
+      
+      // Update the task status to assigned
+      const { data: taskData, error: taskUpdateError } = await supabase
+        .from('tasks')
+        .update({ status: 'assigned' })
+        .eq('id', taskId)
+        .select()
+        .single();
+      
+      if (taskUpdateError) {
+        console.error("Failed to update task status:", taskUpdateError);
+        setMessage("Failed to update task status. Please try again later.");
+        setTimeout(() => setMessage(""), 5000);
+        return;
+      }
+      
+      console.log("Task status updated:", taskData);
+      
+      // Update the request status to approved
+      const { data: updatedRequestData, error: requestUpdateError } = await supabase
+        .from('task_requests')
+        .update({ status: 'approved' })
+        .eq('id', requestId)
+        .select()
+        .single();
+      
+      if (requestUpdateError) {
+        console.error("Failed to update request status:", requestUpdateError);
+        setMessage("Failed to update request status. Please try again later.");
+        setTimeout(() => setMessage(""), 5000);
+        return;
+      }
+      
+      console.log("Request status updated:", updatedRequestData);
+      
+      // Refresh the task data
+      fetchData();
+      verifyAssignments();
+    } catch (e) {
+      console.error("Unexpected error:", e);
+      setMessage("Unexpected error.");
+      setTimeout(() => setMessage(""), 5000);
+    }
+  };
+
+  const handleRejectRequest = async (requestId: string) => {
+    const supabase = createClient();
+    
+    try {
+      console.log("Rejecting request:", { taskId, requestId });
+      
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setMessage("You must be logged in to reject requests.");
+        setTimeout(() => setMessage(""), 5000);
+        return;
+      }
+      
+      // Fetch the request
+      const { data: requestData, error: requestError } = await supabase
+        .from('task_requests')
+        .select('*')
+        .eq('id', requestId)
+        .single();
+      
+      if (requestError) {
+        console.error("Failed to fetch request:", requestError);
+        setMessage("Failed to fetch request. Please try again later.");
+        setTimeout(() => setMessage(""), 5000);
+        return;
+      }
+      
+      console.log("Request fetched:", requestData);
+      
+      // Check if the request is still in requested status
+      if (requestData.status !== 'requested') {
+        setMessage("Request is no longer in requested status. Please try again.");
+        setTimeout(() => setMessage(""), 5000);
+        return;
+      }
+      
+      // Update the request status to rejected
+      const { data: updatedRequestData, error: requestUpdateError } = await supabase
+        .from('task_requests')
+        .update({ status: 'rejected' })
+        .eq('id', requestId)
+        .select()
+        .single();
+      
+      if (requestUpdateError) {
+        console.error("Failed to update request status:", requestUpdateError);
+        setMessage("Failed to update request status. Please try again later.");
+        setTimeout(() => setMessage(""), 5000);
+        return;
+      }
+      
+      console.log("Request status updated:", updatedRequestData);
+      
+      // Refresh the task data
+      fetchData();
+      verifyAssignments();
+    } catch (e) {
+      console.error("Unexpected error:", e);
+      setMessage("Unexpected error.");
+      setTimeout(() => setMessage(""), 5000);
+    }
+  };
+          
           console.log("Sample profiles data:", { allProfiles, allProfilesError });
           
           setMessage(`Error fetching applicant information: ${profileError?.message || fallbackProfileError?.message || existenceError?.message || 'Profile not found'}`);
@@ -573,7 +909,7 @@ export default function TaskDetail() {
       
       // Check if this student is already assigned to this task
       const { data: existingAssignments, error: checkError } = await supabase
-        .from('task_assignments')
+        .from('assignments')
         .select('id')
         .eq('task', taskId)
         .eq('assignee', applicantId);
@@ -594,7 +930,7 @@ export default function TaskDetail() {
       if (task && task.seats && task.seats > 1) {
         // Get current assignments for this task
         const { data: currentAssignments, error: countError } = await supabase
-          .from('task_assignments')
+          .from('assignments')
           .select('id')
           .eq('task', taskId);
         
@@ -613,7 +949,7 @@ export default function TaskDetail() {
       // Create task assignment using both UUID and username for compatibility
       console.log("Creating task assignment:", { taskId, applicantId, applicantUsername });
       const { error: assignError, data: assignmentData } = await supabase
-        .from('task_assignments')
+        .from('assignments')
         .insert({
           task: taskId,
           assignee: applicantId,          // MUST NOT be NULL
@@ -656,7 +992,7 @@ export default function TaskDetail() {
       if (task && task.seats && task.seats > 1) {
         // Get current assignments for this task
         const { data: currentAssignments, error: countError } = await supabase
-          .from('task_assignments')
+          .from('assignments')
           .select('id')
           .eq('task', taskId);
         
@@ -710,7 +1046,7 @@ export default function TaskDetail() {
        
       // Update request status to 'selected' so it disappears from requests list
       const { error: requestError } = await supabase
-        .from('task_requests')
+        .from('requests')
         .update({ status: 'selected' })
         .eq('task', taskId)
         .eq('applicant', applicantId);
@@ -785,7 +1121,7 @@ export default function TaskDetail() {
       if (task && task.seats && task.seats > 1) {
         // Get current assignments for this task
         const { data: currentAssignments, error: countError } = await supabase
-          .from('task_assignments')
+          .from('assignments')
           .select('id')
           .eq('task', taskId);
         
@@ -811,7 +1147,7 @@ export default function TaskDetail() {
           }
           console.log("Creating task assignment for:", { taskId, applicantId, username });
           const { error, data } = await supabase
-            .from('task_assignments')
+            .from('assignments')
             .insert({
               task: taskId,
               assignee: applicantId,
@@ -854,7 +1190,7 @@ export default function TaskDetail() {
       if (task && task.seats && task.seats > 1) {
         // Get current assignments for this task
         const { data: currentAssignments, error: countError } = await supabase
-          .from('task_assignments')
+          .from('assignments')
           .select('id')
           .eq('task', taskId);
         
@@ -908,7 +1244,7 @@ export default function TaskDetail() {
        
       // Update request status to 'selected' so it disappears from requests list
       const { error: requestError } = await supabase
-        .from('task_requests')
+        .from('requests')
         .update({ status: 'selected' })
         .eq('task', taskId)
         .in('applicant', applicantIds);
@@ -987,7 +1323,7 @@ export default function TaskDetail() {
         if (task && task.seats && task.seats > 1) {
           // Get current assignments for this task
           const { data: currentAssignments, error: countError } = await supabase
-            .from('task_assignments')
+            .from('assignments')
             .select('id')
             .eq('task', taskId);
           
@@ -1028,7 +1364,7 @@ export default function TaskDetail() {
         }));
         
         const { error: assignError } = await supabase
-          .from('task_assignments')
+          .from('assignments')
           .insert(assignments);
         
         if (assignError) {
@@ -1037,7 +1373,7 @@ export default function TaskDetail() {
         
         // Update request status for all applicants in this group
         const { error: requestError } = await supabase
-          .from('task_requests')
+          .from('requests')
           .update({ status: 'selected' })
           .eq('task', taskId)
           .in('applicant', group);
@@ -1075,7 +1411,7 @@ export default function TaskDetail() {
     try {
       // Update request status
       const { error } = await supabase
-        .from('task_requests')
+        .from('requests')
         .update({ status: 'declined' })
         .eq('task', taskId)
         .eq('applicant', applicantId);
@@ -1512,14 +1848,16 @@ export default function TaskDetail() {
             )}
           </CardContent>
           <CardFooter className="flex justify-end space-x-2 bg-gray-50">
-            {task.status === 'delivered' && (
+            {(task.status === 'delivered' || submissions.length > 0) && (
               <>
                 <Button variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-50" onClick={() => router.push(`/e/tasks/${taskId}/submissions`)}>
                   View Submissions
                 </Button>
-                <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => router.push(`/e/tasks/${taskId}/rate`)}>
-                  Rate Submissions
-                </Button>
+                {task.status === 'delivered' && (
+                  <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => router.push(`/e/tasks/${taskId}/rate`)}>
+                    Rate Submissions
+                  </Button>
+                )}
               </>
             )}
           </CardFooter>
