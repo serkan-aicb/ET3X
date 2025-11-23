@@ -51,6 +51,7 @@ CREATE TABLE task_requests (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   task UUID REFERENCES tasks(id) ON DELETE CASCADE,
   applicant UUID REFERENCES profiles(id) ON DELETE CASCADE,
+  applicant_username TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   status request_status DEFAULT 'requested'
 );
@@ -60,6 +61,7 @@ CREATE TABLE task_assignments (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   task UUID REFERENCES tasks(id) ON DELETE CASCADE,
   assignee UUID REFERENCES profiles(id) ON DELETE CASCADE,
+  assignee_username TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
