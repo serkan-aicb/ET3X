@@ -66,14 +66,40 @@ export default function StudentMyTasks() {
           
           // Get tasks with these IDs and relevant statuses
           console.log("Fetching tasks with statuses ['assigned', 'delivered', 'rated']");
+          // Temporarily remove the status filter to debug
           const { data: tasksData, error: tasksError } = await supabase
+            .from('tasks')
+            .select('*')
+            .in('id', taskIds)
+            // .in('status', ['assigned', 'delivered', 'rated'])  // Temporarily commented out for debugging
+            .order('created_at', { ascending: false });
+          
+          console.log("Tasks data (without status filter):", { tasksData, tasksError });
+          
+          // Log the actual status of each task for debugging
+          if (tasksData) {
+            tasksData.forEach(task => {
+              console.log(`Task ${task.id} has status: ${task.status}`);
+            });
+          }
+          
+          // Additional debugging - let's also fetch with the status filter to see the difference
+          const { data: tasksDataWithStatus, error: tasksErrorWithStatus } = await supabase
             .from('tasks')
             .select('*')
             .in('id', taskIds)
             .in('status', ['assigned', 'delivered', 'rated'])
             .order('created_at', { ascending: false });
           
-          console.log("Tasks data:", { tasksData, tasksError });
+          console.log("Tasks data (with status filter):", { tasksDataWithStatus, tasksErrorWithStatus });
+          
+          // Check if RLS is the issue by trying to bypass it (this is just for debugging)
+          // We'll fetch all tasks to see if the tasks exist at all
+          const { data: allTasksData, error: allTasksError } = await supabase
+            .from('tasks')
+            .select('*');
+          
+          console.log("All tasks in database:", { allTasksData, allTasksError });
           
           if (!tasksError && tasksData && isMounted) {
             console.log("Setting tasks:", tasksData.length);
