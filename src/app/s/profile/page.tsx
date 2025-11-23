@@ -15,10 +15,19 @@ type Rating = Tables<'ratings'> & {
     title: string;
   } | null;
 };
+type Skill = Tables<'skills'>;
+type SkillRating = {
+  skillId: number;
+  skillValue: number;
+  taskId: string;
+  taskTitle: string;
+  createdAt: string;
+};
 
 export default function StudentProfile() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [ratings, setRatings] = useState<Rating[]>([]);
+  const [skillRatings, setSkillRatings] = useState<SkillRating[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
@@ -48,8 +57,23 @@ export default function StudentProfile() {
       
       setProfile(profileData);
       
-      // Get ratings
+      // Get last 5 task ratings
       const { data: ratingsData, error: ratingsError } = await supabase
+        .from('ratings')
+        .select(`
+          *,
+          tasks(title)
+        `)
+        .eq('rated_user', user.id)
+        .order('created_at', { ascending: false })
+        .limit(5);
+      
+      if (!ratingsError && ratingsData) {
+        setRatings(ratingsData);
+      }
+      
+      // Get individual skill ratings for all ratings (to calculate average and show last 5)
+      const { data: allRatings, error: allRatingsError } = await supabase
         .from('ratings')
         .select(`
           *,
@@ -58,8 +82,28 @@ export default function StudentProfile() {
         .eq('rated_user', user.id)
         .order('created_at', { ascending: false });
       
-      if (!ratingsError && ratingsData) {
-        setRatings(ratingsData);
+      if (!allRatingsError && allRatings) {
+        // Extract individual skill ratings
+        const individualSkillRatings: SkillRating[] = [];
+        allRatings.forEach(rating => {
+          if (rating.skills) {
+            Object.entries(rating.skills).forEach(([skillId, skillValue]) => {
+              individualSkillRatings.push({
+                skillId: parseInt(skillId),
+                skillValue: typeof skillValue === 'number' ? skillValue : 0,
+                taskId: rating.task,
+                taskTitle: rating.tasks?.title || "Unknown Task",
+                createdAt: rating.created_at
+              });
+            });
+          }
+        });
+        
+        // Sort by date and take last 5
+        individualSkillRatings.sort((a, b) => 
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+        setSkillRatings(individualSkillRatings.slice(0, 5));
       }
       
       setLoading(false);
@@ -67,6 +111,28 @@ export default function StudentProfile() {
     
     fetchData();
   }, [router]);
+
+  // Calculate average skill rating and total XP
+  const ratingStats = ratings.reduce((acc, rating) => {
+    // For average rating, we need to calculate the average of all individual skill ratings
+    if (rating.skills) {
+      const skillValues = Object.values(rating.skills);
+      if (skillValues.length > 0) {
+        const ratingAvg = skillValues.reduce((sum, val) => sum + (typeof val === 'number' ? val : 0), 0) / skillValues.length;
+        acc.totalRatings += skillValues.length;
+        acc.sumOfRatings += ratingAvg * skillValues.length;
+      }
+    }
+    
+    // Add XP
+    acc.totalXP += rating.xp || 0;
+    
+    return acc;
+  }, { totalRatings: 0, sumOfRatings: 0, totalXP: 0 });
+
+  const averageSkillRating = ratingStats.totalRatings > 0 
+    ? (ratingStats.sumOfRatings / ratingStats.totalRatings).toFixed(1) 
+    : "0.0";
 
   if (loading) {
     return (
@@ -205,16 +271,32 @@ export default function StudentProfile() {
                   <h3 className="text-sm font-medium text-gray-500">Role</h3>
                   <p className="font-medium capitalize">{profile?.role}</p>
                 </div>
+                
+                {/* Stats Section */}
+                <div className="pt-4 border-t">
+                  <h3 className="text-sm font-medium text-gray-500 mb-2">Statistics</h3>
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Average Rating</span>
+                      <span className="font-medium">{averageSkillRating}/5</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Total XP</span>
+                      <span className="font-medium">{ratingStats.totalXP}</span>
+                    </div>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </div>
           
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 space-y-6">
+            {/* Last 5 Task Ratings */}
             <Card className="shadow-lg rounded-xl overflow-hidden">
               <CardHeader className="bg-gray-50">
-                <CardTitle className="text-gray-800">Task Ratings</CardTitle>
+                <CardTitle className="text-gray-800">Recent Task Ratings</CardTitle>
                 <CardDescription className="text-gray-600">
-                  Ratings for tasks you{`'`}ve completed
+                  Your most recent task ratings
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -253,6 +335,44 @@ export default function StudentProfile() {
                               View on IPFS
                             </Button>
                           )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+            
+            {/* Last 5 Individual Skill Ratings */}
+            <Card className="shadow-lg rounded-xl overflow-hidden">
+              <CardHeader className="bg-gray-50">
+                <CardTitle className="text-gray-800">Recent Skill Ratings</CardTitle>
+                <CardDescription className="text-gray-600">
+                  Your most recent individual skill ratings
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {skillRatings.length === 0 ? (
+                  <p className="text-gray-600 text-center py-4">
+                    No skill ratings available yet.
+                  </p>
+                ) : (
+                  <div className="space-y-4">
+                    {skillRatings.map((skillRating, index) => (
+                      <div key={index} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                        <div>
+                          <h3 className="font-medium text-gray-900">
+                            Skill #{skillRating.skillId}
+                          </h3>
+                          <p className="text-sm text-gray-500">
+                            {skillRating.taskTitle} • {new Date(skillRating.createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <div className="flex items-center space-x-4">
+                          <div>
+                            <p className="text-sm text-gray-500">Rating</p>
+                            <p className="font-medium">{skillRating.skillValue}/5</p>
+                          </div>
                         </div>
                       </div>
                     ))}

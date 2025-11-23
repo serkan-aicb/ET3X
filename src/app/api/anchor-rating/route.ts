@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-// import { pinJSONToIPFS } from '@/lib/pinata/client';
 
 export async function POST(request: Request) {
   try {
@@ -22,18 +21,17 @@ export async function POST(request: Request) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${pinataJWT}`
+        'Authorization': `Bearer ${pinataJWT}`,
       },
-      body: JSON.stringify(ratingPayload)
+      body: JSON.stringify(ratingPayload),
     });
     
+    // Log the full Pinata response body on non-200 responses for debugging
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Pinata API error:', response.status, errorText);
-      return NextResponse.json(
-        { error: `Pinata API error: ${response.status}` }, 
-        { status: response.status }
-      );
+      console.error('Pinata API error:', response.status, response.statusText, errorText);
+      // Don't throw in the client: log a warning, return { cid: null } and continue
+      return NextResponse.json({ cid: null });
     }
     
     // Return the Pinata response JSON (CID etc.)
@@ -42,9 +40,7 @@ export async function POST(request: Request) {
     
   } catch (error) {
     console.error('Error anchoring rating:', error);
-    return NextResponse.json(
-      { error: (error as Error).message || 'Internal server error' }, 
-      { status: 500 }
-    );
+    // Don't throw in the client: log a warning, return { cid: null } and continue
+    return NextResponse.json({ cid: null });
   }
 }

@@ -1,6 +1,6 @@
 // Pinata client for IPFS integration
 
-export async function pinJSONToIPFS(jsonData: Record<string, unknown>): Promise<string> {
+export async function pinJSONToIPFS(jsonData: Record<string, unknown>): Promise<string | null> {
   try {
     const response = await fetch('/api/anchor-rating', {
       method: 'POST',
@@ -10,12 +10,19 @@ export async function pinJSONToIPFS(jsonData: Record<string, unknown>): Promise<
       body: JSON.stringify(jsonData),
     });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || `Pinata API error: ${response.status}`);
+    const data = await response.json();
+    
+    // If we get a cid: null response, it means Pinata failed but we should continue
+    if (data.cid === null) {
+      console.warn('Warning: Failed to pin rating to IPFS, continuing without CID');
+      return null;
+    }
+    
+    // If there's an error field, throw an error
+    if (data.error) {
+      throw new Error(data.error);
     }
 
-    const data = await response.json();
     return data.IpfsHash;
   } catch (error) {
     console.error('Error pinning JSON to IPFS:', error);

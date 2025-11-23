@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -32,6 +33,7 @@ export function RatingForm({
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState("");
+  const router = useRouter();
 
   const handleRatingChange = (studentId: string, skillId: number, value: number) => {
     setRatings(prev => ({
@@ -140,46 +142,59 @@ export function RatingForm({
               };
               
               // Pin rating to IPFS
-              let cid: string | null = null;
               try {
-                cid = await pinJSONToIPFS(ratingDocument);
+                const cid = await pinJSONToIPFS(ratingDocument);
                 console.log('Rating pinned to IPFS with CID:', cid);
                 
-                // Update rating with CID
+                // Update rating with CID if we got one
+                if (cid) {
+                  await supabase
+                    .from('ratings')
+                    .update({ cid: cid })
+                    .eq('id', ratingData.id);
+                }
+                
+                // Simulate blockchain anchoring
+                // Instead of calling anchorRating, we'll just log the simulation
+                console.log('SIMULATION: Would anchor rating to blockchain with:', {
+                  cid: cid,
+                  taskId: taskId,
+                  studentDID: studentProfile.did,
+                  educatorDID: educatorProfile.did
+                });
+                
+                // In a real implementation, this would be:
+                // const txHash = await anchorRating(
+                //   cid,
+                //   taskId,
+                //   studentProfile.did,
+                //   educatorProfile.did
+                // );
+                
+                // For simulation, we'll use a fake transaction hash
+                const txHash = "0xSIMULATED_TRANSACTION_HASH";
+                
+                // Update rating with simulated transaction hash
                 await supabase
                   .from('ratings')
-                  .update({ cid: cid })
+                  .update({ tx_hash: txHash })
                   .eq('id', ratingData.id);
               } catch (pinError) {
                 console.warn('Warning: Failed to pin rating to IPFS:', pinError);
                 // Continue with the process even if IPFS pinning fails
+                
+                // Simulate blockchain anchoring even if IPFS fails
+                console.log('SIMULATION: Would anchor rating to blockchain without CID');
+                
+                // For simulation, we'll use a fake transaction hash
+                const txHash = "0xSIMULATED_TRANSACTION_HASH";
+                
+                // Update rating with simulated transaction hash
+                await supabase
+                  .from('ratings')
+                  .update({ tx_hash: txHash })
+                  .eq('id', ratingData.id);
               }
-              
-              // Simulate blockchain anchoring
-              // Instead of calling anchorRating, we'll just log the simulation
-              console.log('SIMULATION: Would anchor rating to blockchain with:', {
-                cid: cid,
-                taskId: taskId,
-                studentDID: studentProfile.did,
-                educatorDID: educatorProfile.did
-              });
-              
-              // In a real implementation, this would be:
-              // const txHash = await anchorRating(
-              //   cid,
-              //   taskId,
-              //   studentProfile.did,
-              //   educatorProfile.did
-              // );
-              
-              // For simulation, we'll use a fake transaction hash
-              const txHash = "0xSIMULATED_TRANSACTION_HASH";
-              
-              // Update rating with simulated transaction hash
-              await supabase
-                .from('ratings')
-                .update({ tx_hash: txHash })
-                .eq('id', ratingData.id);
             }
           } catch (anchorError) {
             console.error('Error anchoring rating:', anchorError);
@@ -195,6 +210,11 @@ export function RatingForm({
         .from('tasks')
         .update({ status: 'rated' })
         .eq('id', taskId);
+      
+      // Redirect back to the educator dashboard after successful submission
+      setTimeout(() => {
+        router.push("/e/dashboard");
+      }, 1000);
     } catch (error: unknown) {
       if (error instanceof Error) {
         setMessage(`Error: ${error.message}`);
