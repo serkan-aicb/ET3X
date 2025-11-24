@@ -16,7 +16,14 @@ type Rating = Tables<'ratings'> & {
   } | null;
 };
 type Skill = Tables<'skills'>;
-type SkillRating = {
+type AggregatedTaskRating = {
+  taskId: string;
+  taskTitle: string;
+  avgRating: number;
+  totalXP: number;
+  ratingCount: number;
+};
+type IndividualSkillRating = {
   skillId: number;
   skillValue: number;
   taskId: string;
@@ -26,8 +33,9 @@ type SkillRating = {
 
 export default function StudentProfile() {
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [ratings, setRatings] = useState<Rating[]>([]);
-  const [skillRatings, setSkillRatings] = useState<SkillRating[]>([]);
+  const [aggregatedTaskRatings, setAggregatedTaskRatings] = useState<AggregatedTaskRating[]>([]);
+  const [skillRatings, setSkillRatings] = useState<IndividualSkillRating[]>([]);
+  const [skills, setSkills] = useState<Skill[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
@@ -57,7 +65,16 @@ export default function StudentProfile() {
       
       setProfile(profileData);
       
-      // Get last 5 task ratings
+      // Get skills data
+      const { data: skillsData, error: skillsError } = await supabase
+        .from('skills')
+        .select('*');
+      
+      if (!skillsError && skillsData) {
+        setSkills(skillsData);
+      }
+      
+      // Get aggregated task ratings (grouped by task_id)
       const { data: ratingsData, error: ratingsError } = await supabase
         .from('ratings')
         .select(`
@@ -65,11 +82,46 @@ export default function StudentProfile() {
           tasks(title)
         `)
         .eq('rated_user', user.id)
-        .order('created_at', { ascending: false })
-        .limit(5);
+        .order('created_at', { ascending: false });
       
       if (!ratingsError && ratingsData) {
-        setRatings(ratingsData);
+        // Group ratings by task_id and calculate averages
+        const taskRatingsMap = new Map<string, {
+          taskId: string;
+          taskTitle: string;
+          ratings: number[];
+          totalXP: number;
+        }>();
+        
+        ratingsData.forEach(rating => {
+          const taskId = rating.task;
+          if (!taskRatingsMap.has(taskId)) {
+            taskRatingsMap.set(taskId, {
+              taskId,
+              taskTitle: rating.tasks?.title || "Unknown Task",
+              ratings: [],
+              totalXP: 0
+            });
+          }
+          
+          const taskEntry = taskRatingsMap.get(taskId)!;
+          taskEntry.ratings.push(rating.stars_avg);
+          taskEntry.totalXP += rating.xp;
+        });
+        
+        // Calculate averages and create final array
+        const aggregatedRatings: AggregatedTaskRating[] = Array.from(taskRatingsMap.values()).map(task => {
+          const avgRating = task.ratings.reduce((sum: number, rating: number) => sum + rating, 0) / task.ratings.length;
+          return {
+            taskId: task.taskId,
+            taskTitle: task.taskTitle,
+            avgRating: parseFloat(avgRating.toFixed(1)),
+            totalXP: task.totalXP,
+            ratingCount: task.ratings.length
+          };
+        });
+        
+        setAggregatedTaskRatings(aggregatedRatings.slice(0, 5)); // Show only last 5
       }
       
       // Get individual skill ratings for all ratings (to calculate average and show last 5)
@@ -84,7 +136,7 @@ export default function StudentProfile() {
       
       if (!allRatingsError && allRatings) {
         // Extract individual skill ratings
-        const individualSkillRatings: SkillRating[] = [];
+        const individualSkillRatings: IndividualSkillRating[] = [];
         allRatings.forEach(rating => {
           if (rating.skills) {
             Object.entries(rating.skills).forEach(([skillId, skillValue]) => {
@@ -113,26 +165,22 @@ export default function StudentProfile() {
   }, [router]);
 
   // Calculate average skill rating and total XP
-  const ratingStats = ratings.reduce((acc, rating) => {
-    // For average rating, we need to calculate the average of all individual skill ratings
-    if (rating.skills) {
-      const skillValues = Object.values(rating.skills);
-      if (skillValues.length > 0) {
-        const ratingAvg = skillValues.reduce((sum, val) => sum + (typeof val === 'number' ? val : 0), 0) / skillValues.length;
-        acc.totalRatings += skillValues.length;
-        acc.sumOfRatings += ratingAvg * skillValues.length;
-      }
-    }
-    
-    // Add XP
-    acc.totalXP += rating.xp || 0;
-    
+  const ratingStats = aggregatedTaskRatings.reduce((acc, taskRating) => {
+    acc.totalRatings += taskRating.ratingCount;
+    acc.sumOfRatings += taskRating.avgRating * taskRating.ratingCount;
+    acc.totalXP += taskRating.totalXP;
     return acc;
   }, { totalRatings: 0, sumOfRatings: 0, totalXP: 0 });
 
   const averageSkillRating = ratingStats.totalRatings > 0 
     ? (ratingStats.sumOfRatings / ratingStats.totalRatings).toFixed(1) 
     : "0.0";
+
+  // Get skill name by ID
+  const getSkillName = (skillId: number) => {
+    const skill = skills.find(s => s.id === skillId);
+    return skill ? skill.label : `Skill #${skillId}`;
+  };
 
   if (loading) {
     return (
@@ -291,50 +339,40 @@ export default function StudentProfile() {
           </div>
           
           <div className="lg:col-span-2 space-y-6">
-            {/* Last 5 Task Ratings */}
+            {/* Aggregated Task Ratings */}
             <Card className="shadow-lg rounded-xl overflow-hidden">
               <CardHeader className="bg-gray-50">
-                <CardTitle className="text-gray-800">Recent Task Ratings</CardTitle>
+                <CardTitle className="text-gray-800">Task Performance</CardTitle>
                 <CardDescription className="text-gray-600">
-                  Your most recent task ratings
+                  Your performance across different tasks
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                {ratings.length === 0 ? (
+                {aggregatedTaskRatings.length === 0 ? (
                   <p className="text-gray-600 text-center py-4">
                     You haven{`'`}t received any ratings yet.
                   </p>
                 ) : (
                   <div className="space-y-4">
-                    {ratings.map((rating) => (
-                      <div key={rating.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                    {aggregatedTaskRatings.map((taskRating) => (
+                      <div key={taskRating.taskId} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
                         <div>
                           <h3 className="font-medium text-gray-900">
-                            {rating.tasks?.title || "Task Title"}
+                            {taskRating.taskTitle}
                           </h3>
                           <p className="text-sm text-gray-500">
-                            {new Date(rating.created_at).toLocaleDateString()}
+                            {taskRating.ratingCount} rating{taskRating.ratingCount !== 1 ? 's' : ''}
                           </p>
                         </div>
                         <div className="flex items-center space-x-4">
                           <div>
                             <p className="text-sm text-gray-500">Average</p>
-                            <p className="font-medium">{rating.stars_avg.toFixed(1)}/5</p>
+                            <p className="font-medium">{taskRating.avgRating}/5</p>
                           </div>
                           <div>
                             <p className="text-sm text-gray-500">XP</p>
-                            <p className="font-medium">{rating.xp}</p>
+                            <p className="font-medium">{taskRating.totalXP}</p>
                           </div>
-                          {rating.cid && (
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              className="border-blue-600 text-blue-600 hover:bg-blue-50"
-                              onClick={() => window.open(`https://ipfs.io/ipfs/${rating.cid}`, '_blank')}
-                            >
-                              View on IPFS
-                            </Button>
-                          )}
                         </div>
                       </div>
                     ))}
@@ -362,7 +400,7 @@ export default function StudentProfile() {
                       <div key={index} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
                         <div>
                           <h3 className="font-medium text-gray-900">
-                            Skill #{skillRating.skillId}
+                            {getSkillName(skillRating.skillId)}
                           </h3>
                           <p className="text-sm text-gray-500">
                             {skillRating.taskTitle} • {new Date(skillRating.createdAt).toLocaleDateString()}

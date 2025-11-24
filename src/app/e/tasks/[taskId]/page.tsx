@@ -222,7 +222,7 @@ export default function EducatorTaskDetail() {
                 profiles!task_requests_applicant_fkey(username, did)
               `)
               .eq('task', taskId)
-              .eq('status', 'requested')
+              .eq('status', 'requested') // Only show pending requests
               .order('created_at', { ascending: true });
             
             console.log("Requests data:", { requestsData, requestsError });
@@ -513,8 +513,6 @@ export default function EducatorTaskDetail() {
         : [...prev, applicantId]
     );
   };
-
-
 
 const handleAssignTask = async (applicantId: string) => {
   const supabase = createClient();
@@ -1306,13 +1304,11 @@ const handleUnassignTask = async (assigneeId: string) => {
     }
   };
 
-
-
 const handleDeclineRequest = async (applicantId: string) => {
   const supabase = createClient();
   
   try {
-    // Update request status
+    // Update request status to 'declined'
     const { error } = await supabase
       .from('task_requests')
       .update({ status: 'declined' })
