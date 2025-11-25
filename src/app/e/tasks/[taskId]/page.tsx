@@ -134,17 +134,35 @@ export default function EducatorTaskDetail() {
         }
 
         // Fetch requests (only pending requests)
-        const { data: requestsData } = await supabase
+        const { data: requestsData, error: requestsError } = await supabase
           .from('task_requests')
           .select(`
             *,
             profiles!task_requests_applicant_fkey(username, did)
           `)
           .eq('task', taskId)
-          .eq('status', 'pending') // correct status value
-          .order('created_at', { ascending: true });
+          .eq('status', 'pending');
 
-        const requestsWithProfiles: Request[] = (requestsData || []).map((r) => {
+        // Handle enum errors for requests
+        let finalRequestsData = requestsData;
+        if (requestsError && requestsError.code === '22P02' && requestsError.message.includes('invalid input value for enum')) {
+          console.warn("Enum error encountered in educator task requests, trying alternative query method");
+          // Try querying without the enum filter and filter in memory
+          const { data: allRequestsData, error: allRequestsError } = await supabase
+            .from('task_requests')
+            .select(`
+              *,
+              profiles!task_requests_applicant_fkey(username, did)
+            `)
+            .eq('task', taskId);
+          
+          if (!allRequestsError) {
+            // Filter in memory for pending status
+            finalRequestsData = allRequestsData?.filter(req => req.status === 'pending') || [];
+          }
+        }
+
+        const requestsWithProfiles: Request[] = (finalRequestsData || []).map((r) => {
           // if join provided profiles use it, otherwise leave null (we handle fetching later if needed)
           return r;
         });
@@ -200,7 +218,7 @@ export default function EducatorTaskDetail() {
 
       setAssignments(currentAssignments || []);
 
-      const { data: requestsData } = await supabase
+      const { data: requestsData, error: requestsError } = await supabase
         .from('task_requests')
         .select(`
           *,
@@ -209,7 +227,26 @@ export default function EducatorTaskDetail() {
         .eq('task', taskId)
         .eq('status', 'pending');
 
-      setRequests(requestsData || []);
+      // Handle enum errors for requests
+      let finalRequestsData = requestsData;
+      if (requestsError && requestsError.code === '22P02' && requestsError.message.includes('invalid input value for enum')) {
+        console.warn("Enum error encountered in educator task requests (verify), trying alternative query method");
+        // Try querying without the enum filter and filter in memory
+        const { data: allRequestsData, error: allRequestsError } = await supabase
+          .from('task_requests')
+          .select(`
+            *,
+            profiles!task_requests_applicant_fkey(username, did)
+          `)
+          .eq('task', taskId);
+        
+        if (!allRequestsError) {
+          // Filter in memory for pending status
+          finalRequestsData = allRequestsData?.filter(req => req.status === 'pending') || [];
+        }
+      }
+
+      setRequests(finalRequestsData || []);
 
       const { data: submissionsData } = await supabase
         .from('submissions')
@@ -487,7 +524,7 @@ export default function EducatorTaskDetail() {
     try {
       const { error } = await supabase
         .from('task_requests')
-        .update({ status: 'approved' })
+        .update({ status: 'accepted' })
         .eq('task', taskId)
         .eq('id', requestId);
 
@@ -514,7 +551,7 @@ export default function EducatorTaskDetail() {
     try {
       const { error } = await supabase
         .from('task_requests')
-        .update({ status: 'rejected' })
+        .update({ status: 'declined' })
         .eq('task', taskId)
         .eq('id', requestId);
 

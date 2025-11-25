@@ -114,11 +114,38 @@ export default function StudentTasks() {
             .select('id')
             .eq('task', task.id)
             .eq('applicant', user.id)
-            .in('status', ['pending', 'accepted']);
+            // Handle the case where the enum values might be different in the database
+            .or('status.eq.pending,status.eq.accepted');
           
           if (requestError) {
-            console.error("Error checking requests:", requestError);
-            continue;
+            // If we get an enum error, try a more general query
+            if (requestError.code === '22P02' && requestError.message.includes('invalid input value for enum')) {
+              console.warn("Enum error encountered, trying alternative query method");
+              // Try querying without the enum filter and filter in memory
+              const { data: allRequestData, error: allRequestError } = await supabase
+                .from('task_requests')
+                .select('id, status')
+                .eq('task', task.id)
+                .eq('applicant', user.id);
+              
+              if (allRequestError) {
+                console.error("Error checking requests (fallback):", allRequestError);
+                continue;
+              }
+              
+              // Filter in memory for pending or accepted status
+              const filteredRequests = allRequestData?.filter(req => 
+                req.status === 'pending' || req.status === 'accepted'
+              ) || [];
+              
+              if (filteredRequests.length > 0) {
+                console.log("Student already has request for task (fallback):", task.id);
+                continue;
+              }
+            } else {
+              console.error("Error checking requests:", requestError);
+              continue;
+            }
           }
           
           // If student already has a pending or accepted request, skip this task
