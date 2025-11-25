@@ -86,7 +86,6 @@ export function RatingForm({
         const { starsAvg, xp } = computeXP({
           scores: skillScores,
           level: (task.skill_level as Level) || "Novice",
-          seats: task.seats || 1,
           submittedAt: new Date(),
           dueAt: task.due_date ? new Date(task.due_date) : null
         });
