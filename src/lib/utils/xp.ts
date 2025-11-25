@@ -6,7 +6,6 @@ const STAR_MULT = 30;                   // per average star
 const LEVEL_MULT: Record<Level, number> = {
   Novice: 1.0, Skilled: 1.2, Expert: 1.5, Master: 1.8
 };
-const GROUP_DAMP_MAX = 0.40;            // max dampening for big groups
 const ON_TIME_BONUS = 1.10;             // submitted on/before due date
 const XP_MIN_MAX = [25, 600] as const;  // clamp
 
@@ -19,16 +18,13 @@ export function computeStarsAvg(scores: SkillScore[]): number {
 export function computeXP(opts: {
   scores: SkillScore[];
   level: Level;
-  seats: number;            // number of participants in the task
+  // Removed seats parameter as group dampening is no longer needed
   submittedAt: Date;
   dueAt?: Date | null;
 }) {
   const starsAvg = computeStarsAvg(opts.scores);
 
-  // Group dampening: −5% per extra member, capped at 40%
-  const damp = Math.min(GROUP_DAMP_MAX, Math.max(0, (opts.seats - 1) * 0.05));
-  const groupFactor = 1 - damp;
-
+  // Removed group dampening logic since task_mode handles this differently
   const onTime =
     opts.dueAt ? opts.submittedAt.getTime() <= opts.dueAt.getTime() : true;
 
@@ -36,7 +32,7 @@ export function computeXP(opts: {
     BASE_XP +
     STAR_MULT * starsAvg;                      // core
   xp *= LEVEL_MULT[opts.level];                // difficulty
-  xp *= groupFactor;                           // group damp
+  // Removed group dampening factor
   if (onTime) xp *= ON_TIME_BONUS;             // timeliness
 
   // clamp + integerize

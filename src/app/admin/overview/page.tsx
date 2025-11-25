@@ -33,30 +33,30 @@ export default function AdminOverview() {
     const fetchData = async () => {
       const supabase = createClient();
       
-      // Get task statistics
+      // Fetch task statistics
       const { count: totalTasks } = await supabase
         .from('tasks')
         .select('*', { count: 'exact', head: true });
-      
+
       const { count: openTasks } = await supabase
         .from('tasks')
         .select('*', { count: 'exact', head: true })
         .eq('status', 'open');
       
-      const { count: assignedTasks } = await supabase
+      const { count: inProgressTasks } = await supabase
         .from('tasks')
         .select('*', { count: 'exact', head: true })
-        .eq('status', 'assigned');
+        .eq('status', 'in_progress');
       
-      const { count: deliveredTasks } = await supabase
+      const { count: submittedTasks } = await supabase
         .from('tasks')
         .select('*', { count: 'exact', head: true })
-        .eq('status', 'delivered');
+        .eq('status', 'submitted');
       
-      const { count: ratedTasks } = await supabase
+      const { count: gradedTasks } = await supabase
         .from('tasks')
         .select('*', { count: 'exact', head: true })
-        .eq('status', 'rated');
+        .eq('status', 'graded');
       
       // Get user statistics
       const { count: totalUsers } = await supabase
@@ -76,12 +76,12 @@ export default function AdminOverview() {
       setStats({
         totalTasks: totalTasks || 0,
         openTasks: openTasks || 0,
-        assignedTasks: assignedTasks || 0,
-        deliveredTasks: deliveredTasks || 0,
-        ratedTasks: ratedTasks || 0,
+        assignedTasks: inProgressTasks || 0,
+        deliveredTasks: submittedTasks || 0,
+        ratedTasks: gradedTasks || 0,
         totalUsers: totalUsers || 0,
         students: students || 0,
-        educators: educators || 0
+        educators: educators || 0,
       });
       
       setLoading(false);

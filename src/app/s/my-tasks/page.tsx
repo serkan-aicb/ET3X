@@ -65,12 +65,13 @@ export default function StudentMyTasks() {
           console.log("Task IDs to fetch:", taskIds);
           
           // Get tasks with these IDs and relevant statuses
-          console.log("Fetching tasks with statuses ['assigned', 'delivered', 'rated']");
+          // Updated to use new status values
+          console.log("Fetching tasks with new status values ['in_progress', 'submitted', 'graded']");
           const { data: tasksData, error: tasksError } = await supabase
             .from('tasks')
             .select('*')
             .in('id', taskIds)
-            .in('status', ['assigned', 'delivered', 'rated'])
+            .in('status', ['in_progress', 'submitted', 'graded'])
             .order('created_at', { ascending: false });
           
           console.log("Tasks data:", { tasksData, tasksError });
@@ -87,7 +88,7 @@ export default function StudentMyTasks() {
                 tasks!inner(*)
               `)
               .eq('assignee', user.id)
-              .in('tasks.status', ['assigned', 'delivered', 'rated']);
+              .in('tasks.status', ['in_progress', 'submitted', 'graded']);
             
             console.log("Alternative tasks fetch:", { alternativeTasksData, alternativeTasksError });
             
@@ -140,12 +141,14 @@ export default function StudentMyTasks() {
         return <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-800">Draft</span>;
       case 'open':
         return <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800">Open</span>;
-      case 'assigned':
-        return <span className="inline-flex items-center rounded-full bg-yellow-100 px-2.5 py-0.5 text-xs font-medium text-yellow-800">Assigned</span>;
-      case 'delivered':
-        return <span className="inline-flex items-center rounded-full bg-purple-100 px-2.5 py-0.5 text-xs font-medium text-purple-800">Delivered</span>;
-      case 'rated':
-        return <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">Rated</span>;
+      case 'in_progress':
+        return <span className="inline-flex items-center rounded-full bg-yellow-100 px-2.5 py-0.5 text-xs font-medium text-yellow-800">In Progress</span>;
+      case 'submitted':
+        return <span className="inline-flex items-center rounded-full bg-purple-100 px-2.5 py-0.5 text-xs font-medium text-purple-800">Submitted</span>;
+      case 'graded':
+        return <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">Graded</span>;
+      case 'closed':
+        return <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800">Closed</span>;
       default:
         return <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-800">{status}</span>;
     }
@@ -290,7 +293,7 @@ export default function StudentMyTasks() {
                   </div>
                 </CardContent>
                 <CardFooter>
-                  {task.status === 'assigned' && (
+                  {task.status === 'in_progress' && (
                     <Button 
                       className="w-full bg-blue-600 hover:bg-blue-700"
                       onClick={() => router.push(`/submit/${task.id}`)}
@@ -298,7 +301,7 @@ export default function StudentMyTasks() {
                       Submit Work
                     </Button>
                   )}
-                  {task.status === 'delivered' && (
+                  {task.status === 'submitted' && (
                     <Button 
                       variant="outline"
                       className="w-full border-gray-600 text-gray-600 hover:bg-gray-50"
@@ -307,7 +310,7 @@ export default function StudentMyTasks() {
                       Awaiting Rating
                     </Button>
                   )}
-                  {task.status === 'rated' && (
+                  {task.status === 'graded' && (
                     <Button 
                       variant="outline"
                       className="w-full border-blue-600 text-blue-600 hover:bg-blue-50"

@@ -400,17 +400,9 @@ export default function StudentTaskDetail() {
               </div>
               
               <div className="border rounded-lg p-4">
-                <h3 className="text-sm font-medium text-gray-500">Participants</h3>
+                <h3 className="text-sm font-medium text-gray-500">Task Type</h3>
                 <p className="mt-1">
-                  {task.seats} participant{task.seats !== 1 ? 's' : ''}
-                  {task.seats && task.seats > 1 && (
-                    <>
-                      <br />
-                      <span className="text-xs text-gray-500">
-                        Group task - Apply to join a team
-                      </span>
-                    </>
-                  )}
+                  {task.task_mode === 'single' ? 'Single Assignment' : 'Multi-Assignment'}
                 </p>
               </div>
               

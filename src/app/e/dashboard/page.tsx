@@ -21,6 +21,8 @@ export default function EducatorDashboard() {
     totalTasks: 0,
     openTasks: 0,
     assignedTasks: 0,
+    deliveredTasks: 0,
+    ratedTasks: 0,
   });
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -63,13 +65,19 @@ export default function EducatorDashboard() {
         .eq('creator', user.id);
       
       if (!tasksError && tasks) {
+        // Calculate task statistics
+        const totalTasks = tasks.length;
         const openTasks = tasks.filter(t => t.status === 'open').length;
-        const assignedTasks = tasks.filter(t => t.status === 'assigned').length;
+        const assignedTasks = tasks.filter(t => t.status === 'in_progress').length;
+        const deliveredTasks = tasks.filter(t => t.status === 'submitted').length;
+        const ratedTasks = tasks.filter(t => t.status === 'graded').length;
         
         setStats({
-          totalTasks: tasks.length,
+          totalTasks,
           openTasks,
-          assignedTasks
+          assignedTasks,
+          deliveredTasks,
+          ratedTasks,
         });
       }
       

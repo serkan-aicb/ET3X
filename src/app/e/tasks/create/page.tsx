@@ -28,7 +28,7 @@ export default function CreateTask() {
   const [seats, setSeats] = useState(1);
   const [skillLevel, setSkillLevel] = useState<"Novice" | "Skilled" | "Expert" | "Master">("Novice");
   const [license, setLicense] = useState<"CC BY 4.0" | "CC0 1.0">("CC BY 4.0");
-  // Removed recurrence state since we're removing this option
+  const [taskMode, setTaskMode] = useState<"single" | "multi">("single"); // New state for task mode
   const [skills, setSkills] = useState<number[]>([]);
   const [dueDate, setDueDate] = useState("");
   const [loading, setLoading] = useState(false);
@@ -98,7 +98,8 @@ export default function CreateTask() {
           license,
           skills,
           due_date: dueDate || null,
-          status: 'open'
+          status: 'open',
+          task_mode: taskMode // Add task_mode to the insert
         });
       
       console.log("Task creation result:", error);
@@ -223,6 +224,24 @@ export default function CreateTask() {
                     onChange={(e) => setDueDate(e.target.value)}
                     className="py-3 px-4 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                   />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label>Task Mode</Label>
+                  <Select value={taskMode} onValueChange={(value: "single" | "multi") => setTaskMode(value)}>
+                    <SelectTrigger className="py-3 px-4 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200">
+                      <SelectValue placeholder="Select task mode" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="single">Single Assignment</SelectItem>
+                      <SelectItem value="multi">Multi-Assignment</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-sm text-gray-500">
+                    {taskMode === "single" 
+                      ? "Only one student can be assigned to this task" 
+                      : "Multiple students can be assigned to this task"}
+                  </p>
                 </div>
                 
                 <div className="space-y-2">

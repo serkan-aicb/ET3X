@@ -561,34 +561,46 @@ const handleAssignTask = async (applicantId: string) => {
       return;
     }
     
-    // For group tasks, check if all seats are filled
-    if (task && task.seats && task.seats > 1) {
-      // Get current assignments for this task
+    // Get task mode
+    const { data: taskData, error: taskError } = await supabase
+      .from('tasks')
+      .select('task_mode, status')
+      .eq('id', taskId)
+      .single();
+    
+    if (taskError || !taskData) {
+      throw new Error(`Error fetching task mode: ${taskError?.message || 'Task not found'}`);
+    }
+    
+    const taskMode = taskData.task_mode || 'single';
+    
+    // For single tasks, check if someone is already assigned
+    if (taskMode === 'single') {
       const { data: currentAssignments, error: countError } = await supabase
         .from('task_assignments')
         .select('id')
         .eq('task', taskId);
-    
+      
       if (countError) {
         throw new Error(`Error checking current assignments: ${countError.message}`);
       }
-    
-      const currentCount = currentAssignments ? currentAssignments.length : 0;
-      if (currentCount >= task.seats) {
-        setMessage(`All ${task.seats} seats for this task are already filled.`);
+      
+      if (currentAssignments && currentAssignments.length > 0) {
+        setMessage("This single task already has an assigned student.");
         setTimeout(() => setMessage(""), 5000);
         return;
       }
     }
     
-    // Create task assignment using both UUID and username for compatibility
+    // Create task assignment with proper status
     console.log("Creating task assignment:", { taskId, applicantId, applicantUsername });
     const { error: assignError, data: assignmentData } = await supabase
       .from('task_assignments')
       .insert({
         task: taskId,
-        assignee: applicantId,          // MUST NOT be NULL
-        assignee_username: applicantUsername
+        assignee: applicantId,
+        assignee_username: applicantUsername,
+        status: 'in_progress' // Default status for new assignments
       })
       .select();
     
@@ -603,86 +615,36 @@ const handleAssignTask = async (applicantId: string) => {
       console.log("Created assignment:", assignmentData[0]);
     }
     
-    // Update task status to 'assigned' as soon as the first student is assigned
-    if (task) {
-      console.log("Updating task status to 'assigned':", taskId);
+    // Handle task mode-specific behavior
+    if (taskMode === 'single') {
+      // For single tasks, close the task immediately after first assignment
+      console.log("Closing single task after first assignment:", taskId);
       const { error: updateError } = await supabase
         .from('tasks')
-        .update({ status: 'assigned' })
+        .update({ status: 'closed' })
         .eq('id', taskId);
-    
+      
       console.log("Task status update result:", updateError);
-    
+      
       // Verify the task status was updated
       const { data: verifyTask, error: verifyError } = await supabase
         .from('tasks')
         .select('status')
         .eq('id', taskId)
         .single();
-    
+      
       console.log("Task status verification:", { verifyTask, verifyError });
-    }
-    
-    // For group tasks, check if all seats are filled
-    if (task && task.seats && task.seats > 1) {
-      // Get current assignments for this task
-      const { data: currentAssignments, error: countError } = await supabase
-        .from('task_assignments')
-        .select('id')
-        .eq('task', taskId);
-    
-      console.log("Current assignments for group task:", { currentAssignments, countError });
-    
-      // If all seats are filled, update task status to 'assigned'
-      if (currentAssignments && currentAssignments.length >= task.seats) {
-        const { error: updateError } = await supabase
-          .from('tasks')
-          .update({ status: 'assigned' })
-          .eq('id', taskId);
-        
-        console.log("Task status update result:", updateError);
-        
-        // Verify the task status was updated
-        const { data: verifyTask, error: verifyError } = await supabase
-          .from('tasks')
-          .select('status')
-          .eq('id', taskId)
-          .single();
-        
-        console.log("Task status verification:", { verifyTask, verifyError });
-        
-        setMessage(`Task assigned successfully to ${currentAssignments.length} students! All ${task.seats} seats filled.`);
-      } else {
-        // Task still has available seats
-        const assignedCount = currentAssignments ? currentAssignments.length : 0;
-        const remainingSeats = task.seats - assignedCount;
-        setMessage(`Task assigned successfully to ${assignedCount} students! ${remainingSeats} seats still available.`);
-      }
+      
+      setMessage("Task assigned successfully! The task is now closed.");
     } else {
-      // For individual tasks or if all seats filled, update status
-      const { error: updateError } = await supabase
-        .from('tasks')
-        .update({ status: 'assigned' })
-        .eq('id', taskId);
-      
-      console.log("Task status update result:", updateError);
-      
-      // Verify the task status was updated
-      const { data: verifyTask, error: verifyError } = await supabase
-        .from('tasks')
-        .select('status')
-        .eq('id', taskId)
-        .single();
-      
-      console.log("Task status verification:", { verifyTask, verifyError });
-      
-      setMessage("Task assigned successfully!");
+      // For multi tasks, keep the task open
+      setMessage("Task assigned successfully! The task remains open for more assignments.");
     }
      
-    // Update request status to 'selected' so it disappears from requests list
+    // Update request status to 'accepted' so it disappears from requests list
     const { error: requestError } = await supabase
       .from('task_requests')
-      .update({ status: 'selected' })
+      .update({ status: 'accepted' })
       .eq('task', taskId)
       .eq('applicant', applicantId);
     
@@ -690,7 +652,9 @@ const handleAssignTask = async (applicantId: string) => {
       console.error("Error updating request status:", requestError);
       setMessage(`Task assigned but error updating request status: ${requestError.message}`);
     } else {
-      setMessage("Task assigned successfully!");
+      setMessage(taskMode === 'single' 
+        ? "Task assigned successfully! The task is now closed." 
+        : "Task assigned successfully! The task remains open for more assignments.");
       // Remove the request from local state
       setRequests(prev => prev.filter(req => req.applicant !== applicantId));
     }
@@ -1049,130 +1013,152 @@ const handleUnassignTask = async (assigneeId: string) => {
               assignee: applicantId,
               assignee_username: username.username,
             })
-            .select();
-          
-          if (error) {
-            console.error("Error assigning task:", error);
-            setMessage(`Error assigning task to ${username.username}: ${error.message}`);
-          } else {
-            console.log("Created task assignment:", data[0]);
-          }
-        })
-      );
-      
-      console.log("Assignment results:", assignments);
-      
-      // Update task status to 'assigned' as soon as the first student is assigned
-      if (task) {
-        console.log("Updating task status to 'assigned':", taskId);
-        const { error: updateError } = await supabase
-          .from('tasks')
-          .update({ status: 'assigned' })
-          .eq('id', taskId);
-        
-        console.log("Task status update result:", updateError);
-        
-        // Verify the task status was updated
-        const { data: verifyTask, error: verifyError } = await supabase
-          .from('tasks')
-          .select('status')
-          .eq('id', taskId)
-          .single();
-        
-        console.log("Task status verification:", { verifyTask, verifyError });
-      }
-      
-      // For group tasks, check if all seats are filled
-      if (task && task.seats && task.seats > 1) {
-        // Get current assignments for this task
-        const { data: currentAssignments, error: countError } = await supabase
-          .from('task_assignments')
-          .select('id')
-          .eq('task', taskId);
-        
-        console.log("Current assignments for group task:", { currentAssignments, countError });
-        
-        // If all seats are filled, update task status to 'assigned'
-        if (currentAssignments && currentAssignments.length >= task.seats) {
-          const { error: updateError } = await supabase
-            .from('tasks')
-            .update({ status: 'assigned' })
-            .eq('id', taskId);
-          
-          console.log("Task status update result:", updateError);
-          
-          // Verify the task status was updated
-          const { data: verifyTask, error: verifyError } = await supabase
-            .from('tasks')
-            .select('status')
-            .eq('id', taskId)
-            .single();
-          
-          console.log("Task status verification:", { verifyTask, verifyError });
-          
-          setMessage(`Task assigned successfully to ${currentAssignments.length} students! All ${task.seats} seats filled.`);
-        } else {
-          // Task still has available seats
-          const assignedCount = currentAssignments ? currentAssignments.length : 0;
-          const remainingSeats = task.seats - assignedCount;
-          setMessage(`Task assigned successfully to ${assignedCount} students! ${remainingSeats} seats still available.`);
-        }
-      } else {
-        // For individual tasks or if all seats filled, update status
-        const { error: updateError } = await supabase
-          .from('tasks')
-          .update({ status: 'assigned' })
-          .eq('id', taskId);
-        
-        console.log("Task status update result:", updateError);
-        
-        // Verify the task status was updated
-        const { data: verifyTask, error: verifyError } = await supabase
-          .from('tasks')
-          .select('status')
-          .eq('id', taskId)
-          .single();
-        
-        console.log("Task status verification:", { verifyTask, verifyError });
-        
-        setMessage("Task assigned successfully!");
-      }
-       
-      // Update request status to 'selected' so it disappears from requests list
-      const { error: requestError } = await supabase
-        .from('task_requests')
-        .update({ status: 'selected' })
-        .eq('task', taskId)
-        .in('applicant', applicantIds);
-      
-      if (requestError) {
-        console.error("Error updating request status:", requestError);
-        setMessage(`Task assigned but error updating request status: ${requestError.message}`);
-      } else {
-        setMessage("Task assigned successfully!");
-      }
-      
-      console.log("Request status update result:", requestError);
-      
-      // Verify assignments after a short delay
-      setTimeout(() => {
-        verifyAssignments();
-        router.refresh();
-      }, 500);
-      
-      // Also refresh the page immediately to ensure UI updates
-      router.refresh();
-      
-      // Clear message after 5 seconds
+// Add a new function to handle group assignment
+const handleAssignGroupTask = async (applicantIds: string[]) => {
+  const supabase = createClient();
+  
+  try {
+    console.log("Assigning task to group:", { taskId, applicantIds });
+    
+    // Get current user
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      setMessage("You must be logged in to assign tasks.");
       setTimeout(() => setMessage(""), 5000);
-    } catch (error) {
-      console.error("Error assigning task:", error);
-      setMessage(`Error assigning task: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      
-      // Clear message after 5 seconds
-      setTimeout(() => setMessage(""), 5000);
+      return;
     }
-  };
+    
+    // Get task mode
+    const { data: taskData, error: taskError } = await supabase
+      .from('tasks')
+      .select('task_mode, status')
+      .eq('id', taskId)
+      .single();
+    
+    if (taskError || !taskData) {
+      throw new Error(`Error fetching task mode: ${taskError?.message || 'Task not found'}`);
+    }
+    
+    const taskMode = taskData.task_mode || 'single';
+    
+    // For single tasks, only allow one assignment
+    if (taskMode === 'single' && applicantIds.length > 1) {
+      setMessage("This is a single task. You can only assign it to one student.");
+      setTimeout(() => setMessage(""), 5000);
+      return;
+    }
+    
+    // Get usernames for all applicants
+    const usernames = await Promise.all(applicantIds.map(async (applicantId) => {
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('username')
+        .eq('id', applicantId)
+        .single();
+      
+      if (profileError || !profileData) {
+        throw new Error(`Error fetching username for applicant ${applicantId}: ${profileError?.message || 'Profile not found'}`);
+      }
+      
+      return { id: applicantId, username: profileData.username };
+    }));
+    
+    // Create task assignments with proper status
+    console.log("Creating task assignments:", { taskId, applicantIds, usernames });
+    const assignments = await Promise.all(
+      applicantIds.map(async (applicantId, index) => {
+        const username = usernames[index];
+        if (!username) {
+          console.error("Username not found for applicant ID:", applicantId);
+          setMessage(`Error assigning task: Username not found for applicant ID ${applicantId}`);
+          return;
+        }
+        console.log("Creating task assignment for:", { taskId, applicantId, username });
+        const { error, data } = await supabase
+          .from('task_assignments')
+          .insert({
+            task: taskId,
+            assignee: applicantId,
+            assignee_username: username.username,
+            status: 'in_progress' // Default status for new assignments
+          })
+          .select();
+        
+        if (error) {
+          console.error("Error assigning task:", error);
+          setMessage(`Error assigning task to ${username.username}: ${error.message}`);
+        } else {
+          console.log("Created task assignment:", data[0]);
+        }
+      })
+    );
+    
+    console.log("Assignment results:", assignments);
+    
+    // Handle task mode-specific behavior
+    if (taskMode === 'single') {
+      // For single tasks, close the task immediately after first assignment
+      console.log("Closing single task after first assignment:", taskId);
+      const { error: updateError } = await supabase
+        .from('tasks')
+        .update({ status: 'closed' })
+        .eq('id', taskId);
+      
+      console.log("Task status update result:", updateError);
+      
+      // Verify the task status was updated
+      const { data: verifyTask, error: verifyError } = await supabase
+        .from('tasks')
+        .select('status')
+        .eq('id', taskId)
+        .single();
+      
+      console.log("Task status verification:", { verifyTask, verifyError });
+      
+      setMessage("Task assigned successfully! The task is now closed.");
+    } else {
+      // For multi tasks, keep the task open
+      setMessage("Task assigned successfully! The task remains open for more assignments.");
+    }
+     
+    // Update request status to 'accepted' so it disappears from requests list
+    const { error: requestError } = await supabase
+      .from('task_requests')
+      .update({ status: 'accepted' })
+      .eq('task', taskId)
+      .in('applicant', applicantIds);
+    
+    if (requestError) {
+      console.error("Error updating request status:", requestError);
+      setMessage(`Task assigned but error updating request status: ${requestError.message}`);
+    } else {
+      setMessage(taskMode === 'single' 
+        ? "Task assigned successfully! The task is now closed." 
+        : "Task assigned successfully! The task remains open for more assignments.");
+    }
+    
+    console.log("Request status update result:", requestError);
+    
+    // Verify assignments after a short delay
+    setTimeout(() => {
+      verifyAssignments();
+      router.refresh();
+    }, 500);
+    
+    // Also refresh the page immediately to ensure UI updates
+    router.refresh();
+    
+    // Clear message after 5 seconds
+    setTimeout(() => setMessage(""), 5000);
+  } catch (error) {
+    console.error("Error assigning task:", error);
+    setMessage(`Error assigning task: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    
+    // Clear message after 5 seconds
+    setTimeout(() => setMessage(""), 5000);
+  }
+};
+};
 
   // Add a new function to handle assigning all applicants in groups of 5
   const handleAssignAllInGroups = async () => {
@@ -1183,7 +1169,7 @@ const handleUnassignTask = async (assigneeId: string) => {
       
       // Get all requested applicants
       const requestedApplicants = requests
-        .filter(req => req.status === 'requested')
+        .filter(req => req.status === 'pending')
         .map(req => req.applicant);
       
       console.log("Requested applicants:", requestedApplicants);
@@ -1690,24 +1676,15 @@ const handleDeclineRequest = async (applicantId: string) => {
               </div>
               
               <div className="border rounded-lg p-4">
-                <h3 className="text-sm font-medium text-gray-500">License</h3>
-                <p className="mt-1">{task.license || "Not specified"}</p>
+                <h3 className="text-sm font-medium text-gray-500">Task Type</h3>
+                <p className="mt-1">
+                  {task.task_mode === 'single' ? 'Single Assignment' : 'Multi-Assignment'}
+                </p>
               </div>
               
               <div className="border rounded-lg p-4">
-                <h3 className="text-sm font-medium text-gray-500">Participants</h3>
-                <p className="mt-1">
-                  {task.seats} participant{task.seats !== 1 ? 's' : ''}
-                  {task.seats && task.seats > 1 && (
-                    <>
-                      <br />
-                      <span className="text-xs text-gray-500">
-                        {/* Show assigned count */}
-                        {assignments.length > 0 ? `${assignments.length} assigned` : "0 assigned"}
-                      </span>
-                    </>
-                  )}
-                </p>
+                <h3 className="text-sm font-medium text-gray-500">License</h3>
+                <p className="mt-1">{task.license || "Not specified"}</p>
               </div>
               
               <div className="border rounded-lg p-4">
@@ -1723,8 +1700,8 @@ const handleDeclineRequest = async (applicantId: string) => {
               <span className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium ${
                 task.status === 'draft' ? 'bg-yellow-100 text-yellow-800' :
                 task.status === 'open' ? 'bg-blue-100 text-blue-800' :
-                task.status === 'assigned' ? 'bg-purple-100 text-purple-800' :
-                task.status === 'delivered' ? 'bg-green-100 text-green-800' :
+                task.status === 'closed' ? 'bg-purple-100 text-purple-800' :
+                task.status === 'submitted' ? 'bg-green-100 text-green-800' :
                 'bg-gray-100 text-gray-800'
               }`}>
                 {task.status.charAt(0).toUpperCase() + task.status.slice(1)}
@@ -1750,12 +1727,12 @@ const handleDeclineRequest = async (applicantId: string) => {
             )}
           </CardContent>
           <CardFooter className="flex justify-end space-x-2 bg-gray-50">
-            {(task.status === 'delivered' || submissions.length > 0) && (
+            {(task.status === 'submitted' || submissions.length > 0) && (
               <>
                 <Button variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-50" onClick={() => router.push(`/e/tasks/${taskId}/submissions`)}>
                   View Submissions
                 </Button>
-                {task.status === 'delivered' && (
+                {task.status === 'submitted' && (
                   <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => router.push(`/e/tasks/${taskId}/rate`)}>
                     Rate Submissions
                   </Button>
@@ -1783,7 +1760,7 @@ const handleDeclineRequest = async (applicantId: string) => {
                   {requests
                     .filter(req => {
                       console.log("Filtering request:", req);
-                      return req.status === 'requested';
+                      return req.status === 'pending';
                     })
                     .map((request) => (
                       <div key={request.id} className="flex items-center justify-between p-4 border rounded-lg">
@@ -1845,7 +1822,7 @@ const handleDeclineRequest = async (applicantId: string) => {
                   )}
                   
                   {/* Add button to assign all applicants in groups of 5 */}
-                  {requests.filter(req => req.status === 'requested').length > 5 && (
+                  {requests.filter(req => req.status === 'pending').length > 0 && (
                     <div className="pt-4">
                       <Button 
                         className="bg-purple-600 hover:bg-purple-700"
@@ -1857,7 +1834,7 @@ const handleDeclineRequest = async (applicantId: string) => {
                   )}
                   
                   {/* Show grouping suggestion */}
-                  {requests.filter(req => req.status === 'requested').length > 0 && (
+                  {requests.filter(req => req.status === 'pending').length > 0 && (
                     <div className="pt-4">
                       <p className="text-sm text-gray-600">
                         Tip: You can select multiple students and assign them as a group, or use the &quot;Assign All in Groups of 5&quot; button to automatically group all applicants.

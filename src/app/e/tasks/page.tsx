@@ -255,7 +255,7 @@ export default function EducatorTasks() {
                 </CardContent>
                 <CardFooter className="flex justify-between bg-gray-50">
                   <span className="text-sm text-gray-600">
-                    {task.seats} participant{task.seats !== 1 ? 's' : ''}
+                    {task.task_mode === 'single' ? 'Single' : 'Multi'} Assignment
                   </span>
                   <Button 
                     variant="outline" 

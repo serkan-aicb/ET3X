@@ -14,7 +14,7 @@ END $$;
 DO $$ 
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'request_status') THEN
-    CREATE TYPE request_status AS ENUM ('requested', 'declined', 'selected');
+    CREATE TYPE request_status AS ENUM ('pending', 'accepted', 'declined');
   END IF;
 END $$;
 
@@ -35,7 +35,7 @@ END $$;
 DO $$ 
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'task_status') THEN
-    CREATE TYPE task_status AS ENUM ('draft', 'open', 'assigned', 'delivered', 'rated');
+    CREATE TYPE task_status AS ENUM ('draft', 'open', 'closed', 'in_progress', 'submitted', 'graded');
   END IF;
 END $$;
 
@@ -68,6 +68,7 @@ CREATE TABLE IF NOT EXISTS tasks (
   skills INTEGER[], -- Array of skill IDs
   due_date TIMESTAMP WITH TIME ZONE,
   status task_status DEFAULT 'draft',
+  task_mode TEXT DEFAULT 'single', -- New column for task mode ('single' or 'multi')
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -76,8 +77,10 @@ CREATE TABLE IF NOT EXISTS task_requests (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   task UUID REFERENCES tasks(id) ON DELETE CASCADE,
   applicant UUID REFERENCES profiles(id) ON DELETE CASCADE,
-  status request_status DEFAULT 'requested',
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+  status request_status DEFAULT 'pending',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  applicant_username TEXT,
+  CONSTRAINT unique_task_applicant UNIQUE (task, applicant) -- Unique constraint to prevent duplicate requests
 );
 
 CREATE TABLE IF NOT EXISTS task_assignments (
@@ -86,7 +89,11 @@ CREATE TABLE IF NOT EXISTS task_assignments (
   assignee UUID REFERENCES profiles(id) ON DELETE CASCADE,
   assignee_username TEXT, -- Store username for compatibility
   assigned_by UUID REFERENCES profiles(id),
-  assigned_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+  assigned_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  status TEXT DEFAULT 'in_progress', -- New status field for assignments
+  submitted_at TIMESTAMP WITH TIME ZONE,
+  grade INTEGER,
+  CONSTRAINT unique_task_assignee UNIQUE (task, assignee) -- Unique constraint to prevent duplicate assignments
 );
 
 CREATE TABLE IF NOT EXISTS submissions (
@@ -266,6 +273,8 @@ CREATE INDEX IF NOT EXISTS idx_ratings_rater ON ratings(rater);
 CREATE INDEX IF NOT EXISTS idx_ratings_rated_user ON ratings(rated_user);
 
 -- Create function to handle new user creation
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+DROP FUNCTION IF EXISTS handle_new_user() CASCADE;
 CREATE OR REPLACE FUNCTION handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN

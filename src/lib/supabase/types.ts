@@ -194,6 +194,11 @@ export type Database = {
           assignee: string
           created_at: string
           assignee_username: string
+          assigned_by: string | null
+          assigned_at: string | null
+          status: string // New status field for assignments
+          submitted_at: string | null
+          grade: number | null
         }
         Insert: {
           id?: string
@@ -201,6 +206,11 @@ export type Database = {
           assignee: string
           created_at?: string
           assignee_username: string
+          assigned_by?: string | null
+          assigned_at?: string | null
+          status?: string // New status field for assignments
+          submitted_at?: string | null
+          grade?: number | null
         }
         Update: {
           id?: string
@@ -208,6 +218,11 @@ export type Database = {
           assignee?: string
           created_at?: string
           assignee_username?: string
+          assigned_by?: string | null
+          assigned_at?: string | null
+          status?: string // New status field for assignments
+          submitted_at?: string | null
+          grade?: number | null
         }
         Relationships: [
           {
@@ -281,6 +296,7 @@ export type Database = {
           skills: number[] | null
           due_date: string | null
           status: Database["public"]["Enums"]["task_status"]
+          task_mode: string // New column for task mode ('single' or 'multi')
           created_at: string
           updated_at: string
         }
@@ -296,6 +312,7 @@ export type Database = {
           skills?: number[] | null
           due_date?: string | null
           status?: Database["public"]["Enums"]["task_status"]
+          task_mode?: string // New column for task mode ('single' or 'multi')
           created_at?: string
           updated_at?: string
         }
@@ -311,6 +328,7 @@ export type Database = {
           skills?: number[] | null
           due_date?: string | null
           status?: Database["public"]["Enums"]["task_status"]
+          task_mode?: string // New column for task mode ('single' or 'multi')
           created_at?: string
           updated_at?: string
         }
@@ -333,9 +351,9 @@ export type Database = {
     }
     Enums: {
       license_type: "CC BY 4.0" | "CC0 1.0"
-      request_status: "requested" | "declined" | "selected"
+      request_status: "pending" | "accepted" | "declined"
       skill_level: "Novice" | "Skilled" | "Expert" | "Master"
-      task_status: "draft" | "open" | "assigned" | "delivered" | "rated"
+      task_status: "draft" | "open" | "closed" | "in_progress" | "submitted" | "graded"
       user_role: "student" | "educator" | "admin"
     }
     CompositeTypes: {

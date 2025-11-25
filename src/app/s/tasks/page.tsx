@@ -31,95 +31,172 @@ export default function StudentTasks() {
       
       console.log("Fetching available tasks for student");
       
-      // Get open tasks
-      const { data: openTasks, error: openError } = await supabase
-        .from('tasks')
-        .select('*')
-        .eq('status', 'open')
-        .order('created_at', { ascending: false });
-      
-      console.log("Open tasks:", { openTasks, openError });
-      
-      if (openError) {
-        console.error("Error fetching open tasks:", openError);
-        setLoading(false);
-        return;
-      }
-      
-      // Get assigned tasks with more than 1 seat (group tasks)
-      const { data: groupTasks, error: groupError } = await supabase
-        .from('tasks')
-        .select('*')
-        .eq('status', 'assigned')
-        .gt('seats', 1)
-        .order('created_at', { ascending: false });
-      
-      console.log("Assigned group tasks:", { groupTasks, groupError });
-      
-      if (groupError) {
-        console.error("Error fetching group tasks:", groupError);
-        setTasks(openTasks || []);
-        setLoading(false);
-        return;
-      }
-      
-      // For each assigned group task, check if it has available seats
-      const enriched = [];
-      
-      for (const t of groupTasks || []) {
-        const { data: count, error: countError } = await supabase
-          .from('task_assignments')
-          .select('id')
-          .eq('task', t.id);
-        
-        console.log("Assignments for task", t.id, ":", { count, countError });
-        
-        if (!countError && (count?.length ?? 0) < t.seats) {
-          enriched.push(t);
+      try {
+        // Get current user
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          console.log("No user logged in");
+          setLoading(false);
+          return;
         }
-      }
-      
-      console.log("Tasks with available seats:", enriched);
-      
-      // Combine open tasks with assigned group tasks that have available seats
-      const allTasks = [...(openTasks || []), ...enriched];
-      
-      // Fetch skills data for all tasks
-      if (allTasks.length > 0) {
-        // Get all unique skill IDs from all tasks
-        const allSkillIds = [...new Set(allTasks.flatMap((task: Task) => 
-          task.skills && Array.isArray(task.skills) ? task.skills : []
-        ))].filter((id): id is number => id !== undefined && id !== null);
         
-        console.log("All skill IDs to fetch:", allSkillIds);
+        console.log("Current user:", user);
         
-        if (allSkillIds.length > 0) {
-          const { data: skillsData, error: skillsError } = await supabase
-            .from('skills')
-            .select('id, label, description')
-            .in('id', allSkillIds);
+        // Get available tasks using the new logic:
+        // SELECT t.*
+        // FROM tasks t
+        // WHERE t.status = 'open'
+        //   -- Student has no assignment for this task
+        //   AND NOT EXISTS (
+        //     SELECT 1
+        //     FROM task_assignments a
+        //     WHERE a.task_id = t.id
+        //       AND a.student_id = :current_student_id
+        //   )
+        //   -- Student has no pending or accepted request
+        //   AND NOT EXISTS (
+        //     SELECT 1
+        //     FROM task_requests r
+        //     WHERE r.task_id = t.id
+        //       AND r.student_id = :current_student_id
+        //       AND r.status IN ('pending', 'accepted')
+        //   )
+        //   -- Single-task specific: no one else has been assigned
+        //   AND NOT (
+        //     t.task_mode = 'single'
+        //     AND EXISTS (
+        //       SELECT 1
+        //       FROM task_assignments a2
+        //       WHERE a2.task_id = t.id
+        //     )
+        //   );
+        
+        // First, get all open tasks
+        const { data: openTasks, error: openError } = await supabase
+          .from('tasks')
+          .select('*')
+          .eq('status', 'open')
+          .order('created_at', { ascending: false });
+        
+        console.log("Open tasks:", { openTasks, openError });
+        
+        if (openError) {
+          console.error("Error fetching open tasks:", openError);
+          setLoading(false);
+          return;
+        }
+        
+        // Filter tasks based on the new logic
+        const availableTasks = [];
+        
+        for (const task of openTasks || []) {
+          // Check if student already has an assignment for this task
+          const { data: assignmentData, error: assignmentError } = await supabase
+            .from('task_assignments')
+            .select('id')
+            .eq('task', task.id)
+            .eq('assignee', user.id);
           
-          console.log("Skills data fetch result:", { skillsData, skillsError });
+          if (assignmentError) {
+            console.error("Error checking assignments:", assignmentError);
+            continue;
+          }
           
-          if (!skillsError && skillsData) {
-            // Create a map of skill ID to skill data
-            const skillsMap: Record<number, { id: number; label: string; description: string | null }> = {};
-            skillsData.forEach((skill) => {
-              skillsMap[skill.id] = skill;
-            });
+          // If student already has an assignment, skip this task
+          if (assignmentData && assignmentData.length > 0) {
+            console.log("Student already assigned to task:", task.id);
+            continue;
+          }
+          
+          // Check if student already has a pending or accepted request for this task
+          const { data: requestData, error: requestError } = await supabase
+            .from('task_requests')
+            .select('id')
+            .eq('task', task.id)
+            .eq('applicant', user.id)
+            .in('status', ['pending', 'accepted']);
+          
+          if (requestError) {
+            console.error("Error checking requests:", requestError);
+            continue;
+          }
+          
+          // If student already has a pending or accepted request, skip this task
+          if (requestData && requestData.length > 0) {
+            console.log("Student already has request for task:", task.id);
+            continue;
+          }
+          
+          // For single tasks, check if anyone else has been assigned
+          if (task.task_mode === 'single') {
+            const { data: anyAssignmentData, error: anyAssignmentError } = await supabase
+              .from('task_assignments')
+              .select('id')
+              .eq('task', task.id);
             
-            // Add skills_data to each task
-            allTasks.forEach((task: Task) => {
-              if (task.skills && Array.isArray(task.skills)) {
-                task.skills_data = task.skills.map((skillId: number) => skillsMap[skillId]).filter(Boolean);
-              }
-            });
+            if (anyAssignmentError) {
+              console.error("Error checking any assignments:", anyAssignmentError);
+              continue;
+            }
+            
+            // If someone else is already assigned to a single task, skip this task
+            if (anyAssignmentData && anyAssignmentData.length > 0) {
+              console.log("Single task already assigned to someone else:", task.id);
+              continue;
+            }
+          }
+          
+          // If we reach here, the task is available to the student
+          availableTasks.push(task);
+        }
+        
+        console.log("Available tasks after filtering:", availableTasks);
+        
+        // Fetch skills data for available tasks
+        if (availableTasks.length > 0) {
+          // Get all unique skill IDs from available tasks
+          const allSkillIds = [...new Set(availableTasks.flatMap((task: Task) => 
+            task.skills && Array.isArray(task.skills) ? task.skills : []
+          ))].filter((id): id is number => id !== undefined && id !== null);
+          
+          console.log("All skill IDs to fetch:", allSkillIds);
+          
+          if (allSkillIds.length > 0) {
+            const { data: skillsData, error: skillsError } = await supabase
+              .from('skills')
+              .select('id, label, description')
+              .in('id', allSkillIds);
+            
+            console.log("Skills data fetch result:", { skillsData, skillsError });
+            
+            if (!skillsError && skillsData) {
+              // Create a map of skill ID to skill data
+              const skillsMap: Record<number, { id: number; label: string; description: string | null }> = {};
+              skillsData.forEach((skill) => {
+                skillsMap[skill.id] = skill;
+              });
+              
+              // Add skills_data to each task
+              availableTasks.forEach((task: Task) => {
+                if (task.skills && Array.isArray(task.skills)) {
+                  task.skills_data = task.skills.map((skillId: number) => skillsMap[skillId]).filter(Boolean);
+                }
+              });
+            }
           }
         }
+        
+        if (isMounted) {
+          setTasks(availableTasks);
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error("Error fetching tasks:", error);
+        if (isMounted) {
+          setTasks([]);
+          setLoading(false);
+        }
       }
-      
-      setTasks(allTasks);
-      setLoading(false);
     };
     
     fetchTasks();
