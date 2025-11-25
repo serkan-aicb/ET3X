@@ -253,7 +253,8 @@ export default function StudentMyTasks() {
                   </div>
                 </CardContent>
                 <CardFooter>
-                  {task.status === 'in_progress' && (
+                  {/* Allow submission for any assigned task, not just those with 'in_progress' status */}
+                  {(task.status === 'in_progress' || task.status === 'open') && (
                     <Button 
                       className="w-full bg-blue-600 hover:bg-blue-700"
                       onClick={() => router.push(`/submit/${task.id}`)}

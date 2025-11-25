@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Slider } from "@/components/ui/slider";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { createClient } from "@/lib/supabase/client";
 import { SkillScore, Level, computeXP } from "@/lib/utils/xp";
@@ -253,13 +253,22 @@ export function RatingForm({
                       {ratings[student.id]?.[skill.id] || 0}/5
                     </span>
                   </div>
-                  <Slider
+                  {/* Replace Slider with Input field for rating (1-5) */}
+                  <Input
                     id={`rating-${student.id}-${skill.id}`}
-                    min={1}
-                    max={5}
-                    step={1}
-                    value={[ratings[student.id]?.[skill.id] || 0]}
-                    onValueChange={(value: number[]) => handleRatingChange(student.id, skill.id, value[0])}
+                    type="number"
+                    min="1"
+                    max="5"
+                    value={ratings[student.id]?.[skill.id] || ""}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                      const value = e.target.value;
+                      // Validate input to ensure it's between 1-5
+                      if (value === "" || (parseInt(value) >= 1 && parseInt(value) <= 5)) {
+                        handleRatingChange(student.id, skill.id, value === "" ? 0 : parseInt(value));
+                      }
+                    }}
+                    placeholder="1-5"
+                    className="w-24"
                   />
                 </div>
               ))}
