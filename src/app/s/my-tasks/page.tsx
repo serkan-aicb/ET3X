@@ -9,11 +9,11 @@ import { createClient } from "@/lib/supabase/client";
 import { Tables } from '@/lib/supabase/types';
 import Link from "next/link";
 
-type Task = Tables<'tasks'> & {
-  task_assignments: {
-    id: string;
-  }[];
+type TaskAssignment = Tables<'task_assignments'> & {
+  tasks: Tables<'tasks'> | null;
 };
+
+type Task = Tables<'tasks'>;
 
 export default function StudentMyTasks() {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -44,7 +44,10 @@ export default function StudentMyTasks() {
         // Students can only see assignments where task_assignments.assignee = auth.uid()
         const { data: assignments, error: assignmentsError } = await supabase
           .from('task_assignments')
-          .select('task')
+          .select(`
+            *,
+            tasks(*)
+          `)
           .eq('assignee', user.id);
         
         console.log("Assignments:", { assignments, assignmentsError });
@@ -60,57 +63,14 @@ export default function StudentMyTasks() {
         console.log("Number of assignments found:", assignments?.length || 0);
         
         if (assignments && assignments.length > 0) {
-          // Extract task IDs
-          const taskIds = assignments.map(assignment => assignment.task);
-          console.log("Task IDs to fetch:", taskIds);
+          // Extract tasks from assignments - this includes all assigned tasks regardless of task status
+          const extractedTasks = assignments
+            .map(assignment => assignment.tasks)
+            .filter((task): task is Task => task !== null);
           
-          // Get tasks with these IDs and relevant statuses
-          // Updated to use new status values
-          console.log("Fetching tasks with new status values ['in_progress', 'submitted', 'graded']");
-          const { data: tasksData, error: tasksError } = await supabase
-            .from('tasks')
-            .select('*')
-            .in('id', taskIds)
-            .in('status', ['in_progress', 'submitted', 'graded'])
-            .order('created_at', { ascending: false });
-          
-          console.log("Tasks data:", { tasksData, tasksError });
-          
-          if (!tasksError && tasksData && isMounted) {
-            console.log("Setting tasks:", tasksData.length);
-            setTasks(tasksData);
-          } else if (isMounted) {
-            console.log("No tasks found or error occurred");
-            // Try a different approach - fetch using a different query structure
-            const { data: alternativeTasksData, error: alternativeTasksError } = await supabase
-              .from('task_assignments')
-              .select(`
-                tasks!inner(*)
-              `)
-              .eq('assignee', user.id)
-              .in('tasks.status', ['in_progress', 'submitted', 'graded']);
-            
-            console.log("Alternative tasks fetch:", { alternativeTasksData, alternativeTasksError });
-            
-            if (!alternativeTasksError && alternativeTasksData && isMounted) {
-              // Log the structure to understand it better
-              console.log("Alternative tasks data structure:", JSON.stringify(alternativeTasksData, null, 2));
-              
-              // Extract tasks from the joined result - simplified approach
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              const extractedTasks: any[] = [];
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              alternativeTasksData.forEach((item: any) => {
-                if (item.tasks) {
-                  extractedTasks.push(item.tasks);
-                }
-              });
-              console.log("Setting tasks from alternative query:", extractedTasks.length);
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              setTasks(extractedTasks as any);
-            } else {
-              setTasks([]);
-            }
+          console.log("Setting tasks from assignments:", extractedTasks.length);
+          if (isMounted) {
+            setTasks(extractedTasks);
           }
         } else if (isMounted) {
           console.log("No assignments found for user");
