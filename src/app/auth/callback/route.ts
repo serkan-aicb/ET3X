@@ -32,9 +32,15 @@ export async function GET(request: Request) {
         .from('profiles')
         .select('id, role')
         .eq('id', data.user.id)
-        .single()
+        .maybeSingle() // Use maybeSingle instead of single to avoid errors when no record exists
       
-      if (profileError || !profile) {
+      if (profileError) {
+        console.error('Error checking for existing profile:', profileError)
+        return NextResponse.redirect(new URL('/?error=profile_check_failed', request.url))
+      }
+      
+      // Only create profile if it doesn't exist
+      if (!profile) {
         console.log('Creating new profile for user:', data.user.id)
         console.log('User data:', data.user)
         // Create profile for new user
@@ -90,6 +96,8 @@ export async function GET(request: Request) {
           return NextResponse.redirect(new URL('/?error=profile_creation_failed', request.url))
         }
         console.log('Profile created successfully for user:', data.user.id)
+      } else {
+        console.log('User profile already exists:', data.user.id)
       }
       
       // Redirect based on role
