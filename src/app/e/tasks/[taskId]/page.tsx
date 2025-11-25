@@ -44,834 +44,466 @@ export default function EducatorTaskDetail() {
   const taskId = params.taskId as string;
 
   useEffect(() => {
-    console.log("TaskDetail component mounted with taskId:", taskId);
-    console.log("TaskId type:", typeof taskId);
-    console.log("TaskId length:", taskId ? taskId.length : 0);
-    
-    // Add a safety check to prevent infinite loops
     let isMounted = true;
-    let localErrorMessage = "";
-    
+    const supabase = createClient();
+
     const fetchData = async () => {
-      const supabase = createClient();
-      
-      console.log("Fetching task details for:", taskId);
-      
       if (!taskId) {
-        console.log("No task ID provided");
-        localErrorMessage = "No task ID provided";
         if (isMounted) {
-          setTask(null);
-          setErrorMessage(localErrorMessage);
+          setErrorMessage("No task ID provided");
           setLoading(false);
         }
         return;
       }
-      
-      // Validate taskId format
-      if (taskId && taskId.length !== 36) {
-        console.log("Invalid task ID format");
-        localErrorMessage = "Invalid task ID format";
-        if (isMounted) {
-          setTask(null);
-          setErrorMessage(localErrorMessage);
-          setLoading(false);
-        }
-        return;
-      }
-      
+
       try {
-        // Get current user
-        const { data: { user }, error: userError } = await supabase.auth.getUser();
-        if (userError || !user) {
-          console.log("No user logged in");
-          console.log("User error:", userError);
-          localErrorMessage = "You must be logged in to view this page.";
+        const { data: userData, error: userErr } = await supabase.auth.getUser();
+        const user = userData?.user ?? null;
+        if (userErr || !user) {
           if (isMounted) {
-            setTask(null);
-            setErrorMessage(localErrorMessage);
+            setErrorMessage("You must be logged in to view this page.");
             setLoading(false);
           }
           return;
         }
-        
-        console.log("Current user:", user);
-        console.log("User ID:", user.id);
-        console.log("User role:", user.role);
-        
-        // Check if user has educator role
+
+        // Check educator role
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('role')
           .eq('id', user.id)
           .single();
-        
-        console.log("User profile data:", { profileData, profileError });
-        
+
         if (profileError || !profileData) {
-          console.log("Error fetching user profile");
-          localErrorMessage = "Error fetching user profile.";
           if (isMounted) {
-            setTask(null);
-            setErrorMessage(localErrorMessage);
+            setErrorMessage("Error fetching user profile.");
             setLoading(false);
           }
           return;
         }
-        
         if (profileData.role !== 'educator') {
-          console.log("User is not an educator");
-          localErrorMessage = "You must be an educator to view this page.";
           if (isMounted) {
-            setTask(null);
-            setErrorMessage(localErrorMessage);
+            setErrorMessage("You must be an educator to view this page.");
             setLoading(false);
           }
           return;
         }
-        
-        // Educators must always fetch their own tasks
-        console.log("Fetching task with filters:", { taskId, userId: user.id });
-        const { data: taskData, error } = await supabase
+
+        // Fetch task (prefer only educator's own tasks)
+        const { data: taskData, error: taskError } = await supabase
           .from('tasks')
-          .select(`
-            *
-          `)
+          .select('*')
           .eq('id', taskId)
-          .eq('creator', user.id)  // This ensures educators can only view their own tasks
+          .eq('creator', user.id)
           .single();
-        
-        console.log("Task fetch result:", { taskData, error });
-        if (taskData) {
-          console.log("Task creator:", taskData.creator);
-          console.log("User ID:", user.id);
-          console.log("IDs match:", taskData.creator === user.id);
+
+        const finalTask = taskData;
+        if (!finalTask) {
+          // try without creator filter to give clearer message if it exists
+          const { data: anyTaskData } = await supabase
+            .from('tasks')
+            .select('*')
+            .eq('id', taskId)
+            .single();
+          if (anyTaskData) {
+            setErrorMessage("You don't have permission to view this task. This task belongs to another educator.");
+            setTask(null);
+            setLoading(false);
+            return;
+          } else {
+            setErrorMessage("Task not found.");
+            setTask(null);
+            setLoading(false);
+            return;
+          }
         }
-        
-        // If we successfully fetched the task, also fetch the skills data separately
-        if (taskData && taskData.skills && Array.isArray(taskData.skills) && taskData.skills.length > 0) {
-          console.log("Fetching skills data for skill IDs:", taskData.skills);
-          const { data: skillsData, error: skillsError } = await supabase
+
+        // If task has skills, fetch skill details
+        if (finalTask.skills && Array.isArray(finalTask.skills) && finalTask.skills.length > 0) {
+          const { data: skillsData } = await supabase
             .from('skills')
             .select('id, label, description')
-            .in('id', taskData.skills);
-          
-          console.log("Skills data fetch result:", { skillsData, skillsError });
-          
-          if (!skillsError && skillsData) {
-            taskData.skills_data = skillsData;
+            .in('id', finalTask.skills);
+          if (skillsData) {
+            finalTask.skills_data = skillsData;
           }
         }
-        
+
         if (isMounted) {
-          if (error) {
-            console.error("Error fetching task:", error);
-            localErrorMessage = `Error fetching task: ${error.message || 'Unknown error'}`;
-            // Show error in UI instead of redirecting
-            setTask(null);
-            setErrorMessage(localErrorMessage);
-          } else if (!taskData) {
-            console.log("No task data found with creator filter");
-            // Let's also try fetching without the creator filter to see if the task exists at all
-            const { data: anyTaskData, error: anyTaskError } = await supabase
-              .from('tasks')
-              .select(`
-                *
-              `)
-              .eq('id', taskId)
-              .single();
-            
-            console.log("Any task fetch result (without creator filter):", { anyTaskData, anyTaskError });
-            
-            // If we successfully fetched the task, also fetch the skills data separately
-            if (anyTaskData && anyTaskData.skills && Array.isArray(anyTaskData.skills) && anyTaskData.skills.length > 0) {
-              console.log("Fetching skills data for skill IDs:", anyTaskData.skills);
-              const { data: skillsData, error: skillsError } = await supabase
-                .from('skills')
-                .select('id, label, description')
-                .in('id', anyTaskData.skills);
-              
-              console.log("Skills data fetch result:", { skillsData, skillsError });
-              
-              if (!skillsError && skillsData) {
-                anyTaskData.skills_data = skillsData;
-              }
-            }
-            
-            if (anyTaskData) {
-              console.log("Task exists but doesn't belong to current user");
-              console.log("Task creator:", anyTaskData.creator);
-              console.log("Current user ID:", user.id);
-              console.log("Creator matches user:", anyTaskData.creator === user.id);
-              localErrorMessage = "You don't have permission to view this task. This task belongs to another educator.";
-            } else {
-              localErrorMessage = "Task not found.";
-            }
-            // Show error in UI instead of redirecting
-            setTask(null);
-            setErrorMessage(localErrorMessage);
-          } else {
-            setTask(taskData);
-            
-            // Get task requests with properly joined profile data
-            // Get task requests with properly joined profile data
-            const { data: requestsData, error: requestsError } = await supabase
-              .from('task_requests')
-              .select(`
-                *,
-                profiles!task_requests_applicant_fkey(username, did)
-              `)
-              .eq('task', taskId)
-              .eq('status', 'requested') // Only show pending requests
-              .order('created_at', { ascending: true });
-            
-            console.log("Requests data:", { requestsData, requestsError });
-            
-            if (requestsError) {
-              console.error("Error fetching task requests:", requestsError);
-              console.error("Error details:", {
-                message: requestsError.message,
-                code: requestsError.code,
-                details: requestsError.details,
-                hint: requestsError.hint
-              });
-            }
-            
-            if (requestsData) {
-              console.log("Number of requests fetched:", requestsData.length);
-              console.log("Requests before filtering:", requestsData);
-              
-              // Process requests to ensure profile data is available
-              const requestsWithProfiles = await Promise.all(requestsData.map(async (request) => {
-                console.log("Processing request:", request);
-                
-                // If we already have profile data from the join, use it
-                if (request.profiles) {
-                  return request;
-                }
-                
-                // If we don't have profile data, try to fetch it
-                console.log("Fetching profile for request applicant:", request.applicant);
-                const { data: profileData, error: profileError } = await supabase
-                  .from('profiles')
-                  .select('username, did')
-                  .eq('id', request.applicant)
-                  .single();
-                
-                console.log("Profile data fetch result:", { profileData, profileError });
-                
-                if (!profileError && profileData) {
-                  console.log("Profile data fetched:", profileData);
-                  return { ...request, profiles: profileData };
-                } else {
-                  console.log("Profile fetch error:", profileError);
-                  // Even if we can't get the full profile, we should at least show the username
-                  // Let's try to get just the username
-                  const { data: usernameData, error: usernameError } = await supabase
-                    .from('profiles')
-                    .select('username')
-                    .eq('id', request.applicant)
-                    .single();
-                  
-                  console.log("Username data fetch result:", { usernameData, usernameError });
-                  
-                  if (!usernameError && usernameData) {
-                    return { ...request, profiles: { username: usernameData.username, did: '' } };
-                  }
-                  
-                  // If we can't get any profile data, at least show the applicant ID
-                  return { ...request, profiles: null };
-                }
-              }));
-              console.log("RequestsWithProfiles:", requestsWithProfiles);
-              setRequests(requestsWithProfiles);
-            }
-            
-            // Get task assignments with properly joined profile data
-            const { data: assignmentsData, error: assignmentsError } = await supabase
-              .from('task_assignments')
-              .select(`
-                *,
-                profiles!task_assignments_assignee_fkey(username, did)
-              `)
-              .eq('task', taskId);
-            
-            console.log("Assignments data:", { assignmentsData, assignmentsError });
-            
-            if (assignmentsError) {
-              console.error("Error fetching task assignments:", assignmentsError);
-              console.error("Error details:", {
-                message: assignmentsError.message,
-                code: assignmentsError.code,
-                details: assignmentsError.details,
-                hint: assignmentsError.hint
-              });
-            }
-            
-            if (assignmentsData) {
-              console.log("Assignments data:", assignmentsData);
-              // Process assignments to ensure profile data is available
-              const assignmentsWithProfiles = await Promise.all(assignmentsData.map(async (assignment) => {
-                console.log("Processing assignment:", assignment);
-                
-                // If we already have profile data from the join, use it
-                if (assignment.profiles) {
-                  return assignment;
-                }
-                
-                // If we don't have profile data, try to fetch it
-                console.log("Fetching profile for assignment assignee:", assignment.assignee);
-                const { data: profileData, error: profileError } = await supabase
-                  .from('profiles')
-                  .select('username, did')
-                  .eq('id', assignment.assignee)
-                  .single();
-                
-                console.log("Profile data fetch result:", { profileData, profileError });
-                
-                if (!profileError && profileData) {
-                  console.log("Profile data fetched:", profileData);
-                  return { ...assignment, profiles: profileData };
-                } else {
-                  console.log("Profile fetch error:", profileError);
-                  // Even if we can't get the full profile, we should at least show the username
-                  // Let's try to get just the username
-                  const { data: usernameData, error: usernameError } = await supabase
-                    .from('profiles')
-                    .select('username')
-                    .eq('id', assignment.assignee)
-                    .single();
-                  
-                  console.log("Username data fetch result:", { usernameData, usernameError });
-                  
-                  if (!usernameError && usernameData) {
-                    return { ...assignment, profiles: { username: usernameData.username, did: '' } };
-                  }
-                  
-                  // If we can't get any profile data, at least show the assignee ID
-                  return { ...assignment, profiles: null };
-                }
-              }));
-              console.log("AssignmentsWithProfiles:", assignmentsWithProfiles);
-              setAssignments(assignmentsWithProfiles);
-            }
-            
-            // Get submissions for this task
-            const { data: submissionsData, error: submissionsError } = await supabase
-              .from('submissions')
-              .select('*')
-              .eq('task', taskId);
-            
-            console.log("Submissions data:", { submissionsData, submissionsError });
-            
-            if (submissionsError) {
-              console.error("Error fetching task submissions:", submissionsError);
-            }
-            
-            if (submissionsData) {
-              console.log("Submissions data:", submissionsData);
-              setSubmissions(submissionsData);
-            }
-          }
-          setLoading(false);
+          setTask(finalTask);
         }
-      } catch (error) {
-        console.error("Unexpected error:", error);
-        localErrorMessage = `Unexpected error: ${error instanceof Error ? error.message : 'Unknown error'}`;
+
+        // Fetch requests (only pending requests)
+        const { data: requestsData } = await supabase
+          .from('task_requests')
+          .select(`
+            *,
+            profiles!task_requests_applicant_fkey(username, did)
+          `)
+          .eq('task', taskId)
+          .eq('status', 'pending') // correct status value
+          .order('created_at', { ascending: true });
+
+        const requestsWithProfiles: Request[] = (requestsData || []).map((r) => {
+          // if join provided profiles use it, otherwise leave null (we handle fetching later if needed)
+          return r;
+        });
+
+        if (isMounted) setRequests(requestsWithProfiles);
+
+        // Fetch assignments
+        const { data: assignmentsData } = await supabase
+          .from('task_assignments')
+          .select(`
+            *,
+            profiles!task_assignments_assignee_fkey(username, did)
+          `)
+          .eq('task', taskId);
+
+        if (isMounted) setAssignments(assignmentsData || []);
+
+        // Fetch submissions
+        const { data: submissionsData } = await supabase
+          .from('submissions')
+          .select('*')
+          .eq('task', taskId);
+
+        if (isMounted) setSubmissions(submissionsData || []);
+      } catch (e: unknown) {
         if (isMounted) {
-          setTask(null);
-          setErrorMessage(localErrorMessage);
-          setLoading(false);
+          const errorMessage = e instanceof Error ? e.message : String(e);
+          setErrorMessage(`Unexpected error: ${errorMessage}`);
         }
+      } finally {
+        if (isMounted) setLoading(false);
       }
     };
-    
+
     fetchData();
-    
-    // Cleanup function to prevent state updates on unmounted component
+
     return () => {
       isMounted = false;
     };
-  }, [taskId]);
+  }, [taskId, router]);
 
-  // Add verification after assignment operations
+  // Utility to refresh assignments/requests/submissions
   const verifyAssignments = async () => {
     const supabase = createClient();
-    
-    // Get current assignments for this task with profile data
-    const { data: currentAssignments, error } = await supabase
-      .from('task_assignments')
-      .select(`
-        *,
-        profiles!task_assignments_assignee_fkey(username, did)
-      `)
-      .eq('task', taskId);
-    
-    console.log("Verification - Current assignments:", { currentAssignments, error });
-    
-    if (!error) {
-      // If profiles are not loaded, fetch them separately
-      const assignmentsWithProfiles = await Promise.all(currentAssignments.map(async (assignment) => {
-        if (!assignment.profiles) {
-          console.log("Fetching profile for verification assignee:", assignment.assignee);
-          const { data: profileData, error: profileError } = await supabase
-            .from('profiles')
-            .select('username, did')
-            .eq('id', assignment.assignee)
-            .single();
-          
-          if (!profileError && profileData) {
-            console.log("Profile data fetched for verification:", profileData);
-            return { ...assignment, profiles: profileData };
-          } else {
-            console.log("Profile fetch error for verification:", profileError);
-            // Even if we can't get the full profile, we should at least show the username
-            // Let's try to get just the username
-            const { data: usernameData, error: usernameError } = await supabase
-              .from('profiles')
-              .select('username')
-              .eq('id', assignment.assignee)
-              .single();
-            
-            if (!usernameError && usernameData) {
-              return { ...assignment, profiles: { username: usernameData.username, did: '' } };
-            }
-          }
-        }
-        return assignment;
-      }));
-      setAssignments(assignmentsWithProfiles);
-    }
-    
-    // Also refresh requests data to ensure students who were assigned disappear from requests list
-    const { data: requestsData, error: requestsError } = await supabase
-      .from('task_requests')
-      .select(`
-        *,
-        profiles!task_requests_applicant_fkey(username, did)
-      `)
-      .eq('task', taskId);
-    
-    console.log("Verification - Requests data:", { requestsData, requestsError });
-    
-    if (!requestsError && requestsData) {
-      // Filter to only show requested status
-      const requestedRequests = requestsData.filter(req => req.status === 'requested');
-      
-      // Process requests to ensure profile data is available
-      const requestsWithProfiles = await Promise.all(requestedRequests.map(async (request) => {
-        // If we already have profile data from the join, use it
-        if (request.profiles) {
-          return request;
-        }
-        
-        // If we don't have profile data, try to fetch it
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('username, did')
-          .eq('id', request.applicant)
-          .single();
-        
-        if (!profileError && profileData) {
-          return { ...request, profiles: profileData };
-        } else {
-          // Try to get just the username
-          const { data: usernameData, error: usernameError } = await supabase
-            .from('profiles')
-            .select('username')
-            .eq('id', request.applicant)
-            .single();
-          
-          if (!usernameError && usernameData) {
-            return { ...request, profiles: { username: usernameData.username, did: '' } };
-          }
-          
-          // If we can't get any profile data, at least show the applicant ID
-          return { ...request, profiles: null };
-        }
-      }));
-      setRequests(requestsWithProfiles);
-    }
-    
-    // Fetch submissions for this task
-    const { data: submissionsData, error: submissionsError } = await supabase
-      .from('submissions')
-      .select('*')
-      .eq('task', taskId);
-    
-    console.log("Verification - Submissions data:", { submissionsData, submissionsError });
-    
-    if (!submissionsError && submissionsData) {
-      setSubmissions(submissionsData);
+    try {
+      const { data: currentAssignments } = await supabase
+        .from('task_assignments')
+        .select(`
+          *,
+          profiles!task_assignments_assignee_fkey(username, did)
+        `)
+        .eq('task', taskId);
+
+      setAssignments(currentAssignments || []);
+
+      const { data: requestsData } = await supabase
+        .from('task_requests')
+        .select(`
+          *,
+          profiles!task_requests_applicant_fkey(username, did)
+        `)
+        .eq('task', taskId)
+        .eq('status', 'pending');
+
+      setRequests(requestsData || []);
+
+      const { data: submissionsData } = await supabase
+        .from('submissions')
+        .select('*')
+        .eq('task', taskId);
+
+      setSubmissions(submissionsData || []);
+    } catch (e) {
+      console.error("verifyAssignments error:", e);
     }
   };
 
   const toggleApplicantSelection = (applicantId: string) => {
-    setSelectedApplicants(prev => 
-      prev.includes(applicantId) 
-        ? prev.filter(id => id !== applicantId) 
+    setSelectedApplicants(prev =>
+      prev.includes(applicantId)
+        ? prev.filter(id => id !== applicantId)
         : [...prev, applicantId]
     );
   };
 
-const handleAssignTask = async (applicantId: string) => {
-  const supabase = createClient();
-  
-  try {
-    console.log("Assigning task:", { taskId, applicantId });
-    
-    // Get current user
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      setMessage("You must be logged in to assign tasks.");
-      setTimeout(() => setMessage(""), 5000);
-      return;
-    }
-    
-    // Get applicant username
-    const { data: profileData, error: profileError } = await supabase
-      .from('profiles')
-      .select('username')
-      .eq('id', applicantId)
-      .single();
-    
-    if (profileError || !profileData) {
-      throw new Error(`Error fetching username for applicant ${applicantId}: ${profileError?.message || 'Profile not found'}`);
-    }
-    
-    const applicantUsername = profileData.username;
-    console.log("Successfully fetched applicant username:", applicantUsername);
-    
-    // Check if this student is already assigned to this task
-    const { data: existingAssignments, error: checkError } = await supabase
-      .from('task_assignments')
-      .select('id')
-      .eq('task', taskId)
-      .eq('assignee', applicantId);
-    
-    console.log("Existing assignments check:", { existingAssignments, checkError });
-    
-    if (checkError) {
-      throw new Error(`Error checking existing assignments: ${checkError.message}`);
-    }
-    
-    if (existingAssignments && existingAssignments.length > 0) {
-      setMessage("This student is already assigned to this task.");
-      setTimeout(() => setMessage(""), 5000);
-      return;
-    }
-    
-    // Get task mode
-    const { data: taskData, error: taskError } = await supabase
-      .from('tasks')
-      .select('task_mode, status')
-      .eq('id', taskId)
-      .single();
-    
-    if (taskError || !taskData) {
-      throw new Error(`Error fetching task mode: ${taskError?.message || 'Task not found'}`);
-    }
-    
-    const taskMode = taskData.task_mode || 'single';
-    
-    // For single tasks, check if someone is already assigned
-    if (taskMode === 'single') {
-      const { data: currentAssignments, error: countError } = await supabase
+  const handleAssignTask = async (applicantId: string) => {
+    const supabase = createClient();
+    try {
+      const { data: userData } = await supabase.auth.getUser();
+      const user = userData?.user;
+      if (!user) {
+        setMessage("You must be logged in to assign tasks.");
+        setTimeout(() => setMessage(""), 5000);
+        return;
+      }
+
+      // Check if already assigned
+      const { data: existingAssignments, error: checkError } = await supabase
         .from('task_assignments')
         .select('id')
-        .eq('task', taskId);
-      
-      if (countError) {
-        throw new Error(`Error checking current assignments: ${countError.message}`);
-      }
-      
-      if (currentAssignments && currentAssignments.length > 0) {
-        setMessage("This single task already has an assigned student.");
+        .eq('task', taskId)
+        .eq('assignee', applicantId);
+
+      if (checkError) throw checkError;
+      if (existingAssignments && existingAssignments.length > 0) {
+        setMessage("This student is already assigned to this task.");
         setTimeout(() => setMessage(""), 5000);
         return;
       }
-    }
-    
-    // Create task assignment with proper status
-    console.log("Creating task assignment:", { taskId, applicantId, applicantUsername });
-    const { error: assignError, data: assignmentData } = await supabase
-      .from('task_assignments')
-      .insert({
-        task: taskId,
-        assignee: applicantId,
-        assignee_username: applicantUsername,
-        status: 'in_progress' // Default status for new assignments
-      })
-      .select();
-    
-    console.log("Assignment result:", { assignError, assignmentData });
-    
-    if (assignError) {
-      throw new Error(`Error assigning task: ${assignError.message}`);
-    }
-    
-    // Log the created assignment for debugging
-    if (assignmentData && assignmentData.length > 0) {
-      console.log("Created assignment:", assignmentData[0]);
-    }
-    
-    // Handle task mode-specific behavior
-    if (taskMode === 'single') {
-      // For single tasks, close the task immediately after first assignment
-      console.log("Closing single task after first assignment:", taskId);
-      const { error: updateError } = await supabase
+
+      // Get task info
+      const { data: taskData } = await supabase
         .from('tasks')
-        .update({ status: 'closed' })
-        .eq('id', taskId);
-      
-      console.log("Task status update result:", updateError);
-      
-      // Verify the task status was updated
-      const { data: verifyTask, error: verifyError } = await supabase
-        .from('tasks')
-        .select('status')
+        .select('task_mode, status, seats')
         .eq('id', taskId)
         .single();
-      
-      console.log("Task status verification:", { verifyTask, verifyError });
-      
-      setMessage("Task assigned successfully! The task is now closed.");
-    } else {
-      // For multi tasks, keep the task open
-      setMessage("Task assigned successfully! The task remains open for more assignments.");
-    }
-     
-    // Update request status to 'accepted' so it disappears from requests list
-    const { error: requestError } = await supabase
-      .from('task_requests')
-      .update({ status: 'accepted' })
-      .eq('task', taskId)
-      .eq('applicant', applicantId);
-    
-    if (requestError) {
-      console.error("Error updating request status:", requestError);
-      setMessage(`Task assigned but error updating request status: ${requestError.message}`);
-    } else {
-      setMessage(taskMode === 'single' 
-        ? "Task assigned successfully! The task is now closed." 
-        : "Task assigned successfully! The task remains open for more assignments.");
-      // Remove the request from local state
-      setRequests(prev => prev.filter(req => req.applicant !== applicantId));
-    }
-    
-    console.log("Request status update result:", requestError);
-    
-    // Verify assignments after a short delay
-    setTimeout(() => {
-      verifyAssignments();
-      router.refresh();
-    }, 500);
-    
-    // Also refresh the page immediately to ensure UI updates
-    router.refresh();
-    
-    // Clear message after 5 seconds
-    setTimeout(() => setMessage(""), 5000);
-  } catch (error) {
-    console.error("Error assigning task:", error);
-    setMessage(`Error assigning task: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    
-    // Clear message after 5 seconds
-    setTimeout(() => setMessage(""), 5000);
-  }
-};
 
-const handleUnassignTask = async (assigneeId: string) => {
-  const supabase = createClient();
-  
-  try {
-    console.log("Unassigning task:", { taskId, assigneeId });
-    
-    // Get current user
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      setMessage("You must be logged in to unassign tasks.");
-      setTimeout(() => setMessage(""), 5000);
-      return;
-    }
-    
-    // Delete the assignment
-    const { data: assignmentData, error: assignmentError } = await supabase
-      .from('task_assignments')
-      .delete()
-      .eq('task', taskId)
-      .eq('assignee', assigneeId)
-      .select()
-      .single();
-    
-    if (assignmentError) {
-      console.error("Failed to delete assignment:", assignmentError);
-      setMessage("Failed to unassign task. Please try again later.");
-      setTimeout(() => setMessage(""), 5000);
-      return;
-    }
-    
-    console.log("Assignment deleted:", assignmentData);
-    
-    // Refresh the task data
-    verifyAssignments();
-  } catch (e) {
-    console.error("Unexpected error:", e);
-    setMessage("Unexpected error.");
-    setTimeout(() => setMessage(""), 5000);
-  }
-};
+      const taskMode = taskData?.task_mode || 'single';
 
-  const handleApproveRequest = async (requestId: string) => {
-    const supabase = createClient();
-    
-    try {
-      console.log("Approving request:", { taskId, requestId });
-      
-      // Get current user
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        setMessage("You must be logged in to approve requests.");
-        setTimeout(() => setMessage(""), 5000);
-        return;
-      }
-      
-      // Fetch the request
-      const { data: requestData, error: requestError } = await supabase
-        .from('task_requests')
-        .select('*')
-        .eq('id', requestId)
-        .single();
-      
-      if (requestError) {
-        console.error("Failed to fetch request:", requestError);
-        setMessage("Failed to fetch request. Please try again later.");
-        setTimeout(() => setMessage(""), 5000);
-        return;
-      }
-      
-      console.log("Request fetched:", requestData);
-      
-      // Check if the request is still in requested status
-      if (requestData.status !== 'requested') {
-        setMessage("Request is no longer in requested status. Please try again.");
-        setTimeout(() => setMessage(""), 5000);
-        return;
-      }
-      
-      // Fetch the applicant's profile
-      console.log("Fetching profile for applicant ID:", requestData.applicant);
-      const { data: profileDataResult, error: profileError } = await supabase
-        .from('profiles')
-        .select('username')
-        .eq('id', requestData.applicant)
-        .single();
-      
-      let profileData = profileDataResult;
-      
-      if (profileError || !profileData) {
-        console.error("Error fetching applicant profile:", { profileError, profileData, applicantId: requestData.applicant });
-        // Try a fallback approach to get at least the username
-        console.log("Trying fallback profile fetch for applicant ID:", requestData.applicant);
-        const { data: fallbackProfileData, error: fallbackProfileError } = await supabase
-          .from('profiles')
-          .select('username')
-          .eq('id', requestData.applicant)
-          .single();
-        
-        if (fallbackProfileError || !fallbackProfileData) {
-          console.error("Fallback profile fetch also failed:", { fallbackProfileError, fallbackProfileData, applicantId: requestData.applicant });
-          // Let's also try to see if the profile exists at all
-          const { data: existenceCheck, error: existenceError } = await supabase
-            .from('profiles')
-            .select('id, username')
-            .eq('id', requestData.applicant);
-          
-          console.log("Profile existence check:", { existenceCheck, existenceError });
-          
-          // Try one more approach - check if we can get any data from the profiles table
-          const { data: allProfiles, error: allProfilesError } = await supabase
-            .from('profiles')
-            .select('id, username')
-            .limit(5);
-          
-          if (allProfilesError) {
-            console.error("Failed to fetch any profiles:", allProfilesError);
-            setMessage("Failed to fetch user profile. Please try again later.");
-            setTimeout(() => setMessage(""), 5000);
-            return;
-          }
-          
-          setMessage("Failed to fetch user profile. Please try again later.");
+      if (taskMode === 'single') {
+        const { data: currentAssignments } = await supabase
+          .from('task_assignments')
+          .select('id')
+          .eq('task', taskId);
+        if (currentAssignments && currentAssignments.length > 0) {
+          setMessage("This single task already has an assigned student.");
           setTimeout(() => setMessage(""), 5000);
           return;
         }
-        profileData = fallbackProfileData;
+      } else if (taskData?.seats) {
+        // enforce seats limit for multi
+        const { data: currentAssignments } = await supabase
+          .from('task_assignments')
+          .select('id')
+          .eq('task', taskId);
+        const currentCount = currentAssignments ? currentAssignments.length : 0;
+        if (taskData.seats <= currentCount) {
+          setMessage("No seats available for this task.");
+          setTimeout(() => setMessage(""), 5000);
+          return;
+        }
       }
-      
-      console.log("Profile data:", profileData);
-      
-      // Insert the assignment
-      const { data: assignmentData, error: assignmentError } = await supabase
+
+      // Get applicant username (best effort)
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('username')
+        .eq('id', applicantId)
+        .single();
+      const applicantUsername = profileData?.username || null;
+
+      // Insert assignment
+      const { error: assignError } = await supabase
         .from('task_assignments')
-        .insert([
-          {
-            task: taskId,
-            assignee: requestData.applicant,
-            assigned_by: user.id,
-            assigned_at: new Date().toISOString(),
-          },
-        ])
-        .select()
-        .single();
-      
-      if (assignmentError) {
-        console.error("Failed to insert assignment:", assignmentError);
-        setMessage("Failed to assign task. Please try again later.");
+        .insert({
+          task: taskId,
+          assignee: applicantId,
+          assignee_username: applicantUsername,
+          status: 'in_progress'
+        });
+
+      if (assignError) throw assignError;
+
+      // Update request status to accepted (if exists)
+      await supabase
+        .from('task_requests')
+        .update({ status: 'accepted' })
+        .eq('task', taskId)
+        .eq('applicant', applicantId);
+
+      // If single, close task
+      if (taskMode === 'single') {
+        await supabase
+          .from('tasks')
+          .update({ status: 'closed' })
+          .eq('id', taskId);
+        setMessage("Task assigned successfully! The task is now closed.");
+      } else {
+        setMessage("Task assigned successfully!");
+      }
+
+      setTimeout(() => setMessage(""), 5000);
+      verifyAssignments();
+      router.refresh();
+    } catch (e: unknown) {
+      console.error("Error assigning task:", e);
+      const errorMessage = e instanceof Error ? e.message : String(e);
+      setMessage(`Error assigning task: ${errorMessage}`);
+      setTimeout(() => setMessage(""), 5000);
+    }
+  };
+
+  const handleAssignGroupTask = async (applicantIds: string[]) => {
+    const supabase = createClient();
+    try {
+      const { data: userData } = await supabase.auth.getUser();
+      const user = userData?.user;
+      if (!user) {
+        setMessage("You must be logged in to assign tasks.");
         setTimeout(() => setMessage(""), 5000);
         return;
       }
-      
-      console.log("Assignment inserted:", assignmentData);
-      
-      // Update the task status to assigned
-      const { data: taskData, error: taskUpdateError } = await supabase
+
+      const { data: taskData } = await supabase
         .from('tasks')
-        .update({ status: 'assigned' })
+        .select('task_mode, seats')
         .eq('id', taskId)
-        .select()
         .single();
-      
-      if (taskUpdateError) {
-        console.error("Failed to update task status:", taskUpdateError);
-        setMessage("Failed to update task status. Please try again later.");
+
+      const taskMode = taskData?.task_mode || 'single';
+
+      if (taskMode === 'single' && applicantIds.length > 1) {
+        setMessage("This is a single task. You can only assign it to one student.");
         setTimeout(() => setMessage(""), 5000);
         return;
       }
-      
-      console.log("Task status updated:", taskData);
-      
-      // Update the request status to approved
-      const { data: updatedRequestData, error: requestUpdateError } = await supabase
+
+      // Enforce seats
+      if (taskData?.seats) {
+        const { data: currentAssignments } = await supabase
+          .from('task_assignments')
+          .select('id')
+          .eq('task', taskId);
+        const currentCount = currentAssignments ? currentAssignments.length : 0;
+        const availableSeats = taskData.seats - currentCount;
+        if (applicantIds.length > availableSeats) {
+          setMessage(`Not enough seats available. Only ${availableSeats} seats left.`);
+          setTimeout(() => setMessage(""), 5000);
+          return;
+        }
+      }
+
+      // fetch usernames and insert assignments
+      for (const applicantId of applicantIds) {
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('username')
+          .eq('id', applicantId)
+          .single();
+        const username = profileData?.username || null;
+
+        await supabase
+          .from('task_assignments')
+          .insert({
+            task: taskId,
+            assignee: applicantId,
+            assignee_username: username,
+            status: 'in_progress'
+          });
+
+        await supabase
+          .from('task_requests')
+          .update({ status: 'accepted' })
+          .eq('task', taskId)
+          .eq('applicant', applicantId);
+      }
+
+      if (taskMode === 'single') {
+        await supabase.from('tasks').update({ status: 'closed' }).eq('id', taskId);
+      }
+
+      setMessage("Assigned group successfully.");
+      setTimeout(() => setMessage(""), 5000);
+      verifyAssignments();
+      router.refresh();
+    } catch (e: unknown) {
+      console.error("Error assigning group task:", e);
+      const errorMessage = e instanceof Error ? e.message : String(e);
+      setMessage(`Error assigning group: ${errorMessage}`);
+      setTimeout(() => setMessage(""), 5000);
+    }
+  };
+
+  const handleAssignAllInGroups = async () => {
+    const supabase = createClient();
+    try {
+      const requestedApplicants = requests
+        .filter(req => req.status === 'pending')
+        .map(req => req.applicant);
+
+      if (requestedApplicants.length === 0) {
+        setMessage("No requests to assign.");
+        setTimeout(() => setMessage(""), 5000);
+        return;
+      }
+
+      // chunk into groups of 5
+      const groups: string[][] = [];
+      for (let i = 0; i < requestedApplicants.length; i += 5) {
+        groups.push(requestedApplicants.slice(i, i + 5));
+      }
+
+      // assign each group (respect seats & single mode)
+      for (const group of groups) {
+        await handleAssignGroupTask(group);
+      }
+
+      setMessage("All groups processed.");
+      setTimeout(() => setMessage(""), 5000);
+      verifyAssignments();
+      router.refresh();
+    } catch (e: unknown) {
+      console.error("Error assigning all in groups:", e);
+      const errorMessage = e instanceof Error ? e.message : String(e);
+      setMessage(`Error assigning all: ${errorMessage}`);
+      setTimeout(() => setMessage(""), 5000);
+    }
+  };
+
+  const handleUnassignTask = async (assigneeId: string) => {
+    const supabase = createClient();
+    try {
+      const { data: userData } = await supabase.auth.getUser();
+      const user = userData?.user;
+      if (!user) {
+        setMessage("You must be logged in to unassign tasks.");
+        setTimeout(() => setMessage(""), 5000);
+        return;
+      }
+
+      await supabase
+        .from('task_assignments')
+        .delete()
+        .eq('task', taskId)
+        .eq('assignee', assigneeId);
+
+      setMessage("Unassigned successfully.");
+      setTimeout(() => setMessage(""), 5000);
+      verifyAssignments();
+      router.refresh();
+    } catch (e: unknown) {
+      console.error("Error unassigning:", e);
+      setMessage("Unexpected error.");
+      setTimeout(() => setMessage(""), 5000);
+    }
+  };
+
+  const handleApproveRequest = async (requestId: string) => {
+    const supabase = createClient();
+    try {
+      const { error } = await supabase
         .from('task_requests')
         .update({ status: 'approved' })
-        .eq('id', requestId)
-        .select()
-        .single();
-      
-      if (requestUpdateError) {
-        console.error("Failed to update request status:", requestUpdateError);
-        setMessage("Failed to update request status. Please try again later.");
+        .eq('task', taskId)
+        .eq('id', requestId);
+
+      if (error) {
+        setMessage(`Error approving request: ${error.message}`);
         setTimeout(() => setMessage(""), 5000);
         return;
       }
-      
-      console.log("Request status updated:", updatedRequestData);
-      
-      // Refresh the task data
+
+      setRequests(prev => prev.filter(req => req.id !== requestId));
+      setMessage("Request approved successfully");
+      setTimeout(() => setMessage(""), 5000);
       verifyAssignments();
-    } catch (e) {
-      console.error("Unexpected error:", e);
+      router.refresh();
+    } catch (e: unknown) {
+      console.error("Unexpected error approving request:", e);
       setMessage("Unexpected error.");
       setTimeout(() => setMessage(""), 5000);
     }
@@ -879,508 +511,92 @@ const handleUnassignTask = async (assigneeId: string) => {
 
   const handleRejectRequest = async (requestId: string) => {
     const supabase = createClient();
-    
     try {
-      console.log("Rejecting request:", { taskId, requestId });
-      
-      // Get current user
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        setMessage("You must be logged in to reject requests.");
-        setTimeout(() => setMessage(""), 5000);
-        return;
-      }
-      
-      // Fetch the request
-      const { data: requestData, error: requestError } = await supabase
-        .from('task_requests')
-        .select('*')
-        .eq('id', requestId)
-        .single();
-      
-      if (requestError) {
-        console.error("Failed to fetch request:", requestError);
-        setMessage("Failed to fetch request. Please try again later.");
-        setTimeout(() => setMessage(""), 5000);
-        return;
-      }
-      
-      console.log("Request fetched:", requestData);
-      
-      // Check if the request is still in requested status
-      if (requestData.status !== 'requested') {
-        setMessage("Request is no longer in requested status. Please try again.");
-        setTimeout(() => setMessage(""), 5000);
-        return;
-      }
-      
-      // Update the request status to rejected
-      const { data: updatedRequestData, error: requestUpdateError } = await supabase
+      const { error } = await supabase
         .from('task_requests')
         .update({ status: 'rejected' })
-        .eq('id', requestId)
-        .select()
-        .single();
-      
-      if (requestUpdateError) {
-        console.error("Failed to update request status:", requestUpdateError);
-        setMessage("Failed to update request status. Please try again later.");
+        .eq('task', taskId)
+        .eq('id', requestId);
+
+      if (error) {
+        setMessage(`Error rejecting request: ${error.message}`);
         setTimeout(() => setMessage(""), 5000);
         return;
       }
-      
-      console.log("Request status updated:", updatedRequestData);
-      
-      // Refresh the task data
+
+      setRequests(prev => prev.filter(req => req.id !== requestId));
+      setMessage("Request rejected successfully");
+      setTimeout(() => setMessage(""), 5000);
       verifyAssignments();
-    } catch (e) {
-      console.error("Unexpected error:", e);
+      router.refresh();
+    } catch (e: unknown) {
+      console.error("Unexpected error rejecting request:", e);
       setMessage("Unexpected error.");
       setTimeout(() => setMessage(""), 5000);
     }
   };
 
-  // Add a new function to handle group assignment
-  const handleAssignGroupTask = async (applicantIds: string[]) => {
+  const handleDeclineRequest = async (applicantId: string) => {
     const supabase = createClient();
-    
     try {
-      console.log("Assigning task to group:", { taskId, applicantIds });
-      
-      // First, check if this is a single-person task
-      if (task && task.seats === 1) {
-        setMessage("This is a single-person task. You can only assign it to one student.");
+      const { error } = await supabase
+        .from('task_requests')
+        .update({ status: 'declined' })
+        .eq('task', taskId)
+        .eq('applicant', applicantId);
+
+      if (error) {
+        setMessage(`Error declining request: ${error.message}`);
         setTimeout(() => setMessage(""), 5000);
         return;
       }
-      
-      // Get current user
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        setMessage("You must be logged in to assign tasks.");
-        setTimeout(() => setMessage(""), 5000);
-        return;
-      }
-      
-      // Get usernames for all applicants
-      const usernames = await Promise.all(applicantIds.map(async (applicantId) => {
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('username')
-          .eq('id', applicantId)
-          .single();
-        
-        if (profileError || !profileData) {
-          throw new Error(`Error fetching username for applicant ${applicantId}: ${profileError?.message || 'Profile not found'}`);
-        }
-        
-        return { id: applicantId, username: profileData.username };
-      }));
-      
-      // For group tasks, check if we're trying to assign more students than available seats
-      if (task && task.seats && task.seats > 1) {
-        // Get current assignments for this task
-        const { data: currentAssignments, error: countError } = await supabase
-          .from('task_assignments')
-          .select('id')
-          .eq('task', taskId);
-        
-        console.log("Current assignments for group task:", { currentAssignments, countError });
-        
-        const assignedCount = currentAssignments ? currentAssignments.length : 0;
-        if (assignedCount + applicantIds.length > task.seats) {
-          setMessage(`Cannot assign more than ${task.seats} students to this task. ${assignedCount + applicantIds.length - task.seats} students over capacity.`);
-          setTimeout(() => setMessage(""), 5000);
-          return;
-        }
-      }
-      
-      // Create task assignments using both UUID and username for compatibility
-      console.log("Creating task assignments:", { taskId, applicantIds, usernames });
-      const assignments = await Promise.all(
-        applicantIds.map(async (applicantId, index) => {
-          const username = usernames[index];
-          if (!username) {
-            console.error("Username not found for applicant ID:", applicantId);
-            setMessage(`Error assigning task: Username not found for applicant ID ${applicantId}`);
-            return;
-          }
-          console.log("Creating task assignment for:", { taskId, applicantId, username });
-          const { error, data } = await supabase
-            .from('task_assignments')
-            .insert({
-              task: taskId,
-              assignee: applicantId,
-              assignee_username: username.username,
-            })
-// Add a new function to handle group assignment
-const handleAssignGroupTask = async (applicantIds: string[]) => {
-  const supabase = createClient();
-  
-  try {
-    console.log("Assigning task to group:", { taskId, applicantIds });
-    
-    // Get current user
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      setMessage("You must be logged in to assign tasks.");
+
+      setRequests(prev => prev.filter(req => req.applicant !== applicantId));
+      setMessage("Request declined successfully");
       setTimeout(() => setMessage(""), 5000);
-      return;
-    }
-    
-    // Get task mode
-    const { data: taskData, error: taskError } = await supabase
-      .from('tasks')
-      .select('task_mode, status')
-      .eq('id', taskId)
-      .single();
-    
-    if (taskError || !taskData) {
-      throw new Error(`Error fetching task mode: ${taskError?.message || 'Task not found'}`);
-    }
-    
-    const taskMode = taskData.task_mode || 'single';
-    
-    // For single tasks, only allow one assignment
-    if (taskMode === 'single' && applicantIds.length > 1) {
-      setMessage("This is a single task. You can only assign it to one student.");
-      setTimeout(() => setMessage(""), 5000);
-      return;
-    }
-    
-    // Get usernames for all applicants
-    const usernames = await Promise.all(applicantIds.map(async (applicantId) => {
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('username')
-        .eq('id', applicantId)
-        .single();
-      
-      if (profileError || !profileData) {
-        throw new Error(`Error fetching username for applicant ${applicantId}: ${profileError?.message || 'Profile not found'}`);
-      }
-      
-      return { id: applicantId, username: profileData.username };
-    }));
-    
-    // Create task assignments with proper status
-    console.log("Creating task assignments:", { taskId, applicantIds, usernames });
-    const assignments = await Promise.all(
-      applicantIds.map(async (applicantId, index) => {
-        const username = usernames[index];
-        if (!username) {
-          console.error("Username not found for applicant ID:", applicantId);
-          setMessage(`Error assigning task: Username not found for applicant ID ${applicantId}`);
-          return;
-        }
-        console.log("Creating task assignment for:", { taskId, applicantId, username });
-        const { error, data } = await supabase
-          .from('task_assignments')
-          .insert({
-            task: taskId,
-            assignee: applicantId,
-            assignee_username: username.username,
-            status: 'in_progress' // Default status for new assignments
-          })
-          .select();
-        
-        if (error) {
-          console.error("Error assigning task:", error);
-          setMessage(`Error assigning task to ${username.username}: ${error.message}`);
-        } else {
-          console.log("Created task assignment:", data[0]);
-        }
-      })
-    );
-    
-    console.log("Assignment results:", assignments);
-    
-    // Handle task mode-specific behavior
-    if (taskMode === 'single') {
-      // For single tasks, close the task immediately after first assignment
-      console.log("Closing single task after first assignment:", taskId);
-      const { error: updateError } = await supabase
-        .from('tasks')
-        .update({ status: 'closed' })
-        .eq('id', taskId);
-      
-      console.log("Task status update result:", updateError);
-      
-      // Verify the task status was updated
-      const { data: verifyTask, error: verifyError } = await supabase
-        .from('tasks')
-        .select('status')
-        .eq('id', taskId)
-        .single();
-      
-      console.log("Task status verification:", { verifyTask, verifyError });
-      
-      setMessage("Task assigned successfully! The task is now closed.");
-    } else {
-      // For multi tasks, keep the task open
-      setMessage("Task assigned successfully! The task remains open for more assignments.");
-    }
-     
-    // Update request status to 'accepted' so it disappears from requests list
-    const { error: requestError } = await supabase
-      .from('task_requests')
-      .update({ status: 'accepted' })
-      .eq('task', taskId)
-      .in('applicant', applicantIds);
-    
-    if (requestError) {
-      console.error("Error updating request status:", requestError);
-      setMessage(`Task assigned but error updating request status: ${requestError.message}`);
-    } else {
-      setMessage(taskMode === 'single' 
-        ? "Task assigned successfully! The task is now closed." 
-        : "Task assigned successfully! The task remains open for more assignments.");
-    }
-    
-    console.log("Request status update result:", requestError);
-    
-    // Verify assignments after a short delay
-    setTimeout(() => {
       verifyAssignments();
       router.refresh();
-    }, 500);
-    
-    // Also refresh the page immediately to ensure UI updates
-    router.refresh();
-    
-    // Clear message after 5 seconds
-    setTimeout(() => setMessage(""), 5000);
-  } catch (error) {
-    console.error("Error assigning task:", error);
-    setMessage(`Error assigning task: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    
-    // Clear message after 5 seconds
-    setTimeout(() => setMessage(""), 5000);
-  }
-};
-};
-
-  // Add a new function to handle assigning all applicants in groups of 5
-  const handleAssignAllInGroups = async () => {
-    const supabase = createClient();
-    
-    try {
-      console.log("Assigning all applicants in groups:", { taskId, requests });
-      
-      // Get all requested applicants
-      const requestedApplicants = requests
-        .filter(req => req.status === 'pending')
-        .map(req => req.applicant);
-      
-      console.log("Requested applicants:", requestedApplicants);
-      
-      if (requestedApplicants.length === 0) {
-        setMessage("No requests to assign.");
-        setTimeout(() => setMessage(""), 5000);
-        return;
-      }
-      
-      // Update task status to 'assigned' as soon as the first student is assigned
-      if (task) {
-        console.log("Updating task status to 'assigned':", taskId);
-        const { error: updateError } = await supabase
-          .from('tasks')
-          .update({ status: 'assigned' })
-          .eq('id', taskId);
-        
-        console.log("Task status update result:", updateError);
-      }
-      
-      // Group applicants in groups of 5
-      const groups = [];
-      for (let i = 0; i < requestedApplicants.length; i += 5) {
-        groups.push(requestedApplicants.slice(i, i + 5));
-      }
-      
-      console.log("Groups to assign:", groups);
-      
-      // Assign each group
-      for (const group of groups) {
-        // Check if we have enough seats for this group
-        if (task && task.seats && task.seats > 1) {
-          // Get current assignments for this task
-          const { data: currentAssignments, error: countError } = await supabase
-            .from('task_assignments')
-            .select('id')
-            .eq('task', taskId);
-          
-          if (countError) {
-            throw new Error(`Error checking current assignments: ${countError.message}`);
-          }
-          
-          const currentCount = currentAssignments ? currentAssignments.length : 0;
-          const availableSeats = task.seats - currentCount;
-          
-          if (group.length > availableSeats) {
-            setMessage(`Not enough seats available for the last group. Only ${availableSeats} seats left.`);
-            setTimeout(() => setMessage(""), 5000);
-            break;
-          }
-        }
-        
-        // Get usernames for all applicants in this group
-        const usernames = await Promise.all(group.map(async (applicantId) => {
-          const { data: profileData, error: profileError } = await supabase
-            .from('profiles')
-            .select('username')
-            .eq('id', applicantId)
-            .single();
-          
-          if (profileError || !profileData) {
-            throw new Error(`Error fetching username for applicant ${applicantId}: ${profileError?.message || 'Profile not found'}`);
-          }
-          
-          return { id: applicantId, username: profileData.username };
-        }));
-        
-        // Create task assignments using both UUID and username for compatibility
-        console.log("Creating task assignments for group:", { taskId, usernames });
-        const assignments = await Promise.all(
-          group.map(async (applicantId, index) => {
-            const username = usernames[index];
-            if (!username) {
-              console.error("Username not found for applicant ID:", applicantId);
-              setMessage(`Error assigning task: Username not found for applicant ID ${applicantId}`);
-              return;
-            }
-            console.log("Creating task assignment for:", { taskId, applicantId, username });
-            const { error, data } = await supabase
-              .from('task_assignments')
-              .insert({
-                task: taskId,
-                assignee: applicantId,
-                assignee_username: username.username,
-              })
-              .select();
-            
-            if (error) {
-              console.error("Error assigning task:", error);
-              setMessage(`Error assigning task to ${username.username}: ${error.message}`);
-            } else {
-              console.log("Created task assignment:", data[0]);
-            }
-          })
-        );
-        
-        console.log("Assignment results for group:", assignments);
-      }
-      
-      // Verify assignments after a short delay
-      setTimeout(() => {
-        verifyAssignments();
-        router.refresh();
-      }, 500);
-      
-      // Also refresh the page immediately to ensure UI updates
-      router.refresh();
-      
-      // Clear message after 5 seconds
-      setTimeout(() => setMessage(""), 5000);
-    } catch (error) {
-      console.error("Error assigning task:", error);
-      setMessage(`Error assigning task: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      
-      // Clear message after 5 seconds
+    } catch (e: unknown) {
+      console.error("Unexpected error declining request:", e);
+      setMessage("Unexpected error.");
       setTimeout(() => setMessage(""), 5000);
     }
   };
 
-const handleDeclineRequest = async (applicantId: string) => {
-  const supabase = createClient();
-  
-  try {
-    // Update request status to 'declined'
-    const { error } = await supabase
-      .from('task_requests')
-      .update({ status: 'declined' })
-      .eq('task', taskId)
-      .eq('applicant', applicantId);
-    
-    if (error) {
-      console.error("Error declining request:", error);
-      // Show error message to user
-      setMessage(`Error declining request: ${error.message}`);
-      setTimeout(() => setMessage(""), 5000);
-      return;
-    }
-    
-    // Remove the request from local state
-    setRequests(prev => prev.filter(req => req.applicant !== applicantId));
-    
-    // Show success message
-    setMessage("Request declined successfully");
-    setTimeout(() => setMessage(""), 5000);
-    
-    // Refresh data
-    router.refresh();
-  } catch (error) {
-    console.error("Unexpected error declining request:", error);
-    setMessage(`Unexpected error: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    setTimeout(() => setMessage(""), 5000);
-  }
-};
-
   const handlePublishTask = async () => {
     const supabase = createClient();
-    
-    // Update task status to 'open'
-    const { error } = await supabase
-      .from('tasks')
-      .update({ status: 'open' })
-      .eq('id', taskId);
-    
-    if (!error) {
-      // Refresh data
-      router.refresh();
-    }
+    await supabase.from('tasks').update({ status: 'open' }).eq('id', taskId);
+    verifyAssignments();
+    router.refresh();
   };
 
   const handleUnpublishTask = async () => {
     const supabase = createClient();
-    
-    // Update task status to 'draft'
-    const { error } = await supabase
-      .from('tasks')
-      .update({ status: 'draft' })
-      .eq('id', taskId);
-    
-    if (!error) {
-      // Refresh data
-      router.refresh();
-    }
+    await supabase.from('tasks').update({ status: 'draft' }).eq('id', taskId);
+    verifyAssignments();
+    router.refresh();
   };
 
   const handleDuplicateTask = async () => {
     const supabase = createClient();
-    
-    // Get current user
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-    
-    // Create a new task with the same details but as a draft
-    const { error } = await supabase
-      .from('tasks')
-      .insert({
-        creator: user.id,
-        module: task?.module || null,
-        title: `${task?.title} (Copy)`,
-        description: task?.description || null, // Use description instead of goal, context, deliverables
-        seats: task?.seats || null,
-        skill_level: task?.skill_level || null,
-        license: task?.license || null,
-        skills: task?.skills || null,
-        due_date: task?.due_date || null,
-        status: 'draft' // Always create as draft
-      });
-    
-    if (!error) {
-      router.push('/e/tasks');
-    }
+    const { data: userData } = await supabase.auth.getUser();
+    const user = userData?.user;
+    if (!user || !task) return;
+
+    await supabase.from('tasks').insert({
+      creator: user.id,
+      module: task.module || null,
+      title: `${task.title} (Copy)`,
+      description: task.description || null,
+      seats: task.seats || null,
+      skill_level: task.skill_level || null,
+      license: task.license || null,
+      skills: task.skills || null,
+      due_date: task.due_date || null,
+      status: 'draft'
+    });
+
+    router.push('/e/tasks');
   };
 
   if (loading) {
@@ -1411,7 +627,6 @@ const handleDeclineRequest = async (applicantId: string) => {
           <div className="mb-6">
             <Skeleton className="h-10 w-32" />
           </div>
-          
           <Card className="shadow-lg">
             <CardHeader>
               <Skeleton className="h-8 w-64" />
@@ -1758,10 +973,7 @@ const handleDeclineRequest = async (applicantId: string) => {
               ) : (
                 <div className="space-y-4">
                   {requests
-                    .filter(req => {
-                      console.log("Filtering request:", req);
-                      return req.status === 'pending';
-                    })
+                    .filter(req => req.status === 'pending')
                     .map((request) => (
                       <div key={request.id} className="flex items-center justify-between p-4 border rounded-lg">
                         <div className="flex items-center space-x-3">
