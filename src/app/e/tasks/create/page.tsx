@@ -205,9 +205,9 @@ export default function CreateTask() {
                     id="seats"
                     type="number"
                     min="1"
-                    max="50"
+                    max="999"
                     value={seats}
-                    onChange={(e) => setSeats(Math.max(1, Math.min(50, parseInt(e.target.value) || 1)))}
+                    onChange={(e) => setSeats(Math.max(1, Math.min(999, parseInt(e.target.value) || 1)))}
                     className="py-3 px-4 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                   />
                   <p className="text-sm text-gray-500">
