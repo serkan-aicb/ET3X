@@ -17,7 +17,6 @@ export default function SubmitTask() {
   const [task, setTask] = useState<Task | null>(null);
   const [link, setLink] = useState("");
   const [note, setNote] = useState("");
-  const [files, setFiles] = useState<FileList | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState("");
@@ -81,52 +80,6 @@ export default function SubmitTask() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("User not found");
       
-      // Validate file size (max 10MB total)
-      let totalSize = 0;
-      if (files) {
-        for (let i = 0; i < files.length; i++) {
-          totalSize += files[i].size;
-        }
-      }
-      
-      if (totalSize > 10 * 1024 * 1024) {
-        throw new Error("Total file size exceeds 10MB limit");
-      }
-      
-      // Upload files to Supabase Storage (if any)
-      let fileData = null;
-      if (files && files.length > 0) {
-        const uploadedFiles = [];
-        
-        for (let i = 0; i < files.length; i++) {
-          const file = files[i];
-          const fileExt = file.name.split('.').pop();
-          const fileName = `${taskId}-${user.id}-${Date.now()}.${fileExt}`;
-          
-          const { data, error: uploadError } = await supabase.storage
-            .from('submissions')
-            .upload(fileName, file);
-          
-          if (uploadError) {
-            throw new Error(`Error uploading file: ${uploadError.message}`);
-          }
-          
-          // Get public URL
-          const { data: { publicUrl } } = supabase.storage
-            .from('submissions')
-            .getPublicUrl(fileName);
-          
-          uploadedFiles.push({
-            name: file.name,
-            size: file.size,
-            type: file.type,
-            url: publicUrl
-          });
-        }
-        
-        fileData = uploadedFiles;
-      }
-      
       // Create submission
       const { error: submitError } = await supabase
         .from('submissions')
@@ -134,8 +87,7 @@ export default function SubmitTask() {
           task: taskId,
           submitter: user.id,
           link: link || null,
-          note: note || null,
-          files: fileData
+          note: note || null
         });
 
       if (submitError) throw submitError;
@@ -349,21 +301,6 @@ export default function SubmitTask() {
                 <div className="text-right text-sm text-gray-500">
                   {note.length}/300 characters
                 </div>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="files" className="text-gray-700">Files (Optional, max 10MB total)</Label>
-                <Input
-                  id="files"
-                  type="file"
-                  multiple
-                  onChange={(e) => setFiles(e.target.files)}
-                  accept=".zip,.pdf,.jpg,.jpeg,.png,.gif"
-                  className="border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                />
-                <p className="text-sm text-gray-500">
-                  Supported formats: ZIP, PDF, JPG, PNG, GIF. Total size limit: 10MB
-                </p>
               </div>
               
               {message && (
