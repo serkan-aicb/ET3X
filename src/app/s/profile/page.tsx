@@ -326,7 +326,7 @@ export default function StudentProfile() {
                   <div className="space-y-2">
                     <div className="flex justify-between">
                       <span className="text-gray-600">Average Rating</span>
-                      <span className="font-medium">{averageSkillRating}/5</span>
+                      <span className="font-medium">{averageSkillRating}/5.0</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Total XP</span>
