@@ -286,30 +286,33 @@ export default function EducatorTaskDetail() {
       }
 
       // Get task info
-      const { data: taskData } = await supabase
+      const { data: taskData, error: taskInfoError } = await supabase
         .from('tasks')
         .select('task_mode, status, seats')
         .eq('id', taskId)
         .single();
 
+      if (taskInfoError) throw taskInfoError;
+
       const taskMode = taskData?.task_mode || 'single';
 
       if (taskMode === 'single') {
-        const { data: currentAssignments } = await supabase
+        const { data: currentAssignments, error: singleCheckError } = await supabase
           .from('task_assignments')
           .select('id')
           .eq('task', taskId);
+        if (singleCheckError) throw singleCheckError;
         if (currentAssignments && currentAssignments.length > 0) {
           setMessage("This single task already has an assigned student.");
           setTimeout(() => setMessage(""), 5000);
           return;
         }
       } else if (taskData?.seats) {
-        // enforce seats limit for multi
-        const { data: currentAssignments } = await supabase
+        const { data: currentAssignments, error: seatsCheckError } = await supabase
           .from('task_assignments')
           .select('id')
           .eq('task', taskId);
+        if (seatsCheckError) throw seatsCheckError;
         const currentCount = currentAssignments ? currentAssignments.length : 0;
         if (taskData.seats <= currentCount) {
           setMessage("No seats available for this task.");
@@ -319,11 +322,14 @@ export default function EducatorTaskDetail() {
       }
 
       // Get applicant username (best effort)
-      const { data: profileData } = await supabase
+      const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('username')
         .eq('id', applicantId)
         .single();
+      if (profileError && profileError.code !== 'PGRST116') {
+        console.warn("Error fetching applicant profile:", profileError);
+      }
       const applicantUsername = profileData?.username || null;
 
       // Insert assignment
@@ -339,25 +345,34 @@ export default function EducatorTaskDetail() {
       if (assignError) throw assignError;
 
       // Update request status to accepted (if exists)
-      await supabase
+      const { error: updateReqError } = await supabase
         .from('task_requests')
         .update({ status: 'accepted' })
         .eq('task', taskId)
         .eq('applicant', applicantId);
 
+      if (updateReqError) {
+        throw updateReqError;
+      }
+
+      // Remove this student from the local requests state so they disappear from the left list
+      setRequests(prev => prev.filter(req => req.applicant !== applicantId));
+
       // If single, close task
       if (taskMode === 'single') {
-        await supabase
+        const { error: closeError } = await supabase
           .from('tasks')
           .update({ status: 'closed' })
           .eq('id', taskId);
+        if (closeError) throw closeError;
         setMessage("Task assigned successfully! The task is now closed.");
       } else {
         setMessage("Task assigned successfully!");
       }
 
       setTimeout(() => setMessage(""), 5000);
-      verifyAssignments();
+
+      await verifyAssignments();
       router.refresh();
     } catch (e: unknown) {
       console.error("Error assigning task:", e);
@@ -386,7 +401,7 @@ export default function EducatorTaskDetail() {
 
       setMessage("Unassigned successfully.");
       setTimeout(() => setMessage(""), 5000);
-      verifyAssignments();
+      await verifyAssignments();
       router.refresh();
     } catch (e: unknown) {
       console.error("Error unassigning:", e);
@@ -413,7 +428,7 @@ export default function EducatorTaskDetail() {
       setRequests(prev => prev.filter(req => req.id !== requestId));
       setMessage("Request approved successfully");
       setTimeout(() => setMessage(""), 5000);
-      verifyAssignments();
+      await verifyAssignments();
       router.refresh();
     } catch (e: unknown) {
       console.error("Unexpected error approving request:", e);
@@ -440,7 +455,7 @@ export default function EducatorTaskDetail() {
       setRequests(prev => prev.filter(req => req.id !== requestId));
       setMessage("Request rejected successfully");
       setTimeout(() => setMessage(""), 5000);
-      verifyAssignments();
+      await verifyAssignments();
       router.refresh();
     } catch (e: unknown) {
       console.error("Unexpected error rejecting request:", e);
@@ -467,7 +482,7 @@ export default function EducatorTaskDetail() {
       setRequests(prev => prev.filter(req => req.applicant !== applicantId));
       setMessage("Request declined successfully");
       setTimeout(() => setMessage(""), 5000);
-      verifyAssignments();
+      await verifyAssignments();
       router.refresh();
     } catch (e: unknown) {
       console.error("Unexpected error declining request:", e);
@@ -479,14 +494,14 @@ export default function EducatorTaskDetail() {
   const handlePublishTask = async () => {
     const supabase = createClient();
     await supabase.from('tasks').update({ status: 'open' }).eq('id', taskId);
-    verifyAssignments();
+    await verifyAssignments();
     router.refresh();
   };
 
   const handleUnpublishTask = async () => {
     const supabase = createClient();
     await supabase.from('tasks').update({ status: 'draft' }).eq('id', taskId);
-    verifyAssignments();
+    await verifyAssignments();
     router.refresh();
   };
 
@@ -885,47 +900,45 @@ export default function EducatorTaskDetail() {
                 </p>
               ) : (
                 <div className="space-y-4">
-                  {requests
-                    .filter(req => req.status === 'pending')
-                    .map((request) => (
-                      <div key={request.id} className="flex items-center justify-between p-4 border rounded-lg">
-                        <div className="flex items-center space-x-3">
-                          <div className="flex flex-col">
-                            <span className="font-medium">
-                              {request.profiles?.username ? request.profiles.username : 
-                               request.applicant_username ? request.applicant_username :
-                               `User ${request.applicant?.substring(0, 8) || request.id.substring(0, 8)}...`}
-                            </span>
-                            {request.profiles?.did && (
-                              <span className="text-sm text-gray-500">{request.profiles.did}</span>
-                            )}
-                            {request.profiles === null && (
-                              <span className="text-sm text-gray-500">Profile loading failed</span>
-                            )}
-                            {!request.profiles && !request.applicant_username && (
-                              <span className="text-sm text-gray-500">Loading profile...</span>
-                            )}
-                          </div>
-                        </div>
-                        <div className="space-x-2">
-                          <Button 
-                            size="sm"
-                            className="bg-blue-600 hover:bg-blue-700"
-                            onClick={() => handleAssignTask(request.applicant)}
-                          >
-                            Assign
-                          </Button>
-                          <Button 
-                            size="sm"
-                            variant="outline"
-                            className="border-gray-600 text-gray-600 hover:bg-gray-50"
-                            onClick={() => handleDeclineRequest(request.applicant)}
-                          >
-                            Decline
-                          </Button>
+                  {requests.map((request) => (
+                    <div key={request.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        <div className="flex flex-col">
+                          <span className="font-medium">
+                            {request.profiles?.username ? request.profiles.username : 
+                             request.applicant_username ? request.applicant_username :
+                             `User ${request.applicant?.substring(0, 8) || request.id.substring(0, 8)}...`}
+                          </span>
+                          {request.profiles?.did && (
+                            <span className="text-sm text-gray-500">{request.profiles.did}</span>
+                          )}
+                          {request.profiles === null && (
+                            <span className="text-sm text-gray-500">Profile loading failed</span>
+                          )}
+                          {!request.profiles && !request.applicant_username && (
+                            <span className="text-sm text-gray-500">Loading profile...</span>
+                          )}
                         </div>
                       </div>
-                    ))
+                      <div className="space-x-2">
+                        <Button 
+                          size="sm"
+                          className="bg-blue-600 hover:bg-blue-700"
+                          onClick={() => handleAssignTask(request.applicant)}
+                        >
+                          Assign
+                        </Button>
+                        <Button 
+                          size="sm"
+                          variant="outline"
+                          className="border-gray-600 text-gray-600 hover:bg-gray-50"
+                          onClick={() => handleDeclineRequest(request.applicant)}
+                        >
+                          Decline
+                        </Button>
+                      </div>
+                    </div>
+                  ))
                   }
                   {/* Add group assignment button when multiple students are selected */}
                   {/* Removed group assignment functionality as per requirements */}
