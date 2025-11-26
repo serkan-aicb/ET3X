@@ -38,7 +38,6 @@ export default function EducatorTaskDetail() {
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
   const [message, setMessage] = useState("");
-  const [selectedApplicants, setSelectedApplicants] = useState<string[]>([]);
   const router = useRouter();
   const params = useParams();
   const taskId = params.taskId as string;
@@ -259,13 +258,7 @@ export default function EducatorTaskDetail() {
     }
   };
 
-  const toggleApplicantSelection = (applicantId: string) => {
-    setSelectedApplicants(prev =>
-      prev.includes(applicantId)
-        ? prev.filter(id => id !== applicantId)
-        : [...prev, applicantId]
-    );
-  };
+// ... existing code ...
 
   const handleAssignTask = async (applicantId: string) => {
     const supabase = createClient();
@@ -370,123 +363,6 @@ export default function EducatorTaskDetail() {
       console.error("Error assigning task:", e);
       const errorMessage = e instanceof Error ? e.message : String(e);
       setMessage(`Error assigning task: ${errorMessage}`);
-      setTimeout(() => setMessage(""), 5000);
-    }
-  };
-
-  const handleAssignGroupTask = async (applicantIds: string[]) => {
-    const supabase = createClient();
-    try {
-      const { data: userData } = await supabase.auth.getUser();
-      const user = userData?.user;
-      if (!user) {
-        setMessage("You must be logged in to assign tasks.");
-        setTimeout(() => setMessage(""), 5000);
-        return;
-      }
-
-      const { data: taskData } = await supabase
-        .from('tasks')
-        .select('task_mode, seats')
-        .eq('id', taskId)
-        .single();
-
-      const taskMode = taskData?.task_mode || 'single';
-
-      if (taskMode === 'single' && applicantIds.length > 1) {
-        setMessage("This is a single task. You can only assign it to one student.");
-        setTimeout(() => setMessage(""), 5000);
-        return;
-      }
-
-      // Enforce seats
-      if (taskData?.seats) {
-        const { data: currentAssignments } = await supabase
-          .from('task_assignments')
-          .select('id')
-          .eq('task', taskId);
-        const currentCount = currentAssignments ? currentAssignments.length : 0;
-        const availableSeats = taskData.seats - currentCount;
-        if (applicantIds.length > availableSeats) {
-          setMessage(`Not enough seats available. Only ${availableSeats} seats left.`);
-          setTimeout(() => setMessage(""), 5000);
-          return;
-        }
-      }
-
-      // fetch usernames and insert assignments
-      for (const applicantId of applicantIds) {
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('username')
-          .eq('id', applicantId)
-          .single();
-        const username = profileData?.username || null;
-
-        await supabase
-          .from('task_assignments')
-          .insert({
-            task: taskId,
-            assignee: applicantId,
-            assignee_username: username,
-            status: 'in_progress'
-          });
-
-        await supabase
-          .from('task_requests')
-          .update({ status: 'accepted' })
-          .eq('task', taskId)
-          .eq('applicant', applicantId);
-      }
-
-      if (taskMode === 'single') {
-        await supabase.from('tasks').update({ status: 'closed' }).eq('id', taskId);
-      }
-
-      setMessage("Assigned group successfully.");
-      setTimeout(() => setMessage(""), 5000);
-      verifyAssignments();
-      router.refresh();
-    } catch (e: unknown) {
-      console.error("Error assigning group task:", e);
-      const errorMessage = e instanceof Error ? e.message : String(e);
-      setMessage(`Error assigning group: ${errorMessage}`);
-      setTimeout(() => setMessage(""), 5000);
-    }
-  };
-
-  const handleAssignAllInGroups = async () => {
-    const supabase = createClient();
-    try {
-      const requestedApplicants = requests
-        .filter(req => req.status === 'pending')
-        .map(req => req.applicant);
-
-      if (requestedApplicants.length === 0) {
-        setMessage("No requests to assign.");
-        setTimeout(() => setMessage(""), 5000);
-        return;
-      }
-
-      // chunk into groups of 5
-      const groups: string[][] = [];
-      for (let i = 0; i < requestedApplicants.length; i += 5) {
-        groups.push(requestedApplicants.slice(i, i + 5));
-      }
-
-      // assign each group (respect seats & single mode)
-      for (const group of groups) {
-        await handleAssignGroupTask(group);
-      }
-
-      setMessage("All groups processed.");
-      setTimeout(() => setMessage(""), 5000);
-      verifyAssignments();
-      router.refresh();
-    } catch (e: unknown) {
-      console.error("Error assigning all in groups:", e);
-      const errorMessage = e instanceof Error ? e.message : String(e);
-      setMessage(`Error assigning all: ${errorMessage}`);
       setTimeout(() => setMessage(""), 5000);
     }
   };
@@ -1014,13 +890,6 @@ export default function EducatorTaskDetail() {
                     .map((request) => (
                       <div key={request.id} className="flex items-center justify-between p-4 border rounded-lg">
                         <div className="flex items-center space-x-3">
-                          {/* Add checkbox for group selection */}
-                          <input
-                            type="checkbox"
-                            checked={selectedApplicants.includes(request.applicant)}
-                            onChange={() => toggleApplicantSelection(request.applicant)}
-                            className="h-5 w-5 text-blue-600 rounded focus:ring-blue-500"
-                          />
                           <div className="flex flex-col">
                             <span className="font-medium">
                               {request.profiles?.username ? request.profiles.username : 
@@ -1059,37 +928,13 @@ export default function EducatorTaskDetail() {
                     ))
                   }
                   {/* Add group assignment button when multiple students are selected */}
-                  {selectedApplicants.length > 1 && (
-                    <div className="pt-4">
-                      <Button 
-                        className="bg-green-600 hover:bg-green-700"
-                        onClick={() => handleAssignGroupTask(selectedApplicants)}
-                      >
-                        Assign to {selectedApplicants.length} Selected Students
-                      </Button>
-                    </div>
-                  )}
+                  {/* Removed group assignment functionality as per requirements */}
                   
                   {/* Add button to assign all applicants in groups of 5 */}
-                  {requests.filter(req => req.status === 'pending').length > 0 && (
-                    <div className="pt-4">
-                      <Button 
-                        className="bg-purple-600 hover:bg-purple-700"
-                        onClick={handleAssignAllInGroups}
-                      >
-                        Assign All in Groups of 5
-                      </Button>
-                    </div>
-                  )}
+                  {/* Removed "Assign All in Groups of 5" button as per requirements */}
                   
                   {/* Show grouping suggestion */}
-                  {requests.filter(req => req.status === 'pending').length > 0 && (
-                    <div className="pt-4">
-                      <p className="text-sm text-gray-600">
-                        Tip: You can select multiple students and assign them as a group, or use the &quot;Assign All in Groups of 5&quot; button to automatically group all applicants.
-                      </p>
-                    </div>
-                  )}
+                  {/* Removed grouping suggestion text as per requirements */}
                 </div>
               )}
             </CardContent>
