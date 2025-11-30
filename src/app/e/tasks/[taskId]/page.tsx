@@ -20,12 +20,14 @@ type Request = Tables<'task_requests'> & {
   profiles: {
     username: string;
     did: string;
+    matriculation_number?: string | null;
   } | null;
 };
 type Assignment = Tables<'task_assignments'> & {
   profiles: {
     username: string;
     did: string;
+    matriculation_number?: string | null;
   } | null;
 };
 type Submission = Tables<'submissions'>;
@@ -211,7 +213,7 @@ export default function EducatorTaskDetail() {
         .from('task_assignments')
         .select(`
           *,
-          profiles!task_assignments_assignee_fkey(username, did)
+          profiles!task_assignments_assignee_fkey(username, did, matriculation_number)
         `)
         .eq('task', taskId);
 
@@ -221,7 +223,7 @@ export default function EducatorTaskDetail() {
         .from('task_requests')
         .select(`
           *,
-          profiles!task_requests_applicant_fkey(username, did)
+          profiles!task_requests_applicant_fkey(username, did, matriculation_number)
         `)
         .eq('task', taskId)
         .eq('status', 'pending');
@@ -235,7 +237,7 @@ export default function EducatorTaskDetail() {
           .from('task_requests')
           .select(`
             *,
-            profiles!task_requests_applicant_fkey(username, did)
+            profiles!task_requests_applicant_fkey(username, did, matriculation_number)
           `)
           .eq('task', taskId);
         
@@ -909,6 +911,9 @@ export default function EducatorTaskDetail() {
                              request.applicant_username ? request.applicant_username :
                              `User ${request.applicant?.substring(0, 8) || request.id.substring(0, 8)}...`}
                           </span>
+                          {request.profiles?.matriculation_number && (
+                            <span className="text-sm text-gray-500">Matriculation: {request.profiles.matriculation_number}</span>
+                          )}
                           {request.profiles?.did && (
                             <span className="text-sm text-gray-500">{request.profiles.did}</span>
                           )}
@@ -975,6 +980,9 @@ export default function EducatorTaskDetail() {
                            assignment.profiles?.did ? assignment.profiles.did : 
                            `User ${assignment.assignee.substring(0, 8)}...`}
                         </span>
+                        {assignment.profiles?.matriculation_number && (
+                          <span className="text-sm text-gray-500">Matriculation: {assignment.profiles.matriculation_number}</span>
+                        )}
                         {assignment.profiles?.did && (
                           <span className="text-sm text-gray-500">{assignment.profiles.did}</span>
                         )}

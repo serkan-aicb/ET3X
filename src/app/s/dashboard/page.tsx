@@ -13,6 +13,7 @@ type UserWithProfile = {
   email: string | undefined;
   username: string;
   did: string;
+  matriculation_number?: string | null;
 };
 
 export default function StudentDashboard() {
@@ -39,7 +40,7 @@ export default function StudentDashboard() {
       // Get profile
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
-        .select('username, did')
+        .select('username, did, matriculation_number')
         .eq('id', user.id)
         .single();
       
@@ -49,11 +50,18 @@ export default function StudentDashboard() {
         return;
       }
       
+      // If user doesn't have a matriculation number, redirect to collection page
+      if (!profile.matriculation_number) {
+        router.push("/s/collect-matriculation");
+        return;
+      }
+      
       setUser({
         id: user.id,
         email: user.email,
         username: profile.username,
-        did: profile.did
+        did: profile.did,
+        matriculation_number: profile.matriculation_number
       });
       
       // Get task statistics

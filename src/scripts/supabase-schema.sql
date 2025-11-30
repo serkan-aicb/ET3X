@@ -46,6 +46,7 @@ CREATE TABLE IF NOT EXISTS profiles (
   username TEXT UNIQUE,
   role user_role DEFAULT 'student',
   did TEXT UNIQUE,
+  matriculation_number TEXT UNIQUE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

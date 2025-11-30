@@ -4,12 +4,15 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { createClient } from "@/lib/supabase/client";
 import { Tables } from '@/lib/supabase/types';
 import Link from "next/link";
 
-type Profile = Tables<'profiles'>;
+type Profile = Tables<'profiles'> & {
+  matriculation_number?: string | null;
+};
 type Rating = Tables<'ratings'> & {
   tasks: {
     title: string;
@@ -33,10 +36,13 @@ type IndividualSkillRating = {
 
 export default function StudentProfile() {
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [matriculationNumber, setMatriculationNumber] = useState('');
+  const [isEditing, setIsEditing] = useState(false);
   const [aggregatedTaskRatings, setAggregatedTaskRatings] = useState<AggregatedTaskRating[]>([]);
   const [skillRatings, setSkillRatings] = useState<IndividualSkillRating[]>([]);
   const [skills, setSkills] = useState<Skill[]>([]);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -64,6 +70,7 @@ export default function StudentProfile() {
       }
       
       setProfile(profileData);
+      setMatriculationNumber(profileData.matriculation_number || '');
       
       // Get skills data
       const { data: skillsData, error: skillsError } = await supabase
@@ -180,6 +187,46 @@ export default function StudentProfile() {
   const getSkillName = (skillId: number) => {
     const skill = skills.find(s => s.id === skillId);
     return skill ? skill.label : `Skill #${skillId}`;
+  };
+
+  const handleSaveMatriculationNumber = async () => {
+    if (!profile) return;
+    
+    // Validate matriculation number format
+    if (matriculationNumber) {
+      const trimmedNumber = matriculationNumber.trim();
+      
+      if (trimmedNumber.length > 0 && (trimmedNumber.length < 5 || trimmedNumber.length > 20)) {
+        alert("Matriculation number must be between 5 and 20 characters.");
+        return;
+      }
+      
+      if (trimmedNumber.length > 0 && !/^[A-Za-z0-9]+$/.test(trimmedNumber)) {
+        alert("Matriculation number can only contain letters and numbers.");
+        return;
+      }
+    }
+    
+    setSaving(true);
+    const supabase = createClient();
+    
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ matriculation_number: matriculationNumber || null })
+        .eq('id', profile.id);
+        
+      if (error) throw error;
+      
+      // Update local state
+      setProfile({ ...profile, matriculation_number: matriculationNumber || null });
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Error saving matriculation number:', error);
+      alert('Failed to save matriculation number. Please try again.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   if (loading) {
@@ -318,6 +365,53 @@ export default function StudentProfile() {
                 <div>
                   <h3 className="text-sm font-medium text-gray-500">Role</h3>
                   <p className="font-medium capitalize">{profile?.role}</p>
+                </div>
+                
+                <div>
+                  <div className="flex justify-between items-center">
+                    <h3 className="text-sm font-medium text-gray-500">Matriculation Number</h3>
+                    {isEditing ? (
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        onClick={() => setIsEditing(false)}
+                        disabled={saving}
+                      >
+                        Cancel
+                      </Button>
+                    ) : (
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        onClick={() => setIsEditing(true)}
+                      >
+                        Edit
+                      </Button>
+                    )}
+                  </div>
+                  {isEditing ? (
+                    <div className="flex space-x-2 mt-2">
+                      <Input
+                        type="text"
+                        value={matriculationNumber}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setMatriculationNumber(e.target.value)}
+                        placeholder="e.g., 123456 or STUD2023001"
+                        className="flex-1"
+                      />
+                      <p className="text-sm text-gray-500 mt-1">5-20 characters, letters and numbers only</p>
+                      <Button 
+                        size="sm" 
+                        onClick={handleSaveMatriculationNumber}
+                        disabled={saving}
+                      >
+                        {saving ? 'Saving...' : 'Save'}
+                      </Button>
+                    </div>
+                  ) : (
+                    <p className="font-medium">
+                      {profile?.matriculation_number || 'Not provided'}
+                    </p>
+                  )}
                 </div>
                 
                 {/* Stats Section */}

@@ -179,7 +179,7 @@ export async function GET(request: Request) {
           
           // Use service client data
           const redirectPath = serviceUserData.role === 'student' 
-            ? '/s/dashboard' 
+            ? '/s/collect-matriculation' 
             : serviceUserData.role === 'educator' 
               ? '/e/dashboard' 
               : '/admin/overview'
@@ -193,7 +193,7 @@ export async function GET(request: Request) {
       }
       
       const redirectPath = userData.role === 'student' 
-        ? '/s/dashboard' 
+        ? '/s/collect-matriculation' 
         : userData.role === 'educator' 
           ? '/e/dashboard' 
           : '/admin/overview'
