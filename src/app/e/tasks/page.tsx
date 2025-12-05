@@ -28,6 +28,7 @@ type Task = Tables<"tasks"> & {
 export default function EducatorTasks() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -35,8 +36,20 @@ export default function EducatorTasks() {
       const supabase = createClient();
       
       // Get current user
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError) {
+        console.error("Error fetching user:", userError);
+        setError("Failed to fetch user data");
+        setLoading(false);
+        return;
+      }
+      
+      if (!user) {
+        console.log("No user found");
+        setError("Not authenticated");
+        setLoading(false);
+        return;
+      }
       
       console.log("Fetching tasks for user:", user.id);
       
@@ -54,8 +67,15 @@ export default function EducatorTasks() {
       
       console.log("Tasks fetch result:", { tasksWithDetails, tasksError });
       
+      if (tasksError) {
+        console.error("Error fetching tasks:", tasksError);
+        setError(`Failed to fetch tasks: ${tasksError.message}`);
+        setLoading(false);
+        return;
+      }
+      
       // If we have tasks, fetch skills data for each task
-      if (!tasksError && tasksWithDetails && tasksWithDetails.length > 0) {
+      if (tasksWithDetails && tasksWithDetails.length > 0) {
         // Get all unique skill IDs from all tasks
         const allSkillIds = [...new Set(tasksWithDetails.flatMap((task: Task) => 
           task.skills && Array.isArray(task.skills) ? task.skills : []
@@ -71,7 +91,9 @@ export default function EducatorTasks() {
           
           console.log("Skills data fetch result:", { skillsData, skillsError });
           
-          if (!skillsError && skillsData) {
+          if (skillsError) {
+            console.error("Error fetching skills:", skillsError);
+          } else if (skillsData) {
             // Create a map of skill ID to skill data
             const skillsMap: Record<number, { id: number; label: string; description: string | null }> = {};
             skillsData.forEach((skill) => {
@@ -88,10 +110,7 @@ export default function EducatorTasks() {
         }
       }
       
-      if (!tasksError && tasksWithDetails) {
-        setTasks(tasksWithDetails);
-      }
-      
+      setTasks(tasksWithDetails || []);
       setLoading(false);
     };
     
@@ -187,6 +206,63 @@ export default function EducatorTasks() {
     );
   }
 
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col">
+        <header className="bg-white shadow-sm">
+          <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+            <Link href="/e/dashboard" className="flex items-center space-x-2">
+              <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center">
+                <span className="text-white font-bold text-xl">T</span>
+              </div>
+              <span className="text-2xl font-bold text-blue-800">Talent3X</span>
+            </Link>
+            <div className="flex space-x-2">
+              <Button variant="outline" onClick={() => router.push("/e/dashboard")}>
+                Dashboard
+              </Button>
+            </div>
+          </div>
+        </header>
+        
+        <main className="container mx-auto px-4 py-8 flex-grow">
+          <Card className="shadow-lg">
+            <CardHeader>
+              <CardTitle className="text-red-600">Error Loading Tasks</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-600 mb-4">{error}</p>
+              <Button onClick={() => window.location.reload()}>
+                Retry
+              </Button>
+            </CardContent>
+          </Card>
+        </main>
+        
+        <footer className="py-6 px-4 bg-white border-t">
+          <div className="container mx-auto">
+            <div className="flex flex-col md:flex-row justify-between items-center">
+              <div className="text-center md:text-left mb-4 md:mb-0">
+                <p className="text-gray-500">© {new Date().getFullYear()} Talent3X. Oulu Pilot.</p>
+              </div>
+              <div className="flex space-x-6">
+                <Link href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
+                  Terms of Use
+                </Link>
+                <Link href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
+                  Disclaimer
+                </Link>
+                <Link href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
+                  Privacy Policy
+                </Link>
+              </div>
+            </div>
+          </div>
+        </footer>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col">
       {/* Header */}
@@ -230,7 +306,7 @@ export default function EducatorTasks() {
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {tasks.map((task) => (
               <Card key={task.id} className="shadow-lg rounded-xl overflow-hidden transform transition-all hover:scale-105">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between p-6">
                   <div>
                     <CardTitle className="text-lg text-gray-900">{task.title}</CardTitle>
                     {task.module && (
