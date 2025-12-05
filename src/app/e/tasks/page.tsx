@@ -305,33 +305,40 @@ export default function EducatorTasks() {
         ) : (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {tasks.map((task) => (
-              <Card key={task.id} className="shadow-lg rounded-xl overflow-hidden transform transition-all hover:scale-105">
-                <CardHeader className="pb-3">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <CardTitle className="text-lg text-gray-900">{task.title}</CardTitle>
-                      {task.module && (
-                        <CardDescription className="text-gray-600">{task.module}</CardDescription>
-                      )}
-                    </div>
+              <Card 
+                key={task.id} 
+                className="rounded-2xl shadow-md overflow-hidden transform transition-all hover:shadow-lg hover:-translate-y-0.5"
+              >
+                <CardHeader className="bg-white pb-3 relative">
+                  <div className="absolute top-4 right-4">
                     {getStatusBadge(task.status)}
                   </div>
+                  <CardTitle className="text-lg text-gray-900 pr-12">{task.title}</CardTitle>
+                  {task.module && (
+                    <CardDescription className="text-sm text-gray-500">{task.module}</CardDescription>
+                  )}
+                  {task.description && (
+                    <p className="text-sm text-gray-600 line-clamp-2 mt-2">
+                      {task.description}
+                    </p>
+                  )}
                 </CardHeader>
                 <CardContent className="pt-0">
-                  <div className="flex items-center space-x-4 mt-2">
-                    <span className="inline-flex items-center text-sm text-gray-500">
+                  {/* Meta info row */}
+                  <div className="flex justify-between items-center text-xs text-gray-500 mt-3">
+                    <span className="inline-flex items-center">
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                       </svg>
                       {task.profiles?.username || 'Unknown'}
                     </span>
-                    <span className="inline-flex items-center text-sm text-gray-500">
+                    <span className="inline-flex items-center">
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                       </svg>
                       {task.task_assignments?.length || 0} assigned
                     </span>
-                    <span className="inline-flex items-center text-sm text-gray-500">
+                    <span className="inline-flex items-center">
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
                       </svg>
@@ -342,26 +349,28 @@ export default function EducatorTasks() {
                   {/* Skills display */}
                   {task.skills_data && task.skills_data.length > 0 && (
                     <div className="mt-3">
-                      <div className="flex flex-wrap gap-1">
-                        {task.skills_data.slice(0, 3).map((skill) => (
-                          <span key={skill.id} className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      <div className="flex flex-wrap">
+                        {task.skills_data.slice(0, 4).map((skill) => (
+                          <span 
+                            key={skill.id} 
+                            className="inline-flex items-center rounded-full bg-blue-50 text-blue-700 px-3 py-1 text-xs font-medium mr-2 mb-2"
+                          >
                             {skill.label}
                           </span>
                         ))}
-                        {task.skills_data.length > 3 && (
-                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                            +{task.skills_data.length - 3} more
+                        {task.skills_data.length > 4 && (
+                          <span className="inline-flex items-center rounded-full bg-gray-100 text-gray-800 px-3 py-1 text-xs font-medium mr-2 mb-2">
+                            +{task.skills_data.length - 4} more
                           </span>
                         )}
                       </div>
                     </div>
                   )}
                 </CardContent>
-                <CardFooter className="bg-gray-50 pt-3">
+                <CardFooter className="pt-0">
                   <Button 
-                    variant="outline" 
+                    className="bg-blue-600 hover:bg-blue-700 text-white w-full rounded-lg py-2 text-sm font-medium mt-4"
                     onClick={() => router.push(`/e/tasks/${task.id}`)}
-                    className="w-full border-blue-600 text-blue-600 hover:bg-blue-50"
                   >
                     View Details
                   </Button>
