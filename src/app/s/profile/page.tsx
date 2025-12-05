@@ -192,17 +192,17 @@ export default function StudentProfile() {
   const handleSaveMatriculationNumber = async () => {
     if (!profile) return;
     
-    // Validate matriculation number format
+    // Validate student number format
     if (matriculationNumber) {
       const trimmedNumber = matriculationNumber.trim();
       
       if (trimmedNumber.length > 0 && (trimmedNumber.length < 5 || trimmedNumber.length > 20)) {
-        alert("Matriculation number must be between 5 and 20 characters.");
+        alert("Student number must be between 5 and 20 characters.");
         return;
       }
       
       if (trimmedNumber.length > 0 && !/^[A-Za-z0-9]+$/.test(trimmedNumber)) {
-        alert("Matriculation number can only contain letters and numbers.");
+        alert("Student number can only contain letters and numbers.");
         return;
       }
     }
@@ -222,8 +222,8 @@ export default function StudentProfile() {
       setProfile({ ...profile, matriculation_number: matriculationNumber || null });
       setIsEditing(false);
     } catch (error) {
-      console.error('Error saving matriculation number:', error);
-      alert('Failed to save matriculation number. Please try again.');
+      console.error('Error saving student number:', error);
+      alert('Failed to save student number. Please try again.');
     } finally {
       setSaving(false);
     }
@@ -369,7 +369,7 @@ export default function StudentProfile() {
                 
                 <div>
                   <div className="flex justify-between items-center">
-                    <h3 className="text-sm font-medium text-gray-500">Matriculation Number</h3>
+                    <h3 className="text-sm font-medium text-gray-500">Student Number</h3>
                     {isEditing ? (
                       <Button 
                         size="sm" 

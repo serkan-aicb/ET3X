@@ -29,7 +29,7 @@ export default function CollectMatriculationPage() {
         return;
       }
       
-      // Check if user already has a matriculation number
+      // Check if user already has a student number
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('matriculation_number')
@@ -42,7 +42,7 @@ export default function CollectMatriculationPage() {
         return;
       }
       
-      // If user already has a matriculation number, redirect to dashboard
+      // If user already has a student number, redirect to dashboard
       if (profile.matriculation_number) {
         router.push("/s/dashboard");
         return;
@@ -60,18 +60,18 @@ export default function CollectMatriculationPage() {
     const trimmedNumber = matriculationNumber.trim();
     
     if (!trimmedNumber) {
-      setError("Please enter your matriculation number.");
+      setError("Please enter your student number.");
       return;
     }
     
-    // Validate matriculation number format
+    // Validate student number format
     if (trimmedNumber.length < 5 || trimmedNumber.length > 20) {
-      setError("Matriculation number must be between 5 and 20 characters.");
+      setError("Student number must be between 5 and 20 characters.");
       return;
     }
     
     if (!/^[A-Za-z0-9]+$/.test(trimmedNumber)) {
-      setError("Matriculation number can only contain letters and numbers.");
+      setError("Student number can only contain letters and numbers.");
       return;
     }
     
@@ -88,7 +88,7 @@ export default function CollectMatriculationPage() {
         throw new Error("User not authenticated");
       }
       
-      // Update profile with matriculation number
+      // Update profile with student number
       const { error: updateError } = await supabase
         .from('profiles')
         .update({ matriculation_number: trimmedNumber })
@@ -99,8 +99,8 @@ export default function CollectMatriculationPage() {
       // Redirect to dashboard
       router.push("/s/dashboard");
     } catch (err) {
-      console.error("Error saving matriculation number:", err);
-      setError(err instanceof Error ? err.message : "Failed to save matriculation number. Please try again.");
+      console.error("Error saving student number:", err);
+      setError(err instanceof Error ? err.message : "Failed to save student number. Please try again.");
     } finally {
       setSaving(false);
     }
@@ -186,15 +186,15 @@ export default function CollectMatriculationPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
               </svg>
             </div>
-            <CardTitle className="text-2xl">Matriculation Number</CardTitle>
+            <CardTitle className="text-2xl">Student Number</CardTitle>
             <CardDescription className="text-blue-100">
-              Please enter your matriculation number to complete registration
+              Please enter your student number to complete registration
             </CardDescription>
           </CardHeader>
           <form onSubmit={handleSubmit}>
             <CardContent className="space-y-6 pt-6">
               <div className="space-y-2">
-                <Label htmlFor="matriculationNumber" className="text-gray-700">Matriculation Number</Label>
+                <Label htmlFor="matriculationNumber" className="text-gray-700">Student Number</Label>
                 <Input
                   id="matriculationNumber"
                   type="text"

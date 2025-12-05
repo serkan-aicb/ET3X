@@ -40,6 +40,7 @@ export type Database = {
           email_digest: string
           created_at: string
           updated_at: string
+          matriculation_number: string | null // Add matriculation_number field
         }
         Insert: {
           id: string
@@ -50,6 +51,7 @@ export type Database = {
           email_digest: string
           created_at?: string
           updated_at?: string
+          matriculation_number?: string | null // Add matriculation_number field
         }
         Update: {
           id?: string
@@ -60,6 +62,7 @@ export type Database = {
           email_digest?: string
           created_at?: string
           updated_at?: string
+          matriculation_number?: string | null // Add matriculation_number field
         }
         Relationships: []
       }
@@ -199,6 +202,7 @@ export type Database = {
           status: string // New status field for assignments
           submitted_at: string | null
           grade: number | null
+          assignee_matriculation_number: string | null // Add assignee_matriculation_number field
         }
         Insert: {
           id?: string
@@ -211,6 +215,7 @@ export type Database = {
           status?: string // New status field for assignments
           submitted_at?: string | null
           grade?: number | null
+          assignee_matriculation_number?: string | null // Add assignee_matriculation_number field
         }
         Update: {
           id?: string
@@ -223,6 +228,7 @@ export type Database = {
           status?: string // New status field for assignments
           submitted_at?: string | null
           grade?: number | null
+          assignee_matriculation_number?: string | null // Add assignee_matriculation_number field
         }
         Relationships: [
           {
@@ -249,6 +255,7 @@ export type Database = {
           created_at: string
           status: Database["public"]["Enums"]["request_status"]
           applicant_username: string
+          applicant_matriculation_number: string | null // Add applicant_matriculation_number field
         }
         Insert: {
           id?: string
@@ -257,6 +264,7 @@ export type Database = {
           created_at?: string
           status?: Database["public"]["Enums"]["request_status"]
           applicant_username: string
+          applicant_matriculation_number?: string | null // Add applicant_matriculation_number field
         }
         Update: {
           id?: string
@@ -265,6 +273,7 @@ export type Database = {
           created_at?: string
           status?: Database["public"]["Enums"]["request_status"]
           applicant_username?: string
+          applicant_matriculation_number?: string | null // Add applicant_matriculation_number field
         }
         Relationships: [
           {

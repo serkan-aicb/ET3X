@@ -260,8 +260,6 @@ export default function EducatorTaskDetail() {
     }
   };
 
-// ... existing code ...
-
   const handleAssignTask = async (applicantId: string) => {
     const supabase = createClient();
     try {
@@ -912,7 +910,7 @@ export default function EducatorTaskDetail() {
                              `User ${request.applicant?.substring(0, 8) || request.id.substring(0, 8)}...`}
                           </span>
                           {request.profiles?.matriculation_number && (
-                            <span className="text-sm text-gray-500">Matriculation: {request.profiles.matriculation_number}</span>
+                            <span className="text-sm text-gray-500">Student Number: {request.profiles.matriculation_number}</span>
                           )}
                           {request.profiles?.did && (
                             <span className="text-sm text-gray-500">{request.profiles.did}</span>
@@ -981,7 +979,7 @@ export default function EducatorTaskDetail() {
                            `User ${assignment.assignee.substring(0, 8)}...`}
                         </span>
                         {assignment.profiles?.matriculation_number && (
-                          <span className="text-sm text-gray-500">Matriculation: {assignment.profiles.matriculation_number}</span>
+                          <span className="text-sm text-gray-500">Student Number: {assignment.profiles.matriculation_number}</span>
                         )}
                         {assignment.profiles?.did && (
                           <span className="text-sm text-gray-500">{assignment.profiles.did}</span>

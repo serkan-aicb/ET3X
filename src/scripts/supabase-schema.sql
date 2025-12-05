@@ -81,6 +81,7 @@ CREATE TABLE IF NOT EXISTS task_requests (
   status request_status DEFAULT 'pending',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   applicant_username TEXT,
+  applicant_matriculation_number TEXT, -- Add applicant_matriculation_number field
   CONSTRAINT unique_task_applicant UNIQUE (task, applicant) -- Unique constraint to prevent duplicate requests
 );
 
@@ -89,6 +90,7 @@ CREATE TABLE IF NOT EXISTS task_assignments (
   task UUID REFERENCES tasks(id) ON DELETE CASCADE,
   assignee UUID REFERENCES profiles(id) ON DELETE CASCADE,
   assignee_username TEXT, -- Store username for compatibility
+  assignee_matriculation_number TEXT, -- Add assignee_matriculation_number field
   assigned_by UUID REFERENCES profiles(id),
   assigned_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   status TEXT DEFAULT 'in_progress', -- New status field for assignments
