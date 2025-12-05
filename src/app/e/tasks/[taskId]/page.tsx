@@ -29,6 +29,12 @@ type Assignment = Tables<'task_assignments'> & {
     did: string;
     matriculation_number?: string | null;
   } | null;
+  ratings?: {
+    task: string;
+    rated_user: string;
+    stars_avg: number | null;
+    xp: number | null;
+  }[];
 };
 type Submission = Tables<'submissions'>;
 
@@ -139,7 +145,7 @@ export default function EducatorTaskDetail() {
           .from('task_requests')
           .select(`
             *,
-            profiles!task_requests_applicant_fkey(username, did)
+            profiles!task_requests_applicant_fkey(username, did, matriculation_number)
           `)
           .eq('task', taskId)
           .eq('status', 'pending');
@@ -170,12 +176,13 @@ export default function EducatorTaskDetail() {
 
         if (isMounted) setRequests(requestsWithProfiles);
 
-        // Fetch assignments
+        // Fetch assignments with ratings
         const { data: assignmentsData } = await supabase
           .from('task_assignments')
           .select(`
             *,
-            profiles!task_assignments_assignee_fkey(username, did)
+            profiles!task_assignments_assignee_fkey(username, did, matriculation_number),
+            ratings(task, rated_user, stars_avg, xp)
           `)
           .eq('task', taskId);
 
@@ -213,7 +220,8 @@ export default function EducatorTaskDetail() {
         .from('task_assignments')
         .select(`
           *,
-          profiles!task_assignments_assignee_fkey(username, did, matriculation_number)
+          profiles!task_assignments_assignee_fkey(username, did, matriculation_number),
+          ratings(task, rated_user, stars_avg, xp)
         `)
         .eq('task', taskId);
 
@@ -333,14 +341,19 @@ export default function EducatorTaskDetail() {
       const applicantUsername = profileData?.username || null;
 
       // Insert assignment
-      const { error: assignError } = await supabase
+      const { data: assignmentData, error: assignError } = await supabase
         .from('task_assignments')
         .insert({
           task: taskId,
           assignee: applicantId,
           assignee_username: applicantUsername,
           status: 'in_progress'
-        });
+        })
+        .select(`
+          *,
+          profiles!task_assignments_assignee_fkey(username, did, matriculation_number)
+        `)
+        .single();
 
       if (assignError) throw assignError;
 
@@ -357,6 +370,11 @@ export default function EducatorTaskDetail() {
 
       // Remove this student from the local requests state so they disappear from the left list
       setRequests(prev => prev.filter(req => req.applicant !== applicantId));
+
+      // Add the new assignment to the local assignments state so it appears in the right list
+      if (assignmentData) {
+        setAssignments(prev => [...prev, assignmentData]);
+      }
 
       // If single, close task
       if (taskMode === 'single') {
@@ -905,15 +923,12 @@ export default function EducatorTaskDetail() {
                       <div className="flex items-center space-x-3">
                         <div className="flex flex-col">
                           <span className="font-medium">
-                            {request.profiles?.username ? request.profiles.username : 
+                            Username: {request.profiles?.username ? request.profiles.username : 
                              request.applicant_username ? request.applicant_username :
                              `User ${request.applicant?.substring(0, 8) || request.id.substring(0, 8)}...`}
                           </span>
                           {request.profiles?.matriculation_number && (
                             <span className="text-sm text-gray-500">Student Number: {request.profiles.matriculation_number}</span>
-                          )}
-                          {request.profiles?.did && (
-                            <span className="text-sm text-gray-500">{request.profiles.did}</span>
                           )}
                           {request.profiles === null && (
                             <span className="text-sm text-gray-500">Profile loading failed</span>
@@ -974,15 +989,21 @@ export default function EducatorTaskDetail() {
                     <div key={assignment.id} className="flex items-center justify-between p-4 border rounded-lg">
                       <div className="flex flex-col">
                         <span className="font-medium">
-                          {assignment.profiles?.username ? assignment.profiles.username : 
+                          Username: {assignment.profiles?.username ? assignment.profiles.username : 
                            assignment.profiles?.did ? assignment.profiles.did : 
                            `User ${assignment.assignee.substring(0, 8)}...`}
                         </span>
                         {assignment.profiles?.matriculation_number && (
                           <span className="text-sm text-gray-500">Student Number: {assignment.profiles.matriculation_number}</span>
                         )}
-                        {assignment.profiles?.did && (
-                          <span className="text-sm text-gray-500">{assignment.profiles.did}</span>
+                        {/* Show rating information if available */}
+                        {assignment.ratings && assignment.ratings.length > 0 && (
+                          <div className="mt-2">
+                            <span className="text-sm text-green-600">
+                              Rated: {assignment.ratings[0].stars_avg?.toFixed(1) || 'N/A'} stars, 
+                              XP: {assignment.ratings[0].xp || 0}
+                            </span>
+                          </div>
                         )}
                         {assignment.profiles === null && (
                           <span className="text-sm text-gray-500">Profile loading failed</span>

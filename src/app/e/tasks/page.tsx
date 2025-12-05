@@ -35,21 +35,24 @@ export default function EducatorTasks() {
       
       console.log("Fetching tasks for user:", user.id);
       
-      // Get tasks where creator = auth.uid() (educator's own tasks only)
-      const { data, error } = await supabase
+      // Fetch task with creator profile and assignment counts
+      const { data: tasksWithDetails, error: tasksError } = await supabase
         .from('tasks')
         .select(`
-          *
+          *,
+          profiles!tasks_creator_fkey(username),
+          task_assignments(count),
+          ratings(count)
         `)
         .eq('creator', user.id)
         .order('created_at', { ascending: false });
       
-      console.log("Tasks fetch result:", { data, error });
+      console.log("Tasks fetch result:", { tasksWithDetails, tasksError });
       
       // If we have tasks, fetch skills data for each task
-      if (!error && data && data.length > 0) {
+      if (!tasksError && tasksWithDetails && tasksWithDetails.length > 0) {
         // Get all unique skill IDs from all tasks
-        const allSkillIds = [...new Set(data.flatMap((task: Task) => 
+        const allSkillIds = [...new Set(tasksWithDetails.flatMap((task: Task) => 
           task.skills && Array.isArray(task.skills) ? task.skills : []
         ))].filter((id): id is number => id !== undefined && id !== null);
         
@@ -71,7 +74,7 @@ export default function EducatorTasks() {
             });
             
             // Add skills_data to each task
-            data.forEach((task: Task) => {
+            tasksWithDetails.forEach((task: Task) => {
               if (task.skills && Array.isArray(task.skills)) {
                 task.skills_data = task.skills.map((skillId: number) => skillsMap[skillId]).filter(Boolean);
               }
@@ -80,8 +83,8 @@ export default function EducatorTasks() {
         }
       }
       
-      if (!error && data) {
-        setTasks(data);
+      if (!tasksError && tasksWithDetails) {
+        setTasks(tasksWithDetails);
       }
       
       setLoading(false);
@@ -222,50 +225,41 @@ export default function EducatorTasks() {
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {tasks.map((task) => (
               <Card key={task.id} className="shadow-lg rounded-xl overflow-hidden transform transition-all hover:scale-105">
-                <CardHeader className="bg-white">
-                  <CardTitle className="text-lg text-gray-900">{task.title}</CardTitle>
-                  {task.module && (
-                    <CardDescription className="text-gray-600">{task.module}</CardDescription>
-                  )}
-                  {task.profiles && (
-                    <div className="text-sm text-gray-500 mt-1">
-                      Created by: {task.profiles.username}
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-lg text-gray-900">{task.title}</CardTitle>
+                    {task.module && (
+                      <CardDescription className="text-gray-600">{task.module}</CardDescription>
+                    )}
+                    <div className="flex items-center space-x-4 mt-2">
+                      <span className="inline-flex items-center text-sm text-gray-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                        {task.profiles?.username || 'Unknown'}
+                      </span>
+                      <span className="inline-flex items-center text-sm text-gray-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                        {task.task_assignments?.length || 0} assigned
+                      </span>
+                      <span className="inline-flex items-center text-sm text-gray-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                        </svg>
+                        {task.ratings?.length || 0} rated
+                      </span>
                     </div>
-                  )}
-                </CardHeader>
-                <CardContent>
-                  {task.description && (
-                    <p className="text-sm text-gray-600 line-clamp-2">
-                      {task.description}
-                    </p>
-                  )}
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {getStatusBadge(task.status)}
-                    {task.skill_level && (
-                      <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800">
-                        {task.skill_level}
-                      </span>
-                    )}
-                    {task.license && (
-                      <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
-                        {task.license}
-                      </span>
-                    )}
                   </div>
-                </CardContent>
-                <CardFooter className="flex justify-between bg-gray-50">
-                  <span className="text-sm text-gray-600">
-                    {task.task_mode === 'single' ? 'Single' : 'Multi'} Assignment
-                  </span>
                   <Button 
                     variant="outline" 
-                    size="sm"
-                    className="border-blue-600 text-blue-600 hover:bg-blue-50"
                     onClick={() => router.push(`/e/tasks/${task.id}`)}
+                    className="border-blue-600 text-blue-600 hover:bg-blue-50"
                   >
                     View Details
                   </Button>
-                </CardFooter>
+                </div>
               </Card>
             ))}
           </div>

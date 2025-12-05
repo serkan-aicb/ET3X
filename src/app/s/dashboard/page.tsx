@@ -16,6 +16,18 @@ type UserWithProfile = {
   matriculation_number?: string | null;
 };
 
+type Task = {
+  id: string;
+  status: string;
+};
+
+type AssignmentWithTask = {
+  id: string;
+  task: string;
+  status: string;
+  tasks: Task | Task[] | null;
+};
+
 export default function StudentDashboard() {
   const [user, setUser] = useState<UserWithProfile | null>(null);
   const [stats, setStats] = useState({
@@ -64,13 +76,20 @@ export default function StudentDashboard() {
         matriculation_number: profile.matriculation_number
       });
       
-      // Get task statistics
+      // Get task statistics - FIXED IMPLEMENTATION
       console.log("Fetching task assignments for user:", user.id);
+      
+      // Fetch all assignments for the user with task details
       const { data: assignments, error: assignmentsError } = await supabase
         .from('task_assignments')
         .select(`
+          id,
           task,
-          tasks(status)
+          status,
+          tasks (
+            id,
+            status
+          )
         `)
         .eq('assignee', user.id);
       
@@ -78,21 +97,54 @@ export default function StudentDashboard() {
       
       if (!assignmentsError && assignments) {
         // Count tasks by status
-        let totalTasks = 0;
-        let completedTasks = 0; // 'rated' status
-        let pendingTasks = 0;   // 'assigned' and 'delivered' status
+        const totalTasks = assignments.length;
+        let completedTasks = 0; // Tasks with ratings (graded status)
+        let pendingTasks = 0;   // Tasks not yet submitted or not fully rated
         
-        assignments.forEach(assignment => {
-          if (assignment.tasks && assignment.tasks.length > 0) {
-            const task = assignment.tasks[0];
-            totalTasks++;
-            if (task.status === 'rated') {
-              completedTasks++;
-            } else if (task.status === 'assigned' || task.status === 'delivered') {
+        // For each assignment, check if there's a submission and rating
+        for (const assignment of assignments) {
+          // Check if task has graded status
+          // Handle both array and object cases for tasks
+          let taskStatus = '';
+          if (assignment.tasks) {
+            if (Array.isArray(assignment.tasks)) {
+              if (assignment.tasks.length > 0) {
+                taskStatus = assignment.tasks[0].status;
+              }
+            } else {
+              const taskObj = assignment.tasks as Task;
+              taskStatus = taskObj.status;
+            }
+          }
+          
+          if (taskStatus === 'graded') {
+            completedTasks++;
+          } else {
+            // Check if there's a submission for this assignment
+            const { data: submissions } = await supabase
+              .from('submissions')
+              .select('id')
+              .eq('task', assignment.task)
+              .eq('submitter', user.id)
+              .limit(1);
+            
+            // Check if there's a rating for this assignment
+            const { data: ratings } = await supabase
+              .from('ratings')
+              .select('id')
+              .eq('task', assignment.task)
+              .eq('rated_user', user.id)
+              .limit(1);
+            
+            // If submitted but not rated, it's pending
+            // If not submitted at all, it's also pending
+            if ((submissions && submissions.length > 0) && (!ratings || ratings.length === 0)) {
+              pendingTasks++;
+            } else if (!submissions || submissions.length === 0) {
               pendingTasks++;
             }
           }
-        });
+        }
         
         console.log("Task statistics:", { totalTasks, completedTasks, pendingTasks });
         
@@ -152,7 +204,7 @@ export default function StudentDashboard() {
                 <Skeleton className="h-6 w-48" />
               </CardHeader>
               <CardContent>
-                <Skeleton className="h-32 w-full" />
+                <Skeleton className="h-332 w-full" />
               </CardContent>
             </Card>
             
