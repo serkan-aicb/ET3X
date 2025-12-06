@@ -3,11 +3,11 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { createClient } from "@/lib/supabase/client";
 import { Tables } from '@/lib/supabase/types';
-import Link from "next/link";
+import { AppLayout } from "@/components/app-layout";
+import { SharedCard } from "@/components/shared-card";
 
 type Task = Tables<'tasks'> & {
   skills_data?: {
@@ -241,94 +241,33 @@ export default function StudentTasks() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex flex-col">
-        <header className="bg-card shadow-sm border-b">
-          <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-            <Link href="/s/dashboard" className="flex items-center space-x-2">
-              <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-xl">T</span>
-              </div>
-              <span className="text-2xl font-bold text-foreground">Talent3X</span>
-            </Link>
-            <div className="flex space-x-2">
-              <Button variant="outline" onClick={() => router.push("/s/dashboard")}>
-                Dashboard
-              </Button>
-            </div>
-          </div>
-        </header>
-        
-        <main className="container mx-auto px-4 py-8 flex-grow">
-          <div className="mb-8">
+      <AppLayout userRole="student">
+        <div className="space-y-8">
+          <div>
             <Skeleton className="h-10 w-64 mb-2" />
             <Skeleton className="h-4 w-96" />
           </div>
           
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {[1, 2, 3, 4, 5, 6].map((i) => (
-              <Card key={i} className="shadow-lg">
-                <CardHeader>
-                  <Skeleton className="h-6 w-3/4" />
-                  <Skeleton className="h-4 w-1/2" />
-                </CardHeader>
-                <CardContent>
-                  <Skeleton className="h-4 w-full mb-2" />
-                  <Skeleton className="h-4 w-5/6" />
-                </CardContent>
-                <CardFooter>
-                  <Skeleton className="h-10 w-full" />
-                </CardFooter>
-              </Card>
+              <SharedCard key={i}>
+                <Skeleton className="h-6 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+                <Skeleton className="h-4 w-full mb-2" />
+                <Skeleton className="h-4 w-5/6" />
+                <Skeleton className="h-10 w-full" />
+              </SharedCard>
             ))}
           </div>
-        </main>
-        
-        <footer className="py-6 px-4 bg-card border-t mt-auto">
-          <div className="container mx-auto">
-            <div className="flex flex-col md:flex-row justify-between items-center">
-              <div className="text-center md:text-left mb-4 md:mb-0">
-                <p className="text-muted-foreground">© {new Date().getFullYear()} Talent3X. Oulu Pilot.</p>
-              </div>
-              <div className="flex space-x-6">
-                <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                  Terms of Use
-                </Link>
-                <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                  Disclaimer
-                </Link>
-                <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                  Privacy Policy
-                </Link>
-              </div>
-            </div>
-          </div>
-        </footer>
-      </div>
+        </div>
+      </AppLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      {/* Header */}
-      <header className="bg-card shadow-sm border-b">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <Link href="/s/dashboard" className="flex items-center space-x-2">
-            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-xl">T</span>
-            </div>
-            <span className="text-2xl font-bold text-foreground">Talent3X</span>
-          </Link>
-          <div className="flex space-x-2">
-            <Button variant="outline" onClick={() => router.push("/s/dashboard")}>
-              Dashboard
-            </Button>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="container mx-auto px-4 py-8 flex-grow">
-        <div className="mb-8">
+    <AppLayout userRole="student">
+      <div className="space-y-8">
+        <div>
           <h1 className="text-3xl font-bold text-foreground">Available Tasks</h1>
           <p className="text-muted-foreground">
             Browse and request tasks to work on
@@ -336,8 +275,8 @@ export default function StudentTasks() {
         </div>
         
         {tasks.length === 0 ? (
-          <Card className="shadow-lg">
-            <CardContent className="py-8 text-center">
+          <SharedCard>
+            <div className="py-8 text-center">
               <p className="text-muted-foreground">No tasks available at the moment.</p>
               <Button 
                 className="mt-4"
@@ -345,72 +284,46 @@ export default function StudentTasks() {
               >
                 Back to Dashboard
               </Button>
-            </CardContent>
-          </Card>
+            </div>
+          </SharedCard>
         ) : (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {tasks.map((task) => (
-              <Card key={task.id} className="shadow-lg rounded-xl overflow-hidden transform transition-all hover:scale-105 border">
-                <CardHeader className="bg-card">
-                  <CardTitle className="text-lg text-foreground">{task.title}</CardTitle>
+              <SharedCard key={task.id}>
+                <div>
+                  <h3 className="text-lg font-semibold text-foreground">{task.title}</h3>
                   {task.module && (
-                    <CardDescription className="text-muted-foreground">{task.module}</CardDescription>
+                    <p className="text-sm text-muted-foreground">{task.module}</p>
                   )}
-                </CardHeader>
-                <CardContent>
-                  {task.description && (
-                    <p className="text-sm text-muted-foreground line-clamp-2">
-                      {task.description}
-                    </p>
+                </div>
+                {task.description && (
+                  <p className="text-sm text-muted-foreground line-clamp-2">
+                    {task.description}
+                  </p>
+                )}
+                <div className="flex flex-wrap gap-2">
+                  {task.skill_level && (
+                    <span className="inline-flex items-center rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-foreground">
+                      {task.skill_level}
+                    </span>
                   )}
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {task.skill_level && (
-                      <span className="inline-flex items-center rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-foreground">
-                        {task.skill_level}
-                      </span>
-                    )}
-                    {task.license && (
-                      <span className="inline-flex items-center rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-foreground">
-                        {task.license}
-                      </span>
-                    )}
-                  </div>
-                </CardContent>
-                <CardFooter>
-                  <Button 
-                    className="w-full"
-                    onClick={() => handleViewTask(task.id)}
-                  >
-                    View Details
-                  </Button>
-                </CardFooter>
-              </Card>
+                  {task.license && (
+                    <span className="inline-flex items-center rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-foreground">
+                      {task.license}
+                    </span>
+                  )}
+                </div>
+                <Button 
+                  className="w-full"
+                  onClick={() => handleViewTask(task.id)}
+                >
+                  View Details
+                </Button>
+              </SharedCard>
             ))}
           </div>
         )}
-      </main>
-
-      {/* Footer */}
-      <footer className="py-6 px-4 bg-card border-t mt-auto">
-        <div className="container mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="text-center md:text-left mb-4 md:mb-0">
-              <p className="text-muted-foreground">© {new Date().getFullYear()} Talent3X. Oulu Pilot.</p>
-            </div>
-            <div className="flex space-x-6">
-              <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                Terms of Use
-              </Link>
-              <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                Disclaimer
-              </Link>
-              <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                Privacy Policy
-              </Link>
-            </div>
-          </div>
-        </div>
-      </footer>
-    </div>
+      </div>
+    </AppLayout>
   );
 }

@@ -3,11 +3,12 @@
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { createClient } from "@/lib/supabase/client";
 import { Tables } from '@/lib/supabase/types';
-import Link from "next/link";
+import { AppLayout } from "@/components/app-layout";
+import { SharedCard } from "@/components/shared-card";
+import { SharedPill } from "@/components/shared-pill";
 
 type Task = Tables<'tasks'> & {
   skills_data?: {
@@ -208,206 +209,94 @@ export default function StudentTaskDetail() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex flex-col">
-        <header className="bg-card shadow-sm border-b">
-          <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-            <Link href="/s/dashboard" className="flex items-center space-x-2">
-              <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-xl">T</span>
-              </div>
-              <span className="text-2xl font-bold text-foreground">Talent3X</span>
-            </Link>
-            <div className="flex space-x-2">
-              <Button variant="outline" onClick={() => router.push("/s/tasks")}>
-                Browse Tasks
-              </Button>
-              <Button variant="outline" onClick={() => router.push("/s/dashboard")}>
-                Dashboard
-              </Button>
-            </div>
-          </div>
-        </header>
-        
-        <main className="container mx-auto px-4 py-8 flex-grow">
-          <div className="mb-6">
+      <AppLayout userRole="student">
+        <div className="space-y-6">
+          <div>
             <Skeleton className="h-10 w-32" />
           </div>
           
-          <Card className="shadow-lg">
-            <CardHeader>
-              <Skeleton className="h-8 w-64" />
-              <Skeleton className="h-4 w-96 mt-2" />
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-5/6" />
-                <Skeleton className="h-20 w-full mt-6" />
-                <Skeleton className="h-32 w-full mt-6" />
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Skeleton className="h-10 w-full" />
-            </CardFooter>
-          </Card>
-        </main>
-        
-        <footer className="py-6 px-4 bg-card border-t mt-auto">
-          <div className="container mx-auto">
-            <div className="flex flex-col md:flex-row justify-between items-center">
-              <div className="text-center md:text-left mb-4 md:mb-0">
-                <p className="text-muted-foreground">© {new Date().getFullYear()} Talent3X. Oulu Pilot.</p>
-              </div>
-              <div className="flex space-x-6">
-                <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                  Terms of Use
-                </Link>
-                <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                  Disclaimer
-                </Link>
-                <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                  Privacy Policy
-                </Link>
-              </div>
+          <SharedCard>
+            <Skeleton className="h-8 w-64" />
+            <Skeleton className="h-4 w-96 mt-2" />
+            <div className="space-y-4">
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-5/6" />
+              <Skeleton className="h-20 w-full mt-6" />
+              <Skeleton className="h-32 w-full mt-6" />
             </div>
-          </div>
-        </footer>
-      </div>
+            <Skeleton className="h-10 w-full" />
+          </SharedCard>
+        </div>
+      </AppLayout>
     );
   }
 
   if (!task) {
     return (
-      <div className="min-h-screen bg-background flex flex-col">
-        <header className="bg-card shadow-sm border-b">
-          <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-            <Link href="/s/dashboard" className="flex items-center space-x-2">
-              <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-xl">T</span>
-              </div>
-              <span className="text-2xl font-bold text-foreground">Talent3X</span>
-            </Link>
-            <div className="flex space-x-2">
-              <Button variant="outline" onClick={() => router.push("/s/tasks")}>
-                Browse Tasks
-              </Button>
-              <Button variant="outline" onClick={() => router.push("/s/dashboard")}>
-                Dashboard
-              </Button>
-            </div>
+      <AppLayout userRole="student">
+        <SharedCard>
+          <div className="py-8 text-center">
+            <p className="text-muted-foreground">Task not found or not available.</p>
+            <Button 
+              className="mt-4"
+              onClick={() => router.push("/s/tasks")}
+            >
+              Browse Tasks
+            </Button>
           </div>
-        </header>
-        
-        <main className="container mx-auto px-4 py-8 flex-grow">
-          <Card className="shadow-lg">
-            <CardContent className="py-8 text-center">
-              <p className="text-muted-foreground">Task not found or not available.</p>
-              <Button 
-                className="mt-4"
-                onClick={() => router.push("/s/tasks")}
-              >
-                Browse Tasks
-              </Button>
-            </CardContent>
-          </Card>
-        </main>
-        
-        <footer className="py-6 px-4 bg-card border-t mt-auto">
-          <div className="container mx-auto">
-            <div className="flex flex-col md:flex-row justify-between items-center">
-              <div className="text-center md:text-left mb-4 md:mb-0">
-                <p className="text-muted-foreground">© {new Date().getFullYear()} Talent3X. Oulu Pilot.</p>
-              </div>
-              <div className="flex space-x-6">
-                <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                  Terms of Use
-                </Link>
-                <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                  Disclaimer
-                </Link>
-                <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                  Privacy Policy
-                </Link>
-              </div>
-            </div>
-          </div>
-        </footer>
-      </div>
+        </SharedCard>
+      </AppLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      {/* Header */}
-      <header className="bg-card shadow-sm border-b">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <Link href="/s/dashboard" className="flex items-center space-x-2">
-            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-xl">T</span>
-            </div>
-            <span className="text-2xl font-bold text-foreground">Talent3X</span>
-          </Link>
-          <div className="flex space-x-2">
-            <Button variant="outline" onClick={() => router.push("/s/tasks")}>
-              Browse Tasks
-            </Button>
-            <Button variant="outline" onClick={() => router.push("/s/dashboard")}>
-              Dashboard
-            </Button>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="container mx-auto px-4 py-8 flex-grow">
-        <div className="mb-6">
-          <Button variant="outline" onClick={() => router.push("/s/tasks")}>
-            ← Back to Tasks
-          </Button>
-        </div>
+    <AppLayout userRole="student">
+      <div className="space-y-6">
+        <Button variant="outline" onClick={() => router.push("/s/tasks")}>
+          ← Back to Tasks
+        </Button>
         
-        <Card className="shadow-lg rounded-xl overflow-hidden border">
-          <CardHeader className="bg-card">
-            <div className="flex justify-between items-start">
-              <div>
-                <CardTitle className="text-foreground">{task.title}</CardTitle>
-                {task.module && (
-                  <CardDescription className="text-muted-foreground">{task.module}</CardDescription>
-                )}
-              </div>
-              <span className="inline-flex items-center rounded-full bg-primary/20 px-2.5 py-0.5 text-xs font-medium text-primary">
-                Open
-              </span>
+        <SharedCard>
+          <div className="flex justify-between items-start">
+            <div>
+              <h2 className="text-2xl font-semibold text-foreground">{task.title}</h2>
+              {task.module && (
+                <p className="text-sm text-muted-foreground">{task.module}</p>
+              )}
             </div>
-          </CardHeader>
-          <CardContent className="space-y-6 pt-6">
+            <SharedPill variant="primary">
+              Open
+            </SharedPill>
+          </div>
+          
+          <div className="space-y-6">
             {task.description && (
               <div>
-                <h3 className="font-medium mb-2 text-foreground">Description</h3>
-                <p className="text-muted-foreground">{task.description}</p>
+                <h3 className="text-xs uppercase text-muted-foreground">Description</h3>
+                <p className="text-foreground">{task.description}</p>
               </div>
             )}
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="border rounded-lg p-4 border-border">
-                <h3 className="text-sm font-medium text-muted-foreground">Skill Level</h3>
+                <h3 className="text-xs uppercase text-muted-foreground">Skill Level</h3>
                 <p className="mt-1 text-foreground">{task.skill_level || "Not specified"}</p>
               </div>
               
               <div className="border rounded-lg p-4 border-border">
-                <h3 className="text-sm font-medium text-muted-foreground">License</h3>
+                <h3 className="text-xs uppercase text-muted-foreground">License</h3>
                 <p className="mt-1 text-foreground">{task.license || "Not specified"}</p>
               </div>
               
               <div className="border rounded-lg p-4 border-border">
-                <h3 className="text-sm font-medium text-muted-foreground">Task Type</h3>
+                <h3 className="text-xs uppercase text-muted-foreground">Task Type</h3>
                 <p className="mt-1 text-foreground">
                   {task.task_mode === 'single' ? 'Single Assignment' : 'Multi-Assignment'}
                 </p>
               </div>
               
               <div className="border rounded-lg p-4 border-border">
-                <h3 className="text-sm font-medium text-muted-foreground">Status</h3>
+                <h3 className="text-xs uppercase text-muted-foreground">Status</h3>
                 <p className="mt-1 text-foreground capitalize">
                   {task.status || "Not specified"}
                 </p>
@@ -416,61 +305,39 @@ export default function StudentTaskDetail() {
 
             {/* Required Skills Section */}
             {task.skills_data && task.skills_data.length > 0 && (
-              <div className="pt-6">
-                <h3 className="font-medium mb-3 text-foreground">Required Skills</h3>
-                <div className="flex flex-wrap gap-2">
+              <div>
+                <h3 className="text-xs uppercase text-muted-foreground">Required Skills</h3>
+                <div className="flex flex-wrap gap-2 pt-2">
                   {task.skills_data.map((skill) => (
-                    <span 
+                    <SharedPill 
                       key={skill.id} 
-                      className="inline-flex items-center rounded-full bg-muted px-3 py-1 text-sm font-medium text-foreground"
                       title={skill.description}
                     >
                       {skill.label}
-                    </span>
+                    </SharedPill>
                   ))}
                 </div>
               </div>
             )}
             
-            {/* Message display - this is already present but let's make sure it's styled properly */}
+            {/* Message display */}
             {message && (
               <div className={`p-3 rounded-lg ${message.includes("successfully") ? "bg-green-900/30 text-green-400 border border-green-800/50" : "bg-red-900/30 text-red-400 border border-red-800/50"}`}>
                 {message}
               </div>
             )}
-          </CardContent>
-          <CardFooter className="flex justify-end space-x-2 bg-card">
+          </div>
+          
+          <div className="flex justify-end">
             <Button 
               onClick={handleRequestTask}
               disabled={requesting}
             >
               {requesting ? "Requesting..." : "Request Task"}
             </Button>
-          </CardFooter>
-        </Card>
-      </main>
-
-      {/* Footer */}
-      <footer className="py-6 px-4 bg-card border-t mt-auto">
-        <div className="container mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="text-center md:text-left mb-4 md:mb-0">
-              <p className="text-muted-foreground">© {new Date().getFullYear()} Talent3X. Oulu Pilot.</p>
-            </div>
-            <div className="flex space-x-6">
-              <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                Terms of Use
-              </Link>
-              <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                Disclaimer
-              </Link>
-              <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                Privacy Policy
-              </Link>
-            </div>
           </div>
-        </div>
-      </footer>
-    </div>
+        </SharedCard>
+      </div>
+    </AppLayout>
   );
 }

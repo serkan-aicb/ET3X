@@ -8,6 +8,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { createClient } from "@/lib/supabase/client";
 import { Tables } from '@/lib/supabase/types';
 import Link from "next/link";
+import { AppLayout } from "@/components/app-layout";
+import { SharedCard } from "@/components/shared-card";
+import { SharedPill } from "@/components/shared-pill";
 
 type Task = Tables<'tasks'> & {
   skills_data?: {
@@ -547,234 +550,65 @@ export default function EducatorTaskDetail() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col">
-        {/* Header */}
-        <header className="bg-white shadow-sm">
-          <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-            <Link href="/e/dashboard" className="flex items-center space-x-2">
-              <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center">
-                <span className="text-white font-bold text-xl">T</span>
-              </div>
-              <span className="text-2xl font-bold text-blue-800">Talent3X</span>
-            </Link>
-            <div className="flex space-x-2">
-              <Button variant="outline" onClick={() => router.push("/e/tasks")}>
-                My Tasks
-              </Button>
-              <Button variant="outline" onClick={() => router.push("/e/dashboard")}>
-                Dashboard
-              </Button>
-            </div>
-          </div>
-        </header>
-
-        {/* Main Content */}
-        <main className="container mx-auto px-4 py-8 flex-grow">
-          <div className="mb-6">
+      <AppLayout userRole="educator">
+        <div className="space-y-6">
+          <div>
             <Skeleton className="h-10 w-32" />
           </div>
-          <Card className="shadow-lg">
-            <CardHeader>
-              <Skeleton className="h-8 w-64" />
-              <Skeleton className="h-4 w-96 mt-2" />
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-5/6" />
-                <Skeleton className="h-20 w-full mt-6" />
-                <Skeleton className="h-32 w-full mt-6" />
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Skeleton className="h-10 w-full" />
-            </CardFooter>
-          </Card>
-        </main>
-
-        {/* Footer */}
-        <footer className="py-6 px-4 bg-white border-t mt-auto">
-          <div className="container mx-auto">
-            <div className="flex flex-col md:flex-row justify-between items-center">
-              <div className="text-center md:text-left mb-4 md:mb-0">
-                <p className="text-gray-500">© {new Date().getFullYear()} Talent3X. Oulu Pilot.</p>
-              </div>
-              <div className="flex space-x-6">
-                <Link href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
-                  Terms of Use
-                </Link>
-                <Link href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
-                  Disclaimer
-                </Link>
-                <Link href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
-                  Privacy Policy
-                </Link>
-              </div>
+          <SharedCard>
+            <Skeleton className="h-8 w-64" />
+            <Skeleton className="h-4 w-96 mt-2" />
+            <div className="space-y-4">
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-5/6" />
+              <Skeleton className="h-20 w-full mt-6" />
+              <Skeleton className="h-32 w-full mt-6" />
             </div>
-          </div>
-        </footer>
-      </div>
+            <Skeleton className="h-10 w-full" />
+          </SharedCard>
+        </div>
+      </AppLayout>
     );
   }
 
   if (errorMessage) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col">
-        {/* Header */}
-        <header className="bg-white shadow-sm">
-          <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-            <Link href="/e/dashboard" className="flex items-center space-x-2">
-              <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center">
-                <span className="text-white font-bold text-xl">T</span>
-              </div>
-              <span className="text-2xl font-bold text-blue-800">Talent3X</span>
-            </Link>
-            <div className="flex space-x-2">
-              <Button variant="outline" onClick={() => router.push("/e/tasks")}>
-                My Tasks
-              </Button>
-              <Button variant="outline" onClick={() => router.push("/e/dashboard")}>
-                Dashboard
-              </Button>
-            </div>
-          </div>
-        </header>
-
-        {/* Main Content */}
-        <main className="container mx-auto px-4 py-8 flex-grow">
-          <Card className="shadow-lg max-w-2xl mx-auto">
-            <CardHeader>
-              <CardTitle className="text-red-600">Error</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-600">{errorMessage}</p>
-              <Button 
-                className="mt-4 bg-blue-600 hover:bg-blue-700"
-                onClick={() => router.push("/e/tasks")}
-              >
-                Back to Tasks
-              </Button>
-            </CardContent>
-          </Card>
-        </main>
-
-        {/* Footer */}
-        <footer className="py-6 px-4 bg-white border-t mt-auto">
-          <div className="container mx-auto">
-            <div className="flex flex-col md:flex-row justify-between items-center">
-              <div className="text-center md:text-left mb-4 md:mb-0">
-                <p className="text-gray-500">© {new Date().getFullYear()} Talent3X. Oulu Pilot.</p>
-              </div>
-              <div className="flex space-x-6">
-                <Link href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
-                  Terms of Use
-                </Link>
-                <Link href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
-                  Disclaimer
-                </Link>
-                <Link href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
-                  Privacy Policy
-                </Link>
-              </div>
-            </div>
-          </div>
-        </footer>
-      </div>
+      <AppLayout userRole="educator">
+        <SharedCard title="Error" description={errorMessage}>
+          <Button 
+            onClick={() => router.push("/e/tasks")}
+          >
+            Back to Tasks
+          </Button>
+        </SharedCard>
+      </AppLayout>
     );
   }
 
   if (!task) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col">
-        {/* Header */}
-        <header className="bg-white shadow-sm">
-          <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-            <Link href="/e/dashboard" className="flex items-center space-x-2">
-              <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center">
-                <span className="text-white font-bold text-xl">T</span>
-              </div>
-              <span className="text-2xl font-bold text-blue-800">Talent3X</span>
-            </Link>
-            <div className="flex space-x-2">
-              <Button variant="outline" onClick={() => router.push("/e/tasks")}>
-                My Tasks
-              </Button>
-              <Button variant="outline" onClick={() => router.push("/e/dashboard")}>
-                Dashboard
-              </Button>
-            </div>
+      <AppLayout userRole="educator">
+        <SharedCard>
+          <div className="py-8 text-center">
+            <p className="text-muted-foreground">Task not found or not available.</p>
+            <Button 
+              className="mt-4"
+              onClick={() => router.push("/e/tasks")}
+            >
+              My Tasks
+            </Button>
           </div>
-        </header>
-
-        {/* Main Content */}
-        <main className="container mx-auto px-4 py-8 flex-grow">
-          <Card className="shadow-lg">
-            <CardContent className="py-8 text-center">
-              <p className="text-gray-600">Task not found or not available.</p>
-              <Button 
-                className="mt-4 bg-blue-600 hover:bg-blue-700"
-                onClick={() => router.push("/e/tasks")}
-              >
-                My Tasks
-              </Button>
-            </CardContent>
-          </Card>
-        </main>
-
-        {/* Footer */}
-        <footer className="py-6 px-4 bg-white border-t mt-auto">
-          <div className="container mx-auto">
-            <div className="flex flex-col md:flex-row justify-between items-center">
-              <div className="text-center md:text-left mb-4 md:mb-0">
-                <p className="text-gray-500">© {new Date().getFullYear()} Talent3X. Oulu Pilot.</p>
-              </div>
-              <div className="flex space-x-6">
-                <Link href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
-                  Terms of Use
-                </Link>
-                <Link href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
-                  Disclaimer
-                </Link>
-                <Link href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
-                  Privacy Policy
-                </Link>
-              </div>
-            </div>
-          </div>
-        </footer>
-      </div>
+        </SharedCard>
+      </AppLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col">
-      {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <Link href="/e/dashboard" className="flex items-center space-x-2">
-            <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center">
-              <span className="text-white font-bold text-xl">T</span>
-            </div>
-            <span className="text-2xl font-bold text-blue-800">Talent3X</span>
-          </Link>
-          <div className="flex space-x-2">
-            <Button variant="outline" onClick={() => router.push("/e/tasks")}>
-              My Tasks
-            </Button>
-            <Button variant="outline" onClick={() => router.push("/e/dashboard")}>
-              Dashboard
-            </Button>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="container mx-auto px-4 py-8 flex-grow">
-        <div className="mb-6">
-          <Button variant="outline" className="border-gray-600 text-gray-600 hover:bg-gray-50" onClick={() => router.push("/e/tasks")}>
-            ← Back to Tasks
-          </Button>
-        </div>
+    <AppLayout userRole="educator">
+      <div className="space-y-6">
+        <Button variant="outline" onClick={() => router.push("/e/tasks")}>
+          ← Back to Tasks
+        </Button>
         
         {/* Display messages */}
         {message && (
@@ -783,114 +617,108 @@ export default function EducatorTaskDetail() {
           </div>
         )}
 
-        <Card className="shadow-lg rounded-xl overflow-hidden mb-8">
-          <CardHeader className="bg-gray-50">
-            <div className="flex justify-between items-start">
-              <div>
-                <CardTitle className="text-gray-900">{task.title}</CardTitle>
-                {task.module && (
-                  <CardDescription className="text-gray-600">{task.module}</CardDescription>
-                )}
-              </div>
-              <div className="flex space-x-2">
-                {task.status === 'draft' && (
-                  <>
-                    <Button onClick={() => router.push(`/e/tasks/${taskId}/edit`)} variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-50">
-                      Edit Task
-                    </Button>
-                    <Button onClick={handleDuplicateTask}>
-                      Duplicate Task
-                    </Button>
-                    <Button onClick={handlePublishTask}>
-                      Publish Task
-                    </Button>
-                  </>
-                )}
-                {task.status === 'open' && (
-                  <>
-                    <Button onClick={() => router.push(`/e/tasks/${taskId}/edit`)} variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-50">
-                      Edit Task
-                    </Button>
-                    <Button onClick={handleDuplicateTask} className="bg-blue-600 hover:bg-blue-700">
-                      Duplicate Task
-                    </Button>
-                    <Button onClick={handleUnpublishTask} variant="outline" className="border-yellow-600 text-yellow-600 hover:bg-yellow-50">
-                      Unpublish Task
-                    </Button>
-                  </>
-                )}
-              </div>
+        <SharedCard>
+          <div className="flex justify-between items-start">
+            <div>
+              <h2 className="text-2xl font-semibold text-foreground">{task.title}</h2>
+              {task.module && (
+                <p className="text-sm text-muted-foreground">{task.module}</p>
+              )}
             </div>
-          </CardHeader>
-          <CardContent className="space-y-6 pt-6">
+            <div className="flex space-x-2">
+              {task.status === 'draft' && (
+                <>
+                  <Button onClick={() => router.push(`/e/tasks/${taskId}/edit`)} variant="outline">
+                    Edit Task
+                  </Button>
+                  <Button onClick={handleDuplicateTask}>
+                    Duplicate Task
+                  </Button>
+                  <Button onClick={handlePublishTask}>
+                    Publish Task
+                  </Button>
+                </>
+              )}
+              {task.status === 'open' && (
+                <>
+                  <Button onClick={() => router.push(`/e/tasks/${taskId}/edit`)} variant="outline">
+                    Edit Task
+                  </Button>
+                  <Button onClick={handleDuplicateTask}>
+                    Duplicate Task
+                  </Button>
+                  <Button onClick={handleUnpublishTask} variant="outline">
+                    Unpublish Task
+                  </Button>
+                </>
+              )}
+            </div>
+          </div>
+          
+          <div className="space-y-6">
             {task.description && (
               <div>
-                <h3 className="font-medium mb-2 text-gray-900">Description</h3>
-                <p className="text-gray-600">{task.description}</p>
+                <h3 className="text-xs uppercase text-muted-foreground">Description</h3>
+                <p className="text-foreground">{task.description}</p>
               </div>
             )}
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-4">
-              <div className="border rounded-lg p-4">
-                <h3 className="text-sm font-medium text-gray-500">Skill Level</h3>
-                <p className="mt-1">{task.skill_level || "Not specified"}</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="border rounded-lg p-4 border-border">
+                <h3 className="text-xs uppercase text-muted-foreground">Skill Level</h3>
+                <p className="mt-1 text-foreground">{task.skill_level || "Not specified"}</p>
               </div>
               
-              <div className="border rounded-lg p-4">
-                <h3 className="text-sm font-medium text-gray-500">Task Type</h3>
-                <p className="mt-1">
+              <div className="border rounded-lg p-4 border-border">
+                <h3 className="text-xs uppercase text-muted-foreground">Task Type</h3>
+                <p className="mt-1 text-foreground">
                   {task.task_mode === 'single' ? 'Single Assignment' : 'Multi-Assignment'}
                 </p>
               </div>
               
-              <div className="border rounded-lg p-4">
-                <h3 className="text-sm font-medium text-gray-500">License</h3>
-                <p className="mt-1">{task.license || "Not specified"}</p>
+              <div className="border rounded-lg p-4 border-border">
+                <h3 className="text-xs uppercase text-muted-foreground">License</h3>
+                <p className="mt-1 text-foreground">{task.license || "Not specified"}</p>
               </div>
               
-              <div className="border rounded-lg p-4">
-                <h3 className="text-sm font-medium text-gray-500">Status</h3>
-                <p className="mt-1 capitalize">
+              <div className="border rounded-lg p-4 border-border">
+                <h3 className="text-xs uppercase text-muted-foreground">Status</h3>
+                <p className="mt-1 text-foreground capitalize">
                   {task.status || "Not specified"}
                 </p>
               </div>
             </div>
 
-            <div className="border rounded-lg p-4">
-              <h3 className="text-sm font-medium text-gray-500 mb-2">Status</h3>
-              <span className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium ${
-                task.status === 'draft' ? 'bg-yellow-100 text-yellow-800' :
-                task.status === 'open' ? 'bg-blue-100 text-blue-800' :
-                task.status === 'closed' ? 'bg-purple-100 text-purple-800' :
-                task.status === 'submitted' ? 'bg-green-100 text-green-800' :
-                'bg-gray-100 text-gray-800'
-              }`}>
+            {/* Status Badge */}
+            <div>
+              <h3 className="text-xs uppercase text-muted-foreground mb-2">Status</h3>
+              <SharedPill variant={task.status === 'draft' ? 'default' : task.status === 'open' ? 'primary' : 'default'}>
                 {task.status.charAt(0).toUpperCase() + task.status.slice(1)}
-              </span>
+              </SharedPill>
             </div>
             
             {/* Required Skills Section */}
             {task.skills_data && task.skills_data.length > 0 && (
-              <div className="border rounded-lg p-4">
-                <h3 className="text-sm font-medium text-gray-500 mb-2">Required Skills</h3>
+              <div>
+                <h3 className="text-xs uppercase text-muted-foreground mb-2">Required Skills</h3>
                 <div className="flex flex-wrap gap-2">
                   {task.skills_data.map((skill) => (
-                    <span 
+                    <SharedPill 
                       key={skill.id} 
-                      className="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-800"
-                      title={skill.description}
+                      title={skill.description || undefined}
                     >
                       {skill.label}
-                    </span>
+                    </SharedPill>
                   ))}
                 </div>
               </div>
             )}
-          </CardContent>
-          <CardFooter className="flex justify-end space-x-2 bg-gray-50">
+          </div>
+          
+          <div className="flex justify-end space-x-2">
             {(task.status === 'submitted' || submissions.length > 0) && (
               <>
-                <Button variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-50" onClick={() => router.push(`/e/tasks/${taskId}/submissions`)}>
+                <Button variant="outline" onClick={() => router.push(`/e/tasks/${taskId}/submissions`)}>
                   View Submissions
                 </Button>
                 {task.status === 'submitted' && (
@@ -900,150 +728,111 @@ export default function EducatorTaskDetail() {
                 )}
               </>
             )}
-          </CardFooter>
-        </Card>
+          </div>
+        </SharedCard>
         
         <div className="grid gap-6 md:grid-cols-2">
-          <Card className="shadow-lg rounded-xl overflow-hidden">
-            <CardHeader className="bg-gray-50">
-              <CardTitle className="text-gray-900">Task Requests</CardTitle>
-              <CardDescription className="text-gray-600">
-                Students who requested this task
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {requests.length === 0 ? (
-                <p className="text-gray-500 text-center py-4">
-                  No requests for this task yet.
-                </p>
-              ) : (
-                <div className="space-y-4">
-                  {requests.map((request) => (
-                    <div key={request.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="flex items-center space-x-3">
-                        <div className="flex flex-col">
-                          <span className="font-medium">
-                            Username: {request.profiles?.username ? request.profiles.username : 
-                             request.applicant_username ? request.applicant_username :
-                             `User ${request.applicant?.substring(0, 8) || request.id.substring(0, 8)}...`}
-                          </span>
-                          {request.profiles?.matriculation_number && (
-                            <span className="text-sm text-gray-500">Student Number: {request.profiles.matriculation_number}</span>
-                          )}
-                          {request.profiles === null && (
-                            <span className="text-sm text-gray-500">Profile loading failed</span>
-                          )}
-                          {!request.profiles && !request.applicant_username && (
-                            <span className="text-sm text-gray-500">Loading profile...</span>
-                          )}
-                        </div>
-                      </div>
-                      <div className="space-x-2">
-                        <Button 
-                          size="sm"
-                          onClick={() => handleAssignTask(request.applicant)}
-                        >
-                          Assign
-                        </Button>
-                        <Button 
-                          size="sm"
-                          variant="outline"
-                          className="border-gray-600 text-gray-600 hover:bg-gray-50"
-                          onClick={() => handleDeclineRequest(request.applicant)}
-                        >
-                          Decline
-                        </Button>
-                      </div>
-                    </div>
-                  ))
-                  }
-                  {/* Add group assignment button when multiple students are selected */}
-                  {/* Removed group assignment functionality as per requirements */}
-                  
-                  {/* Add button to assign all applicants in groups of 5 */}
-                  {/* Removed "Assign All in Groups of 5" button as per requirements */}
-                  
-                  {/* Show grouping suggestion */}
-                  {/* Removed grouping suggestion text as per requirements */}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-          
-          <Card className="shadow-lg rounded-xl overflow-hidden">
-            <CardHeader className="bg-gray-50">
-              <CardTitle className="text-gray-900">Assigned Students</CardTitle>
-              <CardDescription className="text-gray-600">
-                Students currently working on this task
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {assignments.length === 0 ? (
-                <p className="text-gray-500 text-center py-4">
-                  No students assigned to this task yet.
-                </p>
-              ) : (
-                <div className="space-y-4">
-                  {assignments.map((assignment) => (
-                    <div key={assignment.id} className="flex items-center justify-between p-4 border rounded-lg">
+          <SharedCard title="Task Requests" description="Students who requested this task">
+            {requests.length === 0 ? (
+              <p className="text-muted-foreground text-center py-4">
+                No requests for this task yet.
+              </p>
+            ) : (
+              <div className="space-y-4">
+                {requests.map((request) => (
+                  <div key={request.id} className="flex items-center justify-between p-4 border rounded-lg border-border">
+                    <div className="flex items-center space-x-3">
                       <div className="flex flex-col">
-                        <span className="font-medium">
-                          Username: {assignment.profiles?.username ? assignment.profiles.username : 
-                           assignment.profiles?.did ? assignment.profiles.did : 
-                           `User ${assignment.assignee.substring(0, 8)}...`}
+                        <span className="font-medium text-foreground">
+                          Username: {request.profiles?.username ? request.profiles.username : 
+                           request.applicant_username ? request.applicant_username :
+                           `User ${request.applicant?.substring(0, 8) || request.id.substring(0, 8)}...`}
                         </span>
-                        {assignment.profiles?.matriculation_number && (
-                          <span className="text-sm text-gray-500">Student Number: {assignment.profiles.matriculation_number}</span>
+                        {request.profiles?.matriculation_number && (
+                          <span className="text-sm text-muted-foreground">Student Number: {request.profiles.matriculation_number}</span>
                         )}
-                        {/* Show rating information if available */}
-                        {assignment.ratings && assignment.ratings.length > 0 && (
-                          <div className="mt-2">
-                            <span className="text-sm text-green-600">
-                              Rated: {assignment.ratings[0].stars_avg?.toFixed(1) || 'N/A'} stars, 
-                              XP: {assignment.ratings[0].xp || 0}
-                            </span>
-                          </div>
+                        {request.profiles === null && (
+                          <span className="text-sm text-muted-foreground">Profile loading failed</span>
                         )}
-                        {assignment.profiles === null && (
-                          <span className="text-sm text-gray-500">Profile loading failed</span>
-                        )}
-                        {!assignment.profiles && (
-                          <span className="text-sm text-gray-500">Loading profile...</span>
+                        {!request.profiles && !request.applicant_username && (
+                          <span className="text-sm text-muted-foreground">Loading profile...</span>
                         )}
                       </div>
-                      <span className="text-sm text-gray-500">
-                        Assigned
-                      </span>
                     </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                    <div className="space-x-2">
+                      <Button 
+                        size="sm"
+                        onClick={() => handleAssignTask(request.applicant)}
+                      >
+                        Assign
+                      </Button>
+                      <Button 
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleDeclineRequest(request.applicant)}
+                      >
+                        Decline
+                      </Button>
+                    </div>
+                  </div>
+                ))
+                }
+                {/* Add group assignment button when multiple students are selected */}
+                {/* Removed group assignment functionality as per requirements */}
+                
+                {/* Add button to assign all applicants in groups of 5 */}
+                {/* Removed "Assign All in Groups of 5" button as per requirements */}
+                
+                {/* Show grouping suggestion */}
+                {/* Removed grouping suggestion text as per requirements */}
+              </div>
+            )}
+          </SharedCard>
+          
+          <SharedCard title="Assigned Students" description="Students currently working on this task">
+            {assignments.length === 0 ? (
+              <p className="text-muted-foreground text-center py-4">
+                No students assigned to this task yet.
+              </p>
+            ) : (
+              <div className="space-y-4">
+                {assignments.map((assignment) => (
+                  <div key={assignment.id} className="flex items-center justify-between p-4 border rounded-lg border-border">
+                    <div className="flex flex-col">
+                      <span className="font-medium text-foreground">
+                        Username: {assignment.profiles?.username ? assignment.profiles.username : 
+                         assignment.profiles?.did ? assignment.profiles.did : 
+                         `User ${assignment.assignee.substring(0, 8)}...`}
+                      </span>
+                      {assignment.profiles?.matriculation_number && (
+                        <span className="text-sm text-muted-foreground">Student Number: {assignment.profiles.matriculation_number}</span>
+                      )}
+                      {/* Show rating information if available */}
+                      {assignment.ratings && assignment.ratings.length > 0 && (
+                        <div className="mt-2">
+                          <span className="text-sm text-green-600">
+                            Rated: {assignment.ratings[0].stars_avg?.toFixed(1) || 'N/A'} stars, 
+                            XP: {assignment.ratings[0].xp || 0}
+                          </span>
+                        </div>
+                      )}
+                      {assignment.profiles === null && (
+                        <span className="text-sm text-muted-foreground">Profile loading failed</span>
+                      )}
+                      {!assignment.profiles && (
+                        <span className="text-sm text-muted-foreground">Loading profile...</span>
+                      )}
+                    </div>
+                    <span className="text-sm text-muted-foreground">
+                      Assigned
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </SharedCard>
         </div>
-      </main>
-
-      {/* Footer */}
-      <footer className="py-6 px-4 bg-white border-t mt-auto">
-        <div className="container mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="text-center md:text-left mb-4 md:mb-0">
-              <p className="text-gray-500">© {new Date().getFullYear()} Talent3X. Oulu Pilot.</p>
-            </div>
-            <div className="flex space-x-6">
-              <Link href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
-                Terms of Use
-              </Link>
-              <Link href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
-                Disclaimer
-              </Link>
-              <Link href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
-                Privacy Policy
-              </Link>
-            </div>
-          </div>
-        </div>
-      </footer>
-    </div>
+      </div>
+    </AppLayout>
   );
 }

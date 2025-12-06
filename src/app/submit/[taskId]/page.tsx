@@ -6,10 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { createClient } from "@/lib/supabase/client";
 import { Tables } from '@/lib/supabase/types';
-import Link from "next/link";
+import { AppLayout } from "@/components/app-layout";
+import { SharedCard } from "@/components/shared-card";
 
 type Task = Tables<'tasks'>;
 
@@ -129,219 +130,99 @@ export default function SubmitTask() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col">
-        <header className="bg-white shadow-sm">
-          <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-            <Link href="/s/dashboard" className="flex items-center space-x-2">
-              <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center">
-                <span className="text-white font-bold text-xl">T</span>
-              </div>
-              <span className="text-2xl font-bold text-blue-800">Talent3X</span>
-            </Link>
-            <div className="flex space-x-2">
-              <Button variant="outline" onClick={() => router.push("/s/dashboard")}>
-                Dashboard
-              </Button>
-            </div>
-          </div>
-        </header>
-        
-        <main className="container mx-auto px-4 py-8 flex-grow">
-          <Card className="shadow-lg">
-            <CardHeader>
-              <div className="h-8 w-64 bg-gray-200 rounded animate-pulse"></div>
-              <div className="h-4 w-96 bg-gray-200 rounded animate-pulse mt-2"></div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="h-4 w-full bg-gray-200 rounded animate-pulse"></div>
-                <div className="h-4 w-5/6 bg-gray-200 rounded animate-pulse"></div>
-                <div className="h-10 w-full bg-gray-200 rounded animate-pulse mt-4"></div>
-                <div className="h-20 w-full bg-gray-200 rounded animate-pulse mt-4"></div>
-                <div className="h-10 w-full bg-gray-200 rounded animate-pulse mt-4"></div>
-              </div>
-            </CardContent>
-          </Card>
-        </main>
-        
-        <footer className="py-6 px-4 bg-white border-t">
-          <div className="container mx-auto">
-            <div className="flex flex-col md:flex-row justify-between items-center">
-              <div className="text-center md:text-left mb-4 md:mb-0">
-                <p className="text-gray-500">© {new Date().getFullYear()} Talent3X. Oulu Pilot.</p>
-              </div>
-              <div className="flex space-x-6">
-                <Link href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
-                  Terms of Use
-                </Link>
-                <Link href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
-                  Disclaimer
-                </Link>
-                <Link href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
-                  Privacy Policy
-                </Link>
+      <AppLayout userRole="student">
+        <div className="space-y-8">
+          <SharedCard>
+            <div className="space-y-4">
+              <Skeleton className="h-8 w-64" />
+              <Skeleton className="h-4 w-96" />
+              <div className="space-y-4 pt-4">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-5/6" />
+                <Skeleton className="h-10 w-full mt-4" />
+                <Skeleton className="h-20 w-full mt-4" />
+                <Skeleton className="h-10 w-full mt-4" />
               </div>
             </div>
-          </div>
-        </footer>
-      </div>
+          </SharedCard>
+        </div>
+      </AppLayout>
     );
   }
 
   if (!task) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col">
-        <header className="bg-white shadow-sm">
-          <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-            <Link href="/s/dashboard" className="flex items-center space-x-2">
-              <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center">
-                <span className="text-white font-bold text-xl">T</span>
-              </div>
-              <span className="text-2xl font-bold text-blue-800">Talent3X</span>
-            </Link>
-            <div className="flex space-x-2">
-              <Button variant="outline" onClick={() => router.push("/s/dashboard")}>
-                Dashboard
-              </Button>
-            </div>
+      <AppLayout userRole="student">
+        <SharedCard>
+          <div className="py-8 text-center">
+            <p className="text-muted-foreground">Task not found.</p>
+            <Button 
+              className="mt-4"
+              onClick={() => router.push("/s/my-tasks")}
+            >
+              Back to My Tasks
+            </Button>
           </div>
-        </header>
-        
-        <main className="container mx-auto px-4 py-8 flex-grow">
-          <Card className="shadow-lg">
-            <CardContent className="py-8 text-center">
-              <p className="text-gray-600">Task not found.</p>
-              <Button 
-                className="mt-4 bg-blue-600 hover:bg-blue-700"
-                onClick={() => router.push("/s/my-tasks")}
-              >
-                Back to My Tasks
-              </Button>
-            </CardContent>
-          </Card>
-        </main>
-        
-        <footer className="py-6 px-4 bg-white border-t">
-          <div className="container mx-auto">
-            <div className="flex flex-col md:flex-row justify-between items-center">
-              <div className="text-center md:text-left mb-4 md:mb-0">
-                <p className="text-gray-500">© {new Date().getFullYear()} Talent3X. Oulu Pilot.</p>
-              </div>
-              <div className="flex space-x-6">
-                <Link href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
-                  Terms of Use
-                </Link>
-                <Link href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
-                  Disclaimer
-                </Link>
-                <Link href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
-                  Privacy Policy
-                </Link>
-              </div>
-            </div>
-          </div>
-        </footer>
-      </div>
+        </SharedCard>
+      </AppLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col">
-      {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <Link href="/s/dashboard" className="flex items-center space-x-2">
-            <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center">
-              <span className="text-white font-bold text-xl">T</span>
-            </div>
-            <span className="text-2xl font-bold text-blue-800">Talent3X</span>
-          </Link>
-          <div className="flex space-x-2">
-            <Button variant="outline" onClick={() => router.push("/s/dashboard")}>
-              Dashboard
-            </Button>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="container mx-auto px-4 py-8 flex-grow">
-        <Card className="shadow-lg rounded-xl overflow-hidden">
-          <CardHeader className="bg-gray-50">
-            <CardTitle className="text-gray-800">Submit Task: {task.title}</CardTitle>
-            <CardDescription className="text-gray-600">
+    <AppLayout userRole="student">
+      <div className="space-y-8">
+        <SharedCard>
+          <div>
+            <h2 className="text-2xl font-semibold">Submit Task: {task.title}</h2>
+            <p className="text-xs uppercase text-muted-foreground">
               Complete and submit your work for this task
-            </CardDescription>
-          </CardHeader>
-          <form onSubmit={handleSubmit}>
-            <CardContent className="space-y-6 pt-4">
-              <div className="space-y-2">
-                <Label htmlFor="link" className="text-gray-700">Link (Optional)</Label>
-                <Input
-                  id="link"
-                  type="url"
-                  value={link}
-                  onChange={(e) => setLink(e.target.value)}
-                  placeholder="https://example.com/your-work"
-                  className="border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                />
+            </p>
+          </div>
+          
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="link">Link (Optional)</Label>
+              <Input
+                id="link"
+                type="url"
+                value={link}
+                onChange={(e) => setLink(e.target.value)}
+                placeholder="https://example.com/your-work"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="note">Note (Optional, max 300 characters)</Label>
+              <Textarea
+                id="note"
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                placeholder="Add any notes about your submission"
+                rows={3}
+                maxLength={300}
+              />
+              <div className="text-right text-sm text-muted-foreground">
+                {note.length}/300 characters
               </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="note" className="text-gray-700">Note (Optional, max 300 characters)</Label>
-                <Textarea
-                  id="note"
-                  value={note}
-                  onChange={(e) => setNote(e.target.value)}
-                  placeholder="Add any notes about your submission"
-                  rows={3}
-                  maxLength={300}
-                  className="border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                />
-                <div className="text-right text-sm text-gray-500">
-                  {note.length}/300 characters
-                </div>
+            </div>
+            
+            {message && (
+              <div className={`p-3 rounded-lg ${message.includes("successfully") ? "bg-green-900/30 text-green-400 border border-green-800/50" : "bg-red-900/30 text-red-400 border border-red-800/50"}`}>
+                {message}
               </div>
-              
-              {message && (
-                <div className={`p-3 rounded-lg ${message.includes("successfully") ? "bg-green-50 text-green-700 border border-green-200" : "bg-red-50 text-red-700 border border-red-200"}`}>
-                  {message}
-                </div>
-              )}
-            </CardContent>
-            <CardFooter className="flex justify-between bg-gray-50">
-              <Button type="button" variant="outline" className="border-gray-600 text-gray-600 hover:bg-gray-50" onClick={() => router.back()}>
+            )}
+            
+            <div className="flex justify-between">
+              <Button type="button" variant="outline" onClick={() => router.back()}>
                 Cancel
               </Button>
-              <Button type="submit" className="bg-blue-600 hover:bg-blue-700" disabled={submitting}>
+              <Button type="submit" disabled={submitting}>
                 {submitting ? "Submitting..." : "Submit Task"}
               </Button>
-            </CardFooter>
+            </div>
           </form>
-        </Card>
-      </main>
-
-      {/* Footer */}
-      <footer className="py-6 px-4 bg-white border-t">
-        <div className="container mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="text-center md:text-left mb-4 md:mb-0">
-              <p className="text-gray-500">© {new Date().getFullYear()} Talent3X. Oulu Pilot.</p>
-            </div>
-            <div className="flex space-x-6">
-              <Link href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
-                Terms of Use
-              </Link>
-              <Link href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
-                Disclaimer
-              </Link>
-              <Link href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
-                Privacy Policy
-              </Link>
-            </div>
-          </div>
-        </div>
-      </footer>
-    </div>
+        </SharedCard>
+      </div>
+    </AppLayout>
   );
 }

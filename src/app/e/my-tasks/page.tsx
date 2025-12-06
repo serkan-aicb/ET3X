@@ -3,11 +3,12 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { createClient } from "@/lib/supabase/client";
 import { Tables } from '@/lib/supabase/types';
 import Link from "next/link";
+import { AppLayout } from "@/components/app-layout";
+import { SharedCard } from "@/components/shared-card";
 
 type Task = Tables<'tasks'>;
 
@@ -60,25 +61,9 @@ export default function EducatorMyTasks() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col">
-        <header className="bg-white shadow-sm">
-          <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-            <Link href="/e/dashboard" className="flex items-center space-x-2">
-              <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center">
-                <span className="text-white font-bold text-xl">T</span>
-              </div>
-              <span className="text-2xl font-bold text-blue-800">Talent3X</span>
-            </Link>
-            <div className="flex space-x-2">
-              <Button variant="outline" onClick={() => router.push("/e/dashboard")}>
-                Dashboard
-              </Button>
-            </div>
-          </div>
-        </header>
-        
-        <main className="container mx-auto px-4 py-8 flex-grow">
-          <div className="mb-8 flex justify-between items-center">
+      <AppLayout userRole="educator">
+        <div className="space-y-8">
+          <div className="flex justify-between items-center">
             <div>
               <Skeleton className="h-10 w-64 mb-2" />
               <Skeleton className="h-4 w-96" />
@@ -88,73 +73,34 @@ export default function EducatorMyTasks() {
           
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {[1, 2, 3, 4, 5, 6].map((i) => (
-              <Card key={i} className="shadow-lg">
-                <CardHeader>
+              <SharedCard key={i}>
+                <div className="space-y-3">
                   <Skeleton className="h-6 w-3/4" />
                   <Skeleton className="h-4 w-1/2" />
-                </CardHeader>
-                <CardContent>
-                  <Skeleton className="h-4 w-full mb-2" />
-                  <Skeleton className="h-4 w-5/6" />
-                </CardContent>
-                <CardFooter className="flex justify-between">
-                  <Skeleton className="h-6 w-16" />
-                  <Skeleton className="h-10 w-24" />
-                </CardFooter>
-              </Card>
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-5/6" />
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <Skeleton className="h-6 w-16" />
+                    <Skeleton className="h-10 w-24" />
+                  </div>
+                </div>
+              </SharedCard>
             ))}
           </div>
-        </main>
-        
-        <footer className="py-6 px-4 bg-white border-t">
-          <div className="container mx-auto">
-            <div className="flex flex-col md:flex-row justify-between items-center">
-              <div className="text-center md:text-left mb-4 md:mb-0">
-                <p className="text-gray-500">© {new Date().getFullYear()} Talent3X. Oulu Pilot.</p>
-              </div>
-              <div className="flex space-x-6">
-                <Link href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
-                  Terms of Use
-                </Link>
-                <Link href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
-                  Disclaimer
-                </Link>
-                <Link href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
-                  Privacy Policy
-                </Link>
-              </div>
-            </div>
-          </div>
-        </footer>
-      </div>
+        </div>
+      </AppLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col">
-      {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <Link href="/e/dashboard" className="flex items-center space-x-2">
-            <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center">
-              <span className="text-white font-bold text-xl">T</span>
-            </div>
-            <span className="text-2xl font-bold text-blue-800">Talent3X</span>
-          </Link>
-          <div className="flex space-x-2">
-            <Button variant="outline" onClick={() => router.push("/e/dashboard")}>
-              Dashboard
-            </Button>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="container mx-auto px-4 py-8 flex-grow">
-        <div className="mb-8 flex justify-between items-center">
+    <AppLayout userRole="educator">
+      <div className="space-y-8">
+        <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">My Tasks</h1>
-            <p className="text-gray-600">
+            <h1 className="text-2xl font-semibold">My Tasks</h1>
+            <p className="text-xs uppercase text-muted-foreground">
               Tasks you{`'`}ve created
             </p>
           </div>
@@ -164,33 +110,36 @@ export default function EducatorMyTasks() {
         </div>
         
         {tasks.length === 0 ? (
-          <Card className="shadow-lg">
-            <CardContent className="py-8 text-center">
-              <p className="text-gray-600">You haven{`'`}t created any tasks yet.</p>
+          <SharedCard>
+            <div className="py-8 text-center">
+              <p className="text-muted-foreground">You haven{`'`}t created any tasks yet.</p>
               <Button 
                 onClick={() => router.push("/e/tasks/create")}
+                className="mt-4"
               >
                 Create Your First Task
               </Button>
-            </CardContent>
-          </Card>
+            </div>
+          </SharedCard>
         ) : (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {tasks.map((task) => (
-              <Card key={task.id} className="shadow-lg rounded-xl overflow-hidden transform transition-all hover:scale-105">
-                <CardHeader className="bg-white">
-                  <CardTitle className="text-lg text-gray-900">{task.title}</CardTitle>
-                  {task.module && (
-                    <CardDescription className="text-gray-600">{task.module}</CardDescription>
-                  )}
-                </CardHeader>
-                <CardContent>
+              <SharedCard key={task.id}>
+                <div className="space-y-3">
+                  <div>
+                    <h3 className="text-lg font-semibold">{task.title}</h3>
+                    {task.module && (
+                      <p className="text-sm text-muted-foreground">{task.module}</p>
+                    )}
+                  </div>
+                  
                   {task.description && (
-                    <p className="text-sm text-gray-600 line-clamp-2">
+                    <p className="text-sm text-muted-foreground line-clamp-2">
                       {task.description}
                     </p>
                   )}
-                  <div className="mt-4 flex flex-wrap gap-2">
+                  
+                  <div className="flex flex-wrap gap-2">
                     {getStatusBadge(task.status)}
                     {task.skill_level && (
                       <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800">
@@ -203,47 +152,25 @@ export default function EducatorMyTasks() {
                       </span>
                     )}
                   </div>
-                </CardContent>
-                <CardFooter className="flex justify-between bg-gray-50">
-                  <span className="text-sm text-gray-600">
-                    {task.task_mode === 'single' ? 'Single' : 'Multi'} Assignment
-                  </span>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    className="border-blue-600 text-blue-600 hover:bg-blue-50"
-                    onClick={() => router.push(`/e/tasks/${task.id}`)}
-                  >
-                    View Details
-                  </Button>
-                </CardFooter>
-              </Card>
+                  
+                  <div className="flex justify-between items-center pt-2">
+                    <span className="text-sm text-muted-foreground">
+                      {task.task_mode === 'single' ? 'Single' : 'Multi'} Assignment
+                    </span>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => router.push(`/e/tasks/${task.id}`)}
+                    >
+                      View Details
+                    </Button>
+                  </div>
+                </div>
+              </SharedCard>
             ))}
           </div>
         )}
-      </main>
-
-      {/* Footer */}
-      <footer className="py-6 px-4 bg-white border-t">
-        <div className="container mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="text-center md:text-left mb-4 md:mb-0">
-              <p className="text-gray-500">© {new Date().getFullYear()} Talent3X. Oulu Pilot.</p>
-            </div>
-            <div className="flex space-x-6">
-              <Link href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
-                Terms of Use
-              </Link>
-              <Link href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
-                Disclaimer
-              </Link>
-              <Link href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
-                Privacy Policy
-              </Link>
-            </div>
-          </div>
-        </div>
-      </footer>
-    </div>
+      </div>
+    </AppLayout>
   );
 }

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import Image from "next/image";
 
 export function Header({ 
   title = "Talent3X",
@@ -48,13 +49,16 @@ export function Header({
   };
 
   return (
-    <header className="bg-card shadow-sm border-b">
-      <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+    <header className="bg-background border-b backdrop-blur py-4 px-6">
+      <div className="max-w-6xl mx-auto flex justify-between items-center">
         <Link href={getDashboardLink()} className="flex items-center space-x-2">
-          <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
-            <span className="text-primary-foreground font-bold text-xl">T</span>
-          </div>
-          <span className="text-2xl font-bold text-foreground">{title}</span>
+          <Image 
+            src="/pics/LOGO-blank.png" 
+            alt="Talent3X Logo" 
+            width={120} 
+            height={120} 
+            className="h-10 w-auto"
+          />
         </Link>
         
         <div className="flex items-center space-x-4">

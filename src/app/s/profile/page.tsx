@@ -3,12 +3,12 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { createClient } from "@/lib/supabase/client";
 import { Tables } from '@/lib/supabase/types';
-import Link from "next/link";
+import { AppLayout } from "@/components/app-layout";
+import { SharedCard } from "@/components/shared-card";
 
 type Profile = Tables<'profiles'> & {
   matriculation_number?: string | null;
@@ -235,112 +235,49 @@ export default function StudentProfile() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex flex-col">
-        <header className="bg-card shadow-sm border-b">
-          <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-            <Link href="/s/dashboard" className="flex items-center space-x-2">
-              <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-xl">T</span>
-              </div>
-              <span className="text-2xl font-bold text-foreground">Talent3X</span>
-            </Link>
-            <div className="flex space-x-2">
-              <Button variant="outline" onClick={() => router.push("/s/dashboard")}>
-                Dashboard
-              </Button>
-            </div>
-          </div>
-        </header>
-        
-        <main className="container mx-auto px-4 py-8 flex-grow">
-          <div className="mb-8">
+      <AppLayout userRole="student">
+        <div className="space-y-8">
+          <div>
             <Skeleton className="h-10 w-64 mb-2" />
             <Skeleton className="h-4 w-96" />
           </div>
           
           <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-3">
             <div className="lg:col-span-1">
-              <Card className="shadow-lg">
-                <CardHeader>
-                  <Skeleton className="h-8 w-32" />
-                </CardHeader>
-                <CardContent>
-                  <Skeleton className="h-4 w-full mb-2" />
-                  <Skeleton className="h-4 w-3/4 mb-4" />
-                  <Skeleton className="h-32 w-full" />
-                </CardContent>
-              </Card>
+              <SharedCard>
+                <Skeleton className="h-8 w-32" />
+                <Skeleton className="h-4 w-full mb-2" />
+                <Skeleton className="h-4 w-3/4 mb-4" />
+                <Skeleton className="h-32 w-full" />
+              </SharedCard>
             </div>
             
             <div className="lg:col-span-2">
-              <Card className="shadow-lg">
-                <CardHeader>
-                  <Skeleton className="h-8 w-48" />
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {[1, 2, 3].map((i) => (
-                      <div key={i} className="flex items-center justify-between p-4 border rounded-lg border-border">
-                        <div className="space-y-2">
-                          <Skeleton className="h-4 w-48" />
-                          <Skeleton className="h-4 w-32" />
-                        </div>
-                        <Skeleton className="h-6 w-16" />
+              <SharedCard>
+                <Skeleton className="h-8 w-48" />
+                <div className="space-y-4">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="flex items-center justify-between p-4 border rounded-lg border-border">
+                      <div className="space-y-2">
+                        <Skeleton className="h-4 w-48" />
+                        <Skeleton className="h-4 w-32" />
                       </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
+                      <Skeleton className="h-6 w-16" />
+                    </div>
+                  ))}
+                </div>
+              </SharedCard>
             </div>
           </div>
-        </main>
-        
-        <footer className="py-6 px-4 bg-card border-t mt-auto">
-          <div className="container mx-auto">
-            <div className="flex flex-col md:flex-row justify-between items-center">
-              <div className="text-center md:text-left mb-4 md:mb-0">
-                <p className="text-muted-foreground">© {new Date().getFullYear()} Talent3X. Oulu Pilot.</p>
-              </div>
-              <div className="flex space-x-6">
-                <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                  Terms of Use
-                </Link>
-                <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                  Disclaimer
-                </Link>
-                <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                  Privacy Policy
-                </Link>
-              </div>
-            </div>
-          </div>
-        </footer>
-      </div>
+        </div>
+      </AppLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      {/* Header */}
-      <header className="bg-card shadow-sm border-b">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <Link href="/s/dashboard" className="flex items-center space-x-2">
-            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-xl">T</span>
-            </div>
-            <span className="text-2xl font-bold text-foreground">Talent3X</span>
-          </Link>
-          <div className="flex space-x-2">
-            <Button variant="outline" onClick={() => router.push("/s/dashboard")}>
-              Dashboard
-            </Button>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="container mx-auto px-4 py-8 flex-grow">
-        <div className="mb-8">
+    <AppLayout userRole="student">
+      <div className="space-y-8">
+        <div>
           <h1 className="text-3xl font-bold text-foreground">My Profile</h1>
           <p className="text-muted-foreground">
             View your profile and completed task ratings
@@ -349,31 +286,28 @@ export default function StudentProfile() {
         
         <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-3">
           <div className="lg:col-span-1">
-            <Card className="shadow-lg rounded-xl overflow-hidden border">
-              <CardHeader className="bg-card">
-                <CardTitle className="text-foreground">Profile Information</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4 pt-4">
+            <SharedCard title="Profile Information">
+              <div className="space-y-4">
                 <div>
-                  <h3 className="text-sm font-medium text-muted-foreground">Username</h3>
+                  <h3 className="text-xs uppercase text-muted-foreground">Username</h3>
                   <p className="font-medium text-foreground">@{profile?.username}</p>
                 </div>
                 
                 <div>
-                  <h3 className="text-sm font-medium text-muted-foreground">DID</h3>
+                  <h3 className="text-xs uppercase text-muted-foreground">DID</h3>
                   <p className="font-mono text-sm break-all bg-muted p-2 rounded border border-border">
                     {profile?.did}
                   </p>
                 </div>
                 
                 <div>
-                  <h3 className="text-sm font-medium text-muted-foreground">Role</h3>
+                  <h3 className="text-xs uppercase text-muted-foreground">Role</h3>
                   <p className="font-medium text-foreground capitalize">{profile?.role}</p>
                 </div>
                 
                 <div>
                   <div className="flex justify-between items-center">
-                    <h3 className="text-sm font-medium text-muted-foreground">Student Number</h3>
+                    <h3 className="text-xs uppercase text-muted-foreground">Student Number</h3>
                     {isEditing ? (
                       <Button 
                         size="sm" 
@@ -419,7 +353,7 @@ export default function StudentProfile() {
                 
                 {/* Stats Section */}
                 <div className="pt-4 border-t border-border">
-                  <h3 className="text-sm font-medium text-muted-foreground mb-2">Statistics</h3>
+                  <h3 className="text-xs uppercase text-muted-foreground mb-2">Statistics</h3>
                   <div className="space-y-2">
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Average Rating</span>
@@ -431,115 +365,77 @@ export default function StudentProfile() {
                     </div>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </SharedCard>
           </div>
           
           <div className="lg:col-span-2 space-y-6">
             {/* Aggregated Task Ratings */}
-            <Card className="shadow-lg rounded-xl overflow-hidden border">
-              <CardHeader className="bg-card">
-                <CardTitle className="text-foreground">Task Performance</CardTitle>
-                <CardDescription className="text-muted-foreground">
-                  Your performance across different tasks
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {aggregatedTaskRatings.length === 0 ? (
-                  <p className="text-muted-foreground text-center py-4">
-                    You haven{'t'} received any ratings yet.
-                  </p>
-                ) : (
-                  <div className="space-y-4">
-                    {aggregatedTaskRatings.map((taskRating) => (
-                      <div key={taskRating.taskId} className="flex items-center justify-between p-4 border rounded-lg border-border hover:bg-muted/50 transition-colors">
+            <SharedCard title="Task Performance" description="Your performance across different tasks">
+              {aggregatedTaskRatings.length === 0 ? (
+                <p className="text-muted-foreground text-center py-4">
+                  You haven{'t'} received any ratings yet.
+                </p>
+              ) : (
+                <div className="space-y-4">
+                  {aggregatedTaskRatings.map((taskRating) => (
+                    <div key={taskRating.taskId} className="flex items-center justify-between p-4 border rounded-lg border-border hover:bg-muted/50 transition-colors">
+                      <div>
+                        <h3 className="font-medium text-foreground">
+                          {taskRating.taskTitle}
+                        </h3>
+                        <p className="text-sm text-muted-foreground">
+                          {taskRating.ratingCount} rating{taskRating.ratingCount !== 1 ? 's' : ''}
+                        </p>
+                      </div>
+                      <div className="flex items-center space-x-4">
                         <div>
-                          <h3 className="font-medium text-foreground">
-                            {taskRating.taskTitle}
-                          </h3>
-                          <p className="text-sm text-muted-foreground">
-                            {taskRating.ratingCount} rating{taskRating.ratingCount !== 1 ? 's' : ''}
-                          </p>
+                          <p className="text-sm text-muted-foreground">Average</p>
+                          <p className="font-medium text-foreground">{taskRating.avgRating}/5</p>
                         </div>
-                        <div className="flex items-center space-x-4">
-                          <div>
-                            <p className="text-sm text-muted-foreground">Average</p>
-                            <p className="font-medium text-foreground">{taskRating.avgRating}/5</p>
-                          </div>
-                          <div>
-                            <p className="text-sm text-muted-foreground">XP</p>
-                            <p className="font-medium text-foreground">{taskRating.totalXP}</p>
-                          </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground">XP</p>
+                          <p className="font-medium text-foreground">{taskRating.totalXP}</p>
                         </div>
                       </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </SharedCard>
             
             {/* Last 5 Individual Skill Ratings */}
-            <Card className="shadow-lg rounded-xl overflow-hidden border">
-              <CardHeader className="bg-card">
-                <CardTitle className="text-foreground">Recent Skill Ratings</CardTitle>
-                <CardDescription className="text-muted-foreground">
-                  Your most recent individual skill ratings
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {skillRatings.length === 0 ? (
-                  <p className="text-muted-foreground text-center py-4">
-                    No skill ratings available yet.
-                  </p>
-                ) : (
-                  <div className="space-y-4">
-                    {skillRatings.map((skillRating, index) => (
-                      <div key={index} className="flex items-center justify-between p-4 border rounded-lg border-border hover:bg-muted/50 transition-colors">
+            <SharedCard title="Recent Skill Ratings" description="Your most recent individual skill ratings">
+              {skillRatings.length === 0 ? (
+                <p className="text-muted-foreground text-center py-4">
+                  No skill ratings available yet.
+                </p>
+              ) : (
+                <div className="space-y-4">
+                  {skillRatings.map((skillRating, index) => (
+                    <div key={index} className="flex items-center justify-between p-4 border rounded-lg border-border hover:bg-muted/50 transition-colors">
+                      <div>
+                        <h3 className="font-medium text-foreground">
+                          {getSkillName(skillRating.skillId)}
+                        </h3>
+                        <p className="text-sm text-muted-foreground">
+                          {skillRating.taskTitle} • {new Date(skillRating.createdAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <div className="flex items-center space-x-4">
                         <div>
-                          <h3 className="font-medium text-foreground">
-                            {getSkillName(skillRating.skillId)}
-                          </h3>
-                          <p className="text-sm text-muted-foreground">
-                            {skillRating.taskTitle} • {new Date(skillRating.createdAt).toLocaleDateString()}
-                          </p>
-                        </div>
-                        <div className="flex items-center space-x-4">
-                          <div>
-                            <p className="text-sm text-muted-foreground">Rating</p>
-                            <p className="font-medium text-foreground">{skillRating.skillValue}/5</p>
-                          </div>
+                          <p className="text-sm text-muted-foreground">Rating</p>
+                          <p className="font-medium text-foreground">{skillRating.skillValue}/5</p>
                         </div>
                       </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </SharedCard>
           </div>
         </div>
-      </main>
-
-      {/* Footer */}
-      <footer className="py-6 px-4 bg-card border-t mt-auto">
-        <div className="container mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="text-center md:text-left mb-4 md:mb-0">
-              <p className="text-muted-foreground">© {new Date().getFullYear()} Talent3X. Oulu Pilot.</p>
-            </div>
-            <div className="flex space-x-6">
-              <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                Terms of Use
-              </Link>
-              <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                Disclaimer
-              </Link>
-              <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                Privacy Policy
-              </Link>
-            </div>
-          </div>
-        </div>
-      </footer>
-    </div>
+      </div>
+    </AppLayout>
   );
 }
