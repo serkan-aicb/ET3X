@@ -199,7 +199,7 @@ export default function StudentTaskDetail() {
       if (error instanceof Error) {
         setMessage(`Error: ${error.message}`);
       } else {
-        setMessage("An unknown error occurred while requesting the task.");
+        setMessage("An unexpected error occurred while requesting the task.");
       }
     } finally {
       setRequesting(false);
@@ -208,14 +208,14 @@ export default function StudentTaskDetail() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col">
-        <header className="bg-white shadow-sm">
+      <div className="min-h-screen bg-background flex flex-col">
+        <header className="bg-card shadow-sm border-b">
           <div className="container mx-auto px-4 py-4 flex justify-between items-center">
             <Link href="/s/dashboard" className="flex items-center space-x-2">
-              <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center">
-                <span className="text-white font-bold text-xl">T</span>
+              <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
+                <span className="text-primary-foreground font-bold text-xl">T</span>
               </div>
-              <span className="text-2xl font-bold text-blue-800">Talent3X</span>
+              <span className="text-2xl font-bold text-foreground">Talent3X</span>
             </Link>
             <div className="flex space-x-2">
               <Button variant="outline" onClick={() => router.push("/s/tasks")}>
@@ -252,20 +252,20 @@ export default function StudentTaskDetail() {
           </Card>
         </main>
         
-        <footer className="py-6 px-4 bg-white border-t">
+        <footer className="py-6 px-4 bg-card border-t mt-auto">
           <div className="container mx-auto">
             <div className="flex flex-col md:flex-row justify-between items-center">
               <div className="text-center md:text-left mb-4 md:mb-0">
-                <p className="text-gray-500">© {new Date().getFullYear()} Talent3X. Oulu Pilot.</p>
+                <p className="text-muted-foreground">© {new Date().getFullYear()} Talent3X. Oulu Pilot.</p>
               </div>
               <div className="flex space-x-6">
-                <Link href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
+                <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
                   Terms of Use
                 </Link>
-                <Link href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
+                <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
                   Disclaimer
                 </Link>
-                <Link href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
+                <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
                   Privacy Policy
                 </Link>
               </div>
@@ -278,14 +278,14 @@ export default function StudentTaskDetail() {
 
   if (!task) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col">
-        <header className="bg-white shadow-sm">
+      <div className="min-h-screen bg-background flex flex-col">
+        <header className="bg-card shadow-sm border-b">
           <div className="container mx-auto px-4 py-4 flex justify-between items-center">
             <Link href="/s/dashboard" className="flex items-center space-x-2">
-              <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center">
-                <span className="text-white font-bold text-xl">T</span>
+              <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
+                <span className="text-primary-foreground font-bold text-xl">T</span>
               </div>
-              <span className="text-2xl font-bold text-blue-800">Talent3X</span>
+              <span className="text-2xl font-bold text-foreground">Talent3X</span>
             </Link>
             <div className="flex space-x-2">
               <Button variant="outline" onClick={() => router.push("/s/tasks")}>
@@ -301,9 +301,9 @@ export default function StudentTaskDetail() {
         <main className="container mx-auto px-4 py-8 flex-grow">
           <Card className="shadow-lg">
             <CardContent className="py-8 text-center">
-              <p className="text-gray-600">Task not found or not available.</p>
+              <p className="text-muted-foreground">Task not found or not available.</p>
               <Button 
-                className="mt-4 bg-blue-600 hover:bg-blue-700"
+                className="mt-4"
                 onClick={() => router.push("/s/tasks")}
               >
                 Browse Tasks
@@ -312,20 +312,20 @@ export default function StudentTaskDetail() {
           </Card>
         </main>
         
-        <footer className="py-6 px-4 bg-white border-t">
+        <footer className="py-6 px-4 bg-card border-t mt-auto">
           <div className="container mx-auto">
             <div className="flex flex-col md:flex-row justify-between items-center">
               <div className="text-center md:text-left mb-4 md:mb-0">
-                <p className="text-gray-500">© {new Date().getFullYear()} Talent3X. Oulu Pilot.</p>
+                <p className="text-muted-foreground">© {new Date().getFullYear()} Talent3X. Oulu Pilot.</p>
               </div>
               <div className="flex space-x-6">
-                <Link href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
+                <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
                   Terms of Use
                 </Link>
-                <Link href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
+                <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
                   Disclaimer
                 </Link>
-                <Link href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
+                <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
                   Privacy Policy
                 </Link>
               </div>
@@ -337,15 +337,15 @@ export default function StudentTaskDetail() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
-      <header className="bg-white shadow-sm">
+      <header className="bg-card shadow-sm border-b">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <Link href="/s/dashboard" className="flex items-center space-x-2">
-            <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center">
-              <span className="text-white font-bold text-xl">T</span>
+            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
+              <span className="text-primary-foreground font-bold text-xl">T</span>
             </div>
-            <span className="text-2xl font-bold text-blue-800">Talent3X</span>
+            <span className="text-2xl font-bold text-foreground">Talent3X</span>
           </Link>
           <div className="flex space-x-2">
             <Button variant="outline" onClick={() => router.push("/s/tasks")}>
@@ -361,21 +361,21 @@ export default function StudentTaskDetail() {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8 flex-grow">
         <div className="mb-6">
-          <Button variant="outline" className="border-gray-600 text-gray-600 hover:bg-gray-50" onClick={() => router.push("/s/tasks")}>
+          <Button variant="outline" onClick={() => router.push("/s/tasks")}>
             ← Back to Tasks
           </Button>
         </div>
         
-        <Card className="shadow-lg rounded-xl overflow-hidden">
-          <CardHeader className="bg-gray-50">
+        <Card className="shadow-lg rounded-xl overflow-hidden border">
+          <CardHeader className="bg-card">
             <div className="flex justify-between items-start">
               <div>
-                <CardTitle className="text-gray-900">{task.title}</CardTitle>
+                <CardTitle className="text-foreground">{task.title}</CardTitle>
                 {task.module && (
-                  <CardDescription className="text-gray-600">{task.module}</CardDescription>
+                  <CardDescription className="text-muted-foreground">{task.module}</CardDescription>
                 )}
               </div>
-              <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800">
+              <span className="inline-flex items-center rounded-full bg-primary/20 px-2.5 py-0.5 text-xs font-medium text-primary">
                 Open
               </span>
             </div>
@@ -383,32 +383,32 @@ export default function StudentTaskDetail() {
           <CardContent className="space-y-6 pt-6">
             {task.description && (
               <div>
-                <h3 className="font-medium mb-2 text-gray-900">Description</h3>
-                <p className="text-gray-600">{task.description}</p>
+                <h3 className="font-medium mb-2 text-foreground">Description</h3>
+                <p className="text-muted-foreground">{task.description}</p>
               </div>
             )}
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-4">
-              <div className="border rounded-lg p-4">
-                <h3 className="text-sm font-medium text-gray-500">Skill Level</h3>
-                <p className="mt-1">{task.skill_level || "Not specified"}</p>
+              <div className="border rounded-lg p-4 border-border">
+                <h3 className="text-sm font-medium text-muted-foreground">Skill Level</h3>
+                <p className="mt-1 text-foreground">{task.skill_level || "Not specified"}</p>
               </div>
               
-              <div className="border rounded-lg p-4">
-                <h3 className="text-sm font-medium text-gray-500">License</h3>
-                <p className="mt-1">{task.license || "Not specified"}</p>
+              <div className="border rounded-lg p-4 border-border">
+                <h3 className="text-sm font-medium text-muted-foreground">License</h3>
+                <p className="mt-1 text-foreground">{task.license || "Not specified"}</p>
               </div>
               
-              <div className="border rounded-lg p-4">
-                <h3 className="text-sm font-medium text-gray-500">Task Type</h3>
-                <p className="mt-1">
+              <div className="border rounded-lg p-4 border-border">
+                <h3 className="text-sm font-medium text-muted-foreground">Task Type</h3>
+                <p className="mt-1 text-foreground">
                   {task.task_mode === 'single' ? 'Single Assignment' : 'Multi-Assignment'}
                 </p>
               </div>
               
-              <div className="border rounded-lg p-4">
-                <h3 className="text-sm font-medium text-gray-500">Status</h3>
-                <p className="mt-1 capitalize">
+              <div className="border rounded-lg p-4 border-border">
+                <h3 className="text-sm font-medium text-muted-foreground">Status</h3>
+                <p className="mt-1 text-foreground capitalize">
                   {task.status || "Not specified"}
                 </p>
               </div>
@@ -417,12 +417,12 @@ export default function StudentTaskDetail() {
             {/* Required Skills Section */}
             {task.skills_data && task.skills_data.length > 0 && (
               <div className="pt-6">
-                <h3 className="font-medium mb-3 text-gray-900">Required Skills</h3>
+                <h3 className="font-medium mb-3 text-foreground">Required Skills</h3>
                 <div className="flex flex-wrap gap-2">
                   {task.skills_data.map((skill) => (
                     <span 
                       key={skill.id} 
-                      className="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-800"
+                      className="inline-flex items-center rounded-full bg-muted px-3 py-1 text-sm font-medium text-foreground"
                       title={skill.description}
                     >
                       {skill.label}
@@ -434,14 +434,13 @@ export default function StudentTaskDetail() {
             
             {/* Message display - this is already present but let's make sure it's styled properly */}
             {message && (
-              <div className={`p-3 rounded-lg ${message.includes("successfully") ? "bg-green-50 text-green-700 border border-green-200" : "bg-red-50 text-red-700 border border-red-200"}`}>
+              <div className={`p-3 rounded-lg ${message.includes("successfully") ? "bg-green-900/30 text-green-400 border border-green-800/50" : "bg-red-900/30 text-red-400 border border-red-800/50"}`}>
                 {message}
               </div>
             )}
           </CardContent>
-          <CardFooter className="flex justify-end space-x-2 bg-gray-50">
+          <CardFooter className="flex justify-end space-x-2 bg-card">
             <Button 
-              className="bg-blue-600 hover:bg-blue-700"
               onClick={handleRequestTask}
               disabled={requesting}
             >
@@ -452,20 +451,20 @@ export default function StudentTaskDetail() {
       </main>
 
       {/* Footer */}
-      <footer className="py-6 px-4 bg-white border-t">
+      <footer className="py-6 px-4 bg-card border-t mt-auto">
         <div className="container mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="text-center md:text-left mb-4 md:mb-0">
-              <p className="text-gray-500">© {new Date().getFullYear()} Talent3X. Oulu Pilot.</p>
+              <p className="text-muted-foreground">© {new Date().getFullYear()} Talent3X. Oulu Pilot.</p>
             </div>
             <div className="flex space-x-6">
-              <Link href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
+              <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
                 Terms of Use
               </Link>
-              <Link href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
+              <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
                 Disclaimer
               </Link>
-              <Link href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
+              <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
                 Privacy Policy
               </Link>
             </div>

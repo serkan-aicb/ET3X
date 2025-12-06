@@ -92,14 +92,14 @@ export default function AdminOverview() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col">
-        <header className="bg-white shadow-sm">
+      <div className="min-h-screen bg-background flex flex-col">
+        <header className="bg-card border-b">
           <div className="container mx-auto px-4 py-4 flex justify-between items-center">
             <div className="flex items-center space-x-2">
-              <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center">
-                <span className="text-white font-bold text-xl">T</span>
+              <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
+                <span className="text-primary-foreground font-bold text-xl">T</span>
               </div>
-              <span className="text-2xl font-bold text-blue-800">Talent3X</span>
+              <span className="text-2xl font-bold text-foreground">Talent3X</span>
             </div>
             <div className="flex space-x-2">
               <Skeleton className="h-10 w-24" />
@@ -115,7 +115,7 @@ export default function AdminOverview() {
           
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
             {[1, 2, 3, 4].map((i) => (
-              <Card key={i} className="shadow-lg">
+              <Card key={i} className="shadow-lg border">
                 <CardHeader>
                   <Skeleton className="h-6 w-32" />
                 </CardHeader>
@@ -128,7 +128,7 @@ export default function AdminOverview() {
           
           <div className="grid gap-6 md:grid-cols-3">
             {[1, 2, 3].map((i) => (
-              <Card key={i} className="shadow-lg">
+              <Card key={i} className="shadow-lg border">
                 <CardHeader>
                   <Skeleton className="h-6 w-48" />
                 </CardHeader>
@@ -140,20 +140,20 @@ export default function AdminOverview() {
           </div>
         </main>
         
-        <footer className="py-6 px-4 bg-white border-t">
+        <footer className="py-6 px-4 bg-card border-t">
           <div className="container mx-auto">
             <div className="flex flex-col md:flex-row justify-between items-center">
               <div className="text-center md:text-left mb-4 md:mb-0">
-                <p className="text-gray-500">© {new Date().getFullYear()} Talent3X. Oulu Pilot.</p>
+                <p className="text-muted-foreground">© {new Date().getFullYear()} Talent3X. Oulu Pilot.</p>
               </div>
               <div className="flex space-x-6">
-                <Link href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
+                <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
                   Terms of Use
                 </Link>
-                <Link href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
+                <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
                   Disclaimer
                 </Link>
-                <Link href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
+                <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
                   Privacy Policy
                 </Link>
               </div>
@@ -165,21 +165,25 @@ export default function AdminOverview() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
-      <header className="bg-white shadow-sm">
+      <header className="bg-card border-b">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <Link href="/admin/overview" className="flex items-center space-x-2">
-            <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center">
-              <span className="text-white font-bold text-xl">T</span>
+            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
+              <span className="text-primary-foreground font-bold text-xl">T</span>
             </div>
-            <span className="text-2xl font-bold text-blue-800">Talent3X</span>
+            <span className="text-2xl font-bold text-foreground">Talent3X</span>
           </Link>
           <div className="flex space-x-2">
-            <Button variant="outline" onClick={() => {
-              localStorage.removeItem('admin_code');
-              router.push("/");
-            }}>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                localStorage.removeItem('admin_code');
+                router.push("/");
+              }}
+              className="border border-primary text-primary hover:bg-primary/20"
+            >
               Logout
             </Button>
           </div>
@@ -189,102 +193,102 @@ export default function AdminOverview() {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8 flex-grow">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Admin Overview</h1>
-          <p className="text-gray-600">
+          <h1 className="text-3xl font-bold text-foreground">Admin Overview</h1>
+          <p className="text-muted-foreground">
             Platform analytics and statistics
           </p>
         </div>
         
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
-          <Card className="shadow-lg rounded-xl overflow-hidden transform transition-all hover:scale-105">
-            <CardHeader className="bg-blue-50">
-              <CardTitle className="text-blue-800">Total Tasks</CardTitle>
-              <CardDescription className="text-blue-600">All tasks on the platform</CardDescription>
+          <Card className="shadow-lg rounded-xl overflow-hidden transform transition-all hover:scale-105 border">
+            <CardHeader className="bg-card">
+              <CardTitle className="text-foreground">Total Tasks</CardTitle>
+              <CardDescription className="text-muted-foreground">All tasks on the platform</CardDescription>
             </CardHeader>
             <CardContent className="pt-4">
-              <div className="text-4xl font-bold text-blue-600">{stats.totalTasks}</div>
+              <div className="text-4xl font-bold text-primary">{stats.totalTasks}</div>
             </CardContent>
           </Card>
           
-          <Card className="shadow-lg rounded-xl overflow-hidden transform transition-all hover:scale-105">
-            <CardHeader className="bg-green-50">
-              <CardTitle className="text-green-800">Open Tasks</CardTitle>
-              <CardDescription className="text-green-600">Available for students</CardDescription>
+          <Card className="shadow-lg rounded-xl overflow-hidden transform transition-all hover:scale-105 border">
+            <CardHeader className="bg-card">
+              <CardTitle className="text-foreground">Open Tasks</CardTitle>
+              <CardDescription className="text-muted-foreground">Available for students</CardDescription>
             </CardHeader>
             <CardContent className="pt-4">
-              <div className="text-4xl font-bold text-green-600">{stats.openTasks}</div>
+              <div className="text-4xl font-bold text-primary">{stats.openTasks}</div>
             </CardContent>
           </Card>
           
-          <Card className="shadow-lg rounded-xl overflow-hidden transform transition-all hover:scale-105">
-            <CardHeader className="bg-amber-50">
-              <CardTitle className="text-amber-800">Assigned Tasks</CardTitle>
-              <CardDescription className="text-amber-600">Assigned to students</CardDescription>
+          <Card className="shadow-lg rounded-xl overflow-hidden transform transition-all hover:scale-105 border">
+            <CardHeader className="bg-card">
+              <CardTitle className="text-foreground">Assigned Tasks</CardTitle>
+              <CardDescription className="text-muted-foreground">Assigned to students</CardDescription>
             </CardHeader>
             <CardContent className="pt-4">
-              <div className="text-4xl font-bold text-amber-600">{stats.assignedTasks}</div>
+              <div className="text-4xl font-bold text-primary">{stats.assignedTasks}</div>
             </CardContent>
           </Card>
           
-          <Card className="shadow-lg rounded-xl overflow-hidden transform transition-all hover:scale-105">
-            <CardHeader className="bg-purple-50">
-              <CardTitle className="text-purple-800">Completed Tasks</CardTitle>
-              <CardDescription className="text-purple-600">Rated and finalized</CardDescription>
+          <Card className="shadow-lg rounded-xl overflow-hidden transform transition-all hover:scale-105 border">
+            <CardHeader className="bg-card">
+              <CardTitle className="text-foreground">Completed Tasks</CardTitle>
+              <CardDescription className="text-muted-foreground">Rated and finalized</CardDescription>
             </CardHeader>
             <CardContent className="pt-4">
-              <div className="text-4xl font-bold text-purple-600">{stats.ratedTasks}</div>
+              <div className="text-4xl font-bold text-primary">{stats.ratedTasks}</div>
             </CardContent>
           </Card>
         </div>
         
         <div className="grid gap-6 md:grid-cols-3">
-          <Card className="shadow-lg rounded-xl overflow-hidden transform transition-all hover:scale-105">
-            <CardHeader className="bg-gray-50">
-              <CardTitle className="text-gray-800">Total Users</CardTitle>
-              <CardDescription className="text-gray-600">All registered users</CardDescription>
+          <Card className="shadow-lg rounded-xl overflow-hidden transform transition-all hover:scale-105 border">
+            <CardHeader className="bg-card">
+              <CardTitle className="text-foreground">Total Users</CardTitle>
+              <CardDescription className="text-muted-foreground">All registered users</CardDescription>
             </CardHeader>
             <CardContent className="pt-4">
-              <div className="text-4xl font-bold text-gray-600">{stats.totalUsers}</div>
+              <div className="text-4xl font-bold text-primary">{stats.totalUsers}</div>
             </CardContent>
           </Card>
           
-          <Card className="shadow-lg rounded-xl overflow-hidden transform transition-all hover:scale-105">
-            <CardHeader className="bg-blue-50">
-              <CardTitle className="text-blue-800">Students</CardTitle>
-              <CardDescription className="text-blue-600">Registered students</CardDescription>
+          <Card className="shadow-lg rounded-xl overflow-hidden transform transition-all hover:scale-105 border">
+            <CardHeader className="bg-card">
+              <CardTitle className="text-foreground">Students</CardTitle>
+              <CardDescription className="text-muted-foreground">Registered students</CardDescription>
             </CardHeader>
             <CardContent className="pt-4">
-              <div className="text-4xl font-bold text-blue-600">{stats.students}</div>
+              <div className="text-4xl font-bold text-primary">{stats.students}</div>
             </CardContent>
           </Card>
           
-          <Card className="shadow-lg rounded-xl overflow-hidden transform transition-all hover:scale-105">
-            <CardHeader className="bg-indigo-50">
-              <CardTitle className="text-indigo-800">Educators</CardTitle>
-              <CardDescription className="text-indigo-600">Registered educators</CardDescription>
+          <Card className="shadow-lg rounded-xl overflow-hidden transform transition-all hover:scale-105 border">
+            <CardHeader className="bg-card">
+              <CardTitle className="text-foreground">Educators</CardTitle>
+              <CardDescription className="text-muted-foreground">Registered educators</CardDescription>
             </CardHeader>
             <CardContent className="pt-4">
-              <div className="text-4xl font-bold text-indigo-600">{stats.educators}</div>
+              <div className="text-4xl font-bold text-primary">{stats.educators}</div>
             </CardContent>
           </Card>
         </div>
       </main>
 
       {/* Footer */}
-      <footer className="py-6 px-4 bg-white border-t">
+      <footer className="py-6 px-4 bg-card border-t">
         <div className="container mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="text-center md:text-left mb-4 md:mb-0">
-              <p className="text-gray-500">© {new Date().getFullYear()} Talent3X. Oulu Pilot.</p>
+              <p className="text-muted-foreground">© {new Date().getFullYear()} Talent3X. Oulu Pilot.</p>
             </div>
             <div className="flex space-x-6">
-              <Link href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
+              <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
                 Terms of Use
               </Link>
-              <Link href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
+              <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
                 Disclaimer
               </Link>
-              <Link href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
+              <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
                 Privacy Policy
               </Link>
             </div>

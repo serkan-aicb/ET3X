@@ -158,7 +158,7 @@ export default function EducatorMyTasks() {
               Tasks you{`'`}ve created
             </p>
           </div>
-          <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => router.push("/e/tasks/create")}>
+          <Button onClick={() => router.push("/e/tasks/create")}>
             Create New Task
           </Button>
         </div>
@@ -168,7 +168,6 @@ export default function EducatorMyTasks() {
             <CardContent className="py-8 text-center">
               <p className="text-gray-600">You haven{`'`}t created any tasks yet.</p>
               <Button 
-                className="mt-4 bg-blue-600 hover:bg-blue-700"
                 onClick={() => router.push("/e/tasks/create")}
               >
                 Create Your First Task

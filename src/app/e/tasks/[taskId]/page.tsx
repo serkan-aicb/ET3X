@@ -798,10 +798,10 @@ export default function EducatorTaskDetail() {
                     <Button onClick={() => router.push(`/e/tasks/${taskId}/edit`)} variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-50">
                       Edit Task
                     </Button>
-                    <Button onClick={handleDuplicateTask} className="bg-blue-600 hover:bg-blue-700">
+                    <Button onClick={handleDuplicateTask}>
                       Duplicate Task
                     </Button>
-                    <Button onClick={handlePublishTask} className="bg-green-600 hover:bg-green-700">
+                    <Button onClick={handlePublishTask}>
                       Publish Task
                     </Button>
                   </>
@@ -894,7 +894,7 @@ export default function EducatorTaskDetail() {
                   View Submissions
                 </Button>
                 {task.status === 'submitted' && (
-                  <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => router.push(`/e/tasks/${taskId}/rate`)}>
+                  <Button onClick={() => router.push(`/e/tasks/${taskId}/rate`)}>
                     Rate Submissions
                   </Button>
                 )}
@@ -941,7 +941,6 @@ export default function EducatorTaskDetail() {
                       <div className="space-x-2">
                         <Button 
                           size="sm"
-                          className="bg-blue-600 hover:bg-blue-700"
                           onClick={() => handleAssignTask(request.applicant)}
                         >
                           Assign

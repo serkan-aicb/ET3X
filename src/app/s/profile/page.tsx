@@ -201,21 +201,25 @@ export default function StudentProfile() {
         return;
       }
       
-      if (trimmedNumber.length > 0 && !/^[A-Za-z0-9]+$/.test(trimmedNumber)) {
+      // Check if it contains only letters and numbers
+      if (!/^[a-zA-Z0-9]+$/.test(trimmedNumber)) {
         alert("Student number can only contain letters and numbers.");
         return;
       }
     }
     
     setSaving(true);
-    const supabase = createClient();
     
     try {
+      const supabase = createClient();
+      
       const { error } = await supabase
         .from('profiles')
-        .update({ matriculation_number: matriculationNumber || null })
+        .update({ 
+          matriculation_number: matriculationNumber || null
+        })
         .eq('id', profile.id);
-        
+      
       if (error) throw error;
       
       // Update local state
@@ -231,14 +235,14 @@ export default function StudentProfile() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col">
-        <header className="bg-white shadow-sm">
+      <div className="min-h-screen bg-background flex flex-col">
+        <header className="bg-card shadow-sm border-b">
           <div className="container mx-auto px-4 py-4 flex justify-between items-center">
             <Link href="/s/dashboard" className="flex items-center space-x-2">
-              <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center">
-                <span className="text-white font-bold text-xl">T</span>
+              <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
+                <span className="text-primary-foreground font-bold text-xl">T</span>
               </div>
-              <span className="text-2xl font-bold text-blue-800">Talent3X</span>
+              <span className="text-2xl font-bold text-foreground">Talent3X</span>
             </Link>
             <div className="flex space-x-2">
               <Button variant="outline" onClick={() => router.push("/s/dashboard")}>
@@ -276,7 +280,7 @@ export default function StudentProfile() {
                 <CardContent>
                   <div className="space-y-4">
                     {[1, 2, 3].map((i) => (
-                      <div key={i} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div key={i} className="flex items-center justify-between p-4 border rounded-lg border-border">
                         <div className="space-y-2">
                           <Skeleton className="h-4 w-48" />
                           <Skeleton className="h-4 w-32" />
@@ -291,20 +295,20 @@ export default function StudentProfile() {
           </div>
         </main>
         
-        <footer className="py-6 px-4 bg-white border-t">
+        <footer className="py-6 px-4 bg-card border-t mt-auto">
           <div className="container mx-auto">
             <div className="flex flex-col md:flex-row justify-between items-center">
               <div className="text-center md:text-left mb-4 md:mb-0">
-                <p className="text-gray-500">© {new Date().getFullYear()} Talent3X. Oulu Pilot.</p>
+                <p className="text-muted-foreground">© {new Date().getFullYear()} Talent3X. Oulu Pilot.</p>
               </div>
               <div className="flex space-x-6">
-                <Link href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
+                <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
                   Terms of Use
                 </Link>
-                <Link href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
+                <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
                   Disclaimer
                 </Link>
-                <Link href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
+                <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
                   Privacy Policy
                 </Link>
               </div>
@@ -316,15 +320,15 @@ export default function StudentProfile() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
-      <header className="bg-white shadow-sm">
+      <header className="bg-card shadow-sm border-b">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <Link href="/s/dashboard" className="flex items-center space-x-2">
-            <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center">
-              <span className="text-white font-bold text-xl">T</span>
+            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
+              <span className="text-primary-foreground font-bold text-xl">T</span>
             </div>
-            <span className="text-2xl font-bold text-blue-800">Talent3X</span>
+            <span className="text-2xl font-bold text-foreground">Talent3X</span>
           </Link>
           <div className="flex space-x-2">
             <Button variant="outline" onClick={() => router.push("/s/dashboard")}>
@@ -337,39 +341,39 @@ export default function StudentProfile() {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8 flex-grow">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">My Profile</h1>
-          <p className="text-gray-600">
+          <h1 className="text-3xl font-bold text-foreground">My Profile</h1>
+          <p className="text-muted-foreground">
             View your profile and completed task ratings
           </p>
         </div>
         
         <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-3">
           <div className="lg:col-span-1">
-            <Card className="shadow-lg rounded-xl overflow-hidden">
-              <CardHeader className="bg-gray-50">
-                <CardTitle className="text-gray-800">Profile Information</CardTitle>
+            <Card className="shadow-lg rounded-xl overflow-hidden border">
+              <CardHeader className="bg-card">
+                <CardTitle className="text-foreground">Profile Information</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4 pt-4">
                 <div>
-                  <h3 className="text-sm font-medium text-gray-500">Username</h3>
-                  <p className="font-medium">@{profile?.username}</p>
+                  <h3 className="text-sm font-medium text-muted-foreground">Username</h3>
+                  <p className="font-medium text-foreground">@{profile?.username}</p>
                 </div>
                 
                 <div>
-                  <h3 className="text-sm font-medium text-gray-500">DID</h3>
-                  <p className="font-mono text-sm break-all bg-gray-100 p-2 rounded border border-gray-200">
+                  <h3 className="text-sm font-medium text-muted-foreground">DID</h3>
+                  <p className="font-mono text-sm break-all bg-muted p-2 rounded border border-border">
                     {profile?.did}
                   </p>
                 </div>
                 
                 <div>
-                  <h3 className="text-sm font-medium text-gray-500">Role</h3>
-                  <p className="font-medium capitalize">{profile?.role}</p>
+                  <h3 className="text-sm font-medium text-muted-foreground">Role</h3>
+                  <p className="font-medium text-foreground capitalize">{profile?.role}</p>
                 </div>
                 
                 <div>
                   <div className="flex justify-between items-center">
-                    <h3 className="text-sm font-medium text-gray-500">Student Number</h3>
+                    <h3 className="text-sm font-medium text-muted-foreground">Student Number</h3>
                     {isEditing ? (
                       <Button 
                         size="sm" 
@@ -390,15 +394,14 @@ export default function StudentProfile() {
                     )}
                   </div>
                   {isEditing ? (
-                    <div className="flex space-x-2 mt-2">
+                    <div className="space-y-2 mt-2">
                       <Input
                         type="text"
                         value={matriculationNumber}
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) => setMatriculationNumber(e.target.value)}
                         placeholder="e.g., 123456 or STUD2023001"
-                        className="flex-1"
                       />
-                      <p className="text-sm text-gray-500 mt-1">5-20 characters, letters and numbers only</p>
+                      <p className="text-sm text-muted-foreground">5-20 characters, letters and numbers only</p>
                       <Button 
                         size="sm" 
                         onClick={handleSaveMatriculationNumber}
@@ -408,23 +411,23 @@ export default function StudentProfile() {
                       </Button>
                     </div>
                   ) : (
-                    <p className="font-medium">
+                    <p className="font-medium text-foreground">
                       {profile?.matriculation_number || 'Not provided'}
                     </p>
                   )}
                 </div>
                 
                 {/* Stats Section */}
-                <div className="pt-4 border-t">
-                  <h3 className="text-sm font-medium text-gray-500 mb-2">Statistics</h3>
+                <div className="pt-4 border-t border-border">
+                  <h3 className="text-sm font-medium text-muted-foreground mb-2">Statistics</h3>
                   <div className="space-y-2">
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Average Rating</span>
-                      <span className="font-medium">{averageSkillRating}/5.0</span>
+                      <span className="text-muted-foreground">Average Rating</span>
+                      <span className="font-medium text-foreground">{averageSkillRating}/5.0</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Total XP</span>
-                      <span className="font-medium">{ratingStats.totalXP}</span>
+                      <span className="text-muted-foreground">Total XP</span>
+                      <span className="font-medium text-foreground">{ratingStats.totalXP}</span>
                     </div>
                   </div>
                 </div>
@@ -434,38 +437,38 @@ export default function StudentProfile() {
           
           <div className="lg:col-span-2 space-y-6">
             {/* Aggregated Task Ratings */}
-            <Card className="shadow-lg rounded-xl overflow-hidden">
-              <CardHeader className="bg-gray-50">
-                <CardTitle className="text-gray-800">Task Performance</CardTitle>
-                <CardDescription className="text-gray-600">
+            <Card className="shadow-lg rounded-xl overflow-hidden border">
+              <CardHeader className="bg-card">
+                <CardTitle className="text-foreground">Task Performance</CardTitle>
+                <CardDescription className="text-muted-foreground">
                   Your performance across different tasks
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 {aggregatedTaskRatings.length === 0 ? (
-                  <p className="text-gray-600 text-center py-4">
-                    You haven{`'`}t received any ratings yet.
+                  <p className="text-muted-foreground text-center py-4">
+                    You haven{'t'} received any ratings yet.
                   </p>
                 ) : (
                   <div className="space-y-4">
                     {aggregatedTaskRatings.map((taskRating) => (
-                      <div key={taskRating.taskId} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                      <div key={taskRating.taskId} className="flex items-center justify-between p-4 border rounded-lg border-border hover:bg-muted/50 transition-colors">
                         <div>
-                          <h3 className="font-medium text-gray-900">
+                          <h3 className="font-medium text-foreground">
                             {taskRating.taskTitle}
                           </h3>
-                          <p className="text-sm text-gray-500">
+                          <p className="text-sm text-muted-foreground">
                             {taskRating.ratingCount} rating{taskRating.ratingCount !== 1 ? 's' : ''}
                           </p>
                         </div>
                         <div className="flex items-center space-x-4">
                           <div>
-                            <p className="text-sm text-gray-500">Average</p>
-                            <p className="font-medium">{taskRating.avgRating}/5</p>
+                            <p className="text-sm text-muted-foreground">Average</p>
+                            <p className="font-medium text-foreground">{taskRating.avgRating}/5</p>
                           </div>
                           <div>
-                            <p className="text-sm text-gray-500">XP</p>
-                            <p className="font-medium">{taskRating.totalXP}</p>
+                            <p className="text-sm text-muted-foreground">XP</p>
+                            <p className="font-medium text-foreground">{taskRating.totalXP}</p>
                           </div>
                         </div>
                       </div>
@@ -476,34 +479,34 @@ export default function StudentProfile() {
             </Card>
             
             {/* Last 5 Individual Skill Ratings */}
-            <Card className="shadow-lg rounded-xl overflow-hidden">
-              <CardHeader className="bg-gray-50">
-                <CardTitle className="text-gray-800">Recent Skill Ratings</CardTitle>
-                <CardDescription className="text-gray-600">
+            <Card className="shadow-lg rounded-xl overflow-hidden border">
+              <CardHeader className="bg-card">
+                <CardTitle className="text-foreground">Recent Skill Ratings</CardTitle>
+                <CardDescription className="text-muted-foreground">
                   Your most recent individual skill ratings
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 {skillRatings.length === 0 ? (
-                  <p className="text-gray-600 text-center py-4">
+                  <p className="text-muted-foreground text-center py-4">
                     No skill ratings available yet.
                   </p>
                 ) : (
                   <div className="space-y-4">
                     {skillRatings.map((skillRating, index) => (
-                      <div key={index} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                      <div key={index} className="flex items-center justify-between p-4 border rounded-lg border-border hover:bg-muted/50 transition-colors">
                         <div>
-                          <h3 className="font-medium text-gray-900">
+                          <h3 className="font-medium text-foreground">
                             {getSkillName(skillRating.skillId)}
                           </h3>
-                          <p className="text-sm text-gray-500">
+                          <p className="text-sm text-muted-foreground">
                             {skillRating.taskTitle} • {new Date(skillRating.createdAt).toLocaleDateString()}
                           </p>
                         </div>
                         <div className="flex items-center space-x-4">
                           <div>
-                            <p className="text-sm text-gray-500">Rating</p>
-                            <p className="font-medium">{skillRating.skillValue}/5</p>
+                            <p className="text-sm text-muted-foreground">Rating</p>
+                            <p className="font-medium text-foreground">{skillRating.skillValue}/5</p>
                           </div>
                         </div>
                       </div>
@@ -517,20 +520,20 @@ export default function StudentProfile() {
       </main>
 
       {/* Footer */}
-      <footer className="py-6 px-4 bg-white border-t">
+      <footer className="py-6 px-4 bg-card border-t mt-auto">
         <div className="container mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="text-center md:text-left mb-4 md:mb-0">
-              <p className="text-gray-500">© {new Date().getFullYear()} Talent3X. Oulu Pilot.</p>
+              <p className="text-muted-foreground">© {new Date().getFullYear()} Talent3X. Oulu Pilot.</p>
             </div>
             <div className="flex space-x-6">
-              <Link href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
+              <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
                 Terms of Use
               </Link>
-              <Link href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
+              <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
                 Disclaimer
               </Link>
-              <Link href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
+              <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
                 Privacy Policy
               </Link>
             </div>
