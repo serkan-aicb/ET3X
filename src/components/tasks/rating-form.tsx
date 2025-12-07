@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { createClient } from "@/lib/supabase/client";
 import { SkillScore, Level, computeXP } from "@/lib/utils/xp";
 // Import the IPFS client
@@ -30,7 +29,6 @@ export function RatingForm({
   task: Task;
 }) {
   const [ratings, setRatings] = useState<Record<string, Record<number, number>>>({});
-  const [notes, setNotes] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState("");
   const router = useRouter();
@@ -56,14 +54,6 @@ export function RatingForm({
             ...prev,
             [student.id]: existingRating.skills as Record<number, number>
           }));
-          
-          // Set existing notes
-          if (existingRating.notes) {
-            setNotes(prev => ({
-              ...prev,
-              [student.id]: existingRating.notes
-            }));
-          }
         }
       }
     };
@@ -78,13 +68,6 @@ export function RatingForm({
         ...prev[studentId],
         [skillId]: value
       }
-    }));
-  };
-
-  const handleNoteChange = (studentId: string, value: string) => {
-    setNotes(prev => ({
-      ...prev,
-      [studentId]: value
     }));
   };
 
@@ -201,7 +184,6 @@ export function RatingForm({
                 skills: studentRatings,
                 starsAvg: starsAvg,
                 xp: xp,
-                notes: notes[student.id] || "",
                 createdAt: new Date().toISOString()
               };
               
@@ -226,14 +208,6 @@ export function RatingForm({
                   studentDID: studentProfile.did,
                   educatorDID: educatorProfile.did
                 });
-                
-                // In a real implementation, this would be:
-                // const txHash = await anchorRating(
-                //   cid,
-                //   taskId,
-                //   studentProfile.did,
-                //   educatorProfile.did
-                // );
                 
                 // For simulation, we'll use a fake transaction hash
                 const txHash = "0xSIMULATED_TRANSACTION_HASH";
@@ -300,57 +274,46 @@ export function RatingForm({
           <CardContent className="space-y-6">
             <div className="space-y-4">
               {skills.map((skill) => (
-                <div key={skill.id} className="space-y-2">
-                  <div className="flex justify-between">
-                    <div>
-                      <Label htmlFor={`rating-${student.id}-${skill.id}`}>
-                        {skill.label}
-                      </Label>
-                      {/* Display skill description */}
-                      <p className="text-sm text-muted-foreground mt-1">
-                        {skill.description}
-                      </p>
-                    </div>
+                <div key={skill.id} className="space-y-3">
+                  <div>
+                    <Label htmlFor={`rating-${student.id}-${skill.id}`} className="font-medium">
+                      {skill.label}
+                    </Label>
+                    {/* Display skill description */}
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {skill.description}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-4">
                     <span className="text-sm text-muted-foreground">
                       {ratings[student.id]?.[skill.id] || 0}/5
                     </span>
+                    {/* Rating input field for rating (1-5) */}
+                    <Input
+                      id={`rating-${student.id}-${skill.id}`}
+                      type="number"
+                      min="1"
+                      max="5"
+                      value={ratings[student.id]?.[skill.id] || ""}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                        const value = e.target.value;
+                        // Validate input to ensure it's between 1-5
+                        if (value === "" || (parseInt(value) >= 1 && parseInt(value) <= 5)) {
+                          handleRatingChange(student.id, skill.id, value === "" ? 0 : parseInt(value));
+                        }
+                      }}
+                      placeholder="1-5"
+                      className="w-24"
+                    />
                   </div>
-                  {/* Replace Slider with Input field for rating (1-5) */}
-                  <Input
-                    id={`rating-${student.id}-${skill.id}`}
-                    type="number"
-                    min="1"
-                    max="5"
-                    value={ratings[student.id]?.[skill.id] || ""}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                      const value = e.target.value;
-                      // Validate input to ensure it's between 1-5
-                      if (value === "" || (parseInt(value) >= 1 && parseInt(value) <= 5)) {
-                        handleRatingChange(student.id, skill.id, value === "" ? 0 : parseInt(value));
-                      }
-                    }}
-                    placeholder="1-5"
-                    className="w-24"
-                  />
                 </div>
               ))}
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor={`note-${student.id}`}>Notes (Optional)</Label>
-              <Textarea
-                id={`note-${student.id}`}
-                value={notes[student.id] || ""}
-                onChange={(e) => handleNoteChange(student.id, e.target.value)}
-                placeholder="Add any additional notes about this student's work"
-                rows={3}
-              />
             </div>
           </CardContent>
         </Card>
       ))}
       
-      <div className="flex justify-end">
+      <div className="flex justify-end pt-4">
         <Button 
           onClick={handleSubmit}
           disabled={submitting}
