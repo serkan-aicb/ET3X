@@ -25,15 +25,21 @@ export default function CreateTask() {
   const [title, setTitle] = useState("");
   const [module, setModule] = useState("");
   const [description, setDescription] = useState("");
-  const [seats, setSeats] = useState(1);
+  // Removed seats state as it's no longer needed in the new flow
   const [skillLevel, setSkillLevel] = useState<"Novice" | "Skilled" | "Expert" | "Master">("Novice");
   const [license, setLicense] = useState<"CC BY 4.0" | "CC0 1.0">("CC BY 4.0");
-  const [taskMode, setTaskMode] = useState<"single" | "multi">("single"); // New state for task mode
+  // Removed taskMode state as it's no longer needed in the new flow
   const [skills, setSkills] = useState<number[]>([]);
   const [dueDate, setDueDate] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [availableSkills, setAvailableSkills] = useState<Skill[]>([]);
+  
+  // New state for assigned usernames (part of the new bulk assignment flow)
+  const [assignedUsernames, setAssignedUsernames] = useState("");
+  // State for displaying missing usernames
+  const [missingUsernames, setMissingUsernames] = useState<string[]>([]);
+  
   const router = useRouter();
 
   // Fetch skills on component mount
@@ -71,10 +77,30 @@ export default function CreateTask() {
     });
   };
 
+  // Process assigned usernames: trim, remove duplicates, filter empty
+  // This is part of the new bulk assignment flow
+  const processAssignedUsernames = (): string[] => {
+    if (!assignedUsernames.trim()) {
+      return [];
+    }
+    
+    // Split by newlines, trim each line, filter out empty lines, remove duplicates
+    const usernames = assignedUsernames
+      .split('\n')
+      .map(username => username.trim())
+      .filter(username => username.length > 0);
+    
+    // Remove duplicates while preserving order
+    return Array.from(new Set(usernames));
+  };
+
+  // Main submission handler for the new flow
+  // This replaces the old request/submission flow with direct assignment
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setMessage("");
+    setMissingUsernames([]);
     
     try {
       const supabase = createClient();
@@ -85,29 +111,80 @@ export default function CreateTask() {
       
       console.log("Creating task for user:", user.id);
       
-      // Create task - remove recurrence since we removed the column
-      const { error } = await supabase
+      // Process assigned usernames
+      const processedUsernames = processAssignedUsernames();
+      
+      // Check for extremely large lists
+      if (processedUsernames.length > 5000) {
+        setMessage("Warning: You are trying to assign a very large number of students. This may take a while to process.");
+      }
+      
+      // Create task - remove seats and task_mode since they're no longer needed
+      const { data: taskData, error: taskError } = await supabase
         .from('tasks')
         .insert({
           creator: user.id,
           title,
           module,
           description, // Use description instead of goal, context, deliverables
-          seats,
+          // Removed seats
           skill_level: skillLevel,
           license,
           skills,
           due_date: dueDate || null,
           status: 'open',
-          task_mode: taskMode // Add task_mode to the insert
-        });
+          // Removed task_mode
+        })
+        .select()
+        .single();
       
-      console.log("Task creation result:", error);
+      console.log("Task creation result:", taskError);
       
-      if (error) throw error;
+      if (taskError) throw taskError;
       
-      setMessage("Task created and published successfully!");
-      router.push("/e/tasks");
+      // If we have assigned usernames, call the RPC function
+      // This is the core of the new bulk assignment flow
+      if (processedUsernames.length > 0) {
+        console.log("Calling RPC with usernames:", processedUsernames);
+        
+        // Call the RPC function to assign usernames to the task
+        const { data: rpcData, error: rpcError } = await supabase
+          .rpc('assign_task_to_usernames', {
+            task_id: taskData.id,
+            usernames: processedUsernames
+          });
+        
+        console.log("RPC result:", rpcData, rpcError);
+        
+        if (rpcError) throw rpcError;
+        
+        // Check if there were any missing usernames
+        if (rpcData.missing_usernames && rpcData.missing_usernames.length > 0) {
+          // Set missing usernames to display to the user
+          setMissingUsernames(rpcData.missing_usernames);
+          
+          // Delete the created task since some usernames were invalid
+          await supabase
+            .from('tasks')
+            .delete()
+            .eq('id', taskData.id);
+          
+          setMessage(`The following usernames do not exist: ${rpcData.missing_usernames.join(', ')}. Task was not created.`);
+          setLoading(false);
+          return;
+        }
+        
+        // Success - task created and assigned
+        setMessage(`Task created and assigned to ${rpcData.assigned_usernames.length} students.`);
+      } else {
+        // Success - task created without assignments
+        setMessage("Task created successfully!");
+      }
+      
+      // Redirect to tasks page after a short delay
+      setTimeout(() => {
+        router.push("/e/tasks");
+      }, 2000);
     } catch (error: unknown) {
       if (error instanceof Error) {
         setMessage(error.message || "An error occurred while creating the task.");
@@ -129,6 +206,17 @@ export default function CreateTask() {
           </p>
         </div>
         
+        {/* 
+          NEW TALENT3X UNIVERSITY FLOW:
+          This form implements the new direct assignment flow where educators
+          assign tasks directly to students by pasting usernames during task creation.
+          
+          DEPRECATED FEATURES (can be removed later):
+          - Number of Participants field (was seats)
+          - Task Mode field (was single/multi assignment)
+          - Student request system
+          - Student submission system
+        */}
         <SharedCard>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
@@ -164,20 +252,7 @@ export default function CreateTask() {
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="seats">Number of Participants</Label>
-                <Input
-                  id="seats"
-                  type="number"
-                  min="1"
-                  max="999"
-                  value={seats}
-                  onChange={(e) => setSeats(Math.max(1, Math.min(999, parseInt(e.target.value) || 1)))}
-                />
-                <p className="text-sm text-muted-foreground">
-                  Enter 1 for individual tasks, or more for group tasks
-                </p>
-              </div>
+              {/* Removed Number of Participants field - deprecated in new flow */}
               
               <div className="space-y-2">
                 <Label htmlFor="dueDate">Due Date (Optional)</Label>
@@ -189,23 +264,7 @@ export default function CreateTask() {
                 />
               </div>
               
-              <div className="space-y-2">
-                <Label>Task Mode</Label>
-                <Select value={taskMode} onValueChange={(value: "single" | "multi") => setTaskMode(value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select task mode" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="single">Single Assignment</SelectItem>
-                    <SelectItem value="multi">Multi-Assignment</SelectItem>
-                  </SelectContent>
-                </Select>
-                <p className="text-sm text-muted-foreground">
-                  {taskMode === "single" 
-                    ? "Only one student can be assigned to this task" 
-                    : "Multiple students can be assigned to this task"}
-                </p>
-              </div>
+              {/* Removed Task Mode field - deprecated in new flow */}
               
               <div className="space-y-2">
                 <Label>Skill Level</Label>
@@ -234,6 +293,33 @@ export default function CreateTask() {
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+            
+            {/* New Assigned Usernames field for direct assignment */}
+            <div className="space-y-2">
+              <Label htmlFor="assignedUsernames">Assigned Usernames (optional)</Label>
+              <Textarea
+                id="assignedUsernames"
+                value={assignedUsernames}
+                onChange={(e) => setAssignedUsernames(e.target.value)}
+                placeholder="Paste one username per line (e.g. stud12345)&#10;stud12345&#10;stud67890&#10;stud99999"
+                rows={6}
+              />
+              <p className="text-sm text-muted-foreground">
+                You can paste a full column from Google Sheets. Each line will be treated as one username.
+              </p>
+              
+              {/* Display missing usernames if any */}
+              {missingUsernames.length > 0 && (
+                <div className="mt-2 p-3 bg-red-900/30 text-red-400 border border-red-800/50 rounded-lg">
+                  <p className="font-medium">The following usernames do not exist:</p>
+                  <ul className="list-disc list-inside mt-1">
+                    {missingUsernames.map((username, index) => (
+                      <li key={index}>{username}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
             
             <div className="space-y-4">
@@ -278,7 +364,7 @@ export default function CreateTask() {
             </div>
             
             {message && (
-              <div className={`p-3 rounded-lg ${message.includes("successfully") ? "bg-green-900/30 text-green-400 border border-green-800/50" : "bg-red-900/30 text-red-400 border border-red-800/50"}`}>
+              <div className={`p-3 rounded-lg ${message.includes("successfully") || message.includes("assigned to") ? "bg-green-900/30 text-green-400 border border-green-800/50" : "bg-red-900/30 text-red-400 border border-red-800/50"}`}>
                 {message}
               </div>
             )}
@@ -305,3 +391,76 @@ export default function CreateTask() {
     </AppLayout>
   );
 }
+
+// Export the username processing function for testing
+export const processAssignedUsernames = (assignedUsernames: string): string[] => {
+  if (!assignedUsernames.trim()) {
+    return [];
+  }
+  
+  // Split by newlines, trim each line, filter out empty lines, remove duplicates
+  const usernames = assignedUsernames
+    .split('\n')
+    .map(username => username.trim())
+    .filter(username => username.length > 0);
+  
+  // Remove duplicates while preserving order
+  return Array.from(new Set(usernames));
+};
+
+// Simple test function for the username processing logic
+export const testProcessAssignedUsernames = () => {
+  const testCases = [
+    {
+      input: "user1\nuser2\nuser3",
+      expected: ["user1", "user2", "user3"],
+      description: "Basic case with multiple usernames"
+    },
+    {
+      input: " user1 \n user2 \n user3 ",
+      expected: ["user1", "user2", "user3"],
+      description: "Usernames with extra whitespace"
+    },
+    {
+      input: "user1\n\nuser2\n\n\nuser3",
+      expected: ["user1", "user2", "user3"],
+      description: "Empty lines between usernames"
+    },
+    {
+      input: "user1\nuser1\nuser2",
+      expected: ["user1", "user2"],
+      description: "Duplicate usernames"
+    },
+    {
+      input: "",
+      expected: [],
+      description: "Empty input"
+    },
+    {
+      input: "   \n  \n  ",
+      expected: [],
+      description: "Only whitespace"
+    }
+  ];
+  
+  let passed = 0;
+  let failed = 0;
+  
+  testCases.forEach(({ input, expected, description }) => {
+    const result = processAssignedUsernames(input);
+    const success = JSON.stringify(result) === JSON.stringify(expected);
+    
+    if (success) {
+      console.log(`✓ ${description}`);
+      passed++;
+    } else {
+      console.log(`✗ ${description}`);
+      console.log(`  Expected: ${JSON.stringify(expected)}`);
+      console.log(`  Got:      ${JSON.stringify(result)}`);
+      failed++;
+    }
+  });
+  
+  console.log(`\nTests: ${passed} passed, ${failed} failed`);
+  return failed === 0;
+};
