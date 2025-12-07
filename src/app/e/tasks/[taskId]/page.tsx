@@ -703,12 +703,13 @@ export default function EducatorTaskDetail() {
                 <h3 className="text-xs uppercase text-muted-foreground mb-2">Required Skills</h3>
                 <div className="flex flex-wrap gap-2">
                   {task.skills_data.map((skill) => (
-                    <SharedPill 
+                    <span 
                       key={skill.id} 
+                      className="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium bg-white text-black border border-gray-200"
                       title={skill.description || undefined}
                     >
                       {skill.label}
-                    </SharedPill>
+                    </span>
                   ))}
                 </div>
               </div>

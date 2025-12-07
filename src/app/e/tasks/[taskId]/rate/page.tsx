@@ -3,12 +3,12 @@
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { RatingForm } from "@/components/tasks/rating-form";
 import { createClient } from "@/lib/supabase/client";
 import { Tables } from '@/lib/supabase/types';
-import Link from "next/link";
+import { AppLayout } from "@/components/app-layout";
+import { SharedCard } from "@/components/shared-card";
 
 type Task = Tables<'tasks'> & {
   skills_data?: {
@@ -123,320 +123,121 @@ export default function RateTask() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col">
-        {/* Header */}
-        <header className="bg-white shadow-sm">
-          <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-            <div className="flex items-center space-x-2">
-              <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center">
-                <span className="text-white font-bold text-xl">T</span>
-              </div>
-              <span className="text-2xl font-bold text-blue-800">Talent3X</span>
-            </div>
-            <div className="flex space-x-2">
-              <Button variant="outline" onClick={() => router.push("/e/tasks")}>
-                My Tasks
-              </Button>
-              <Button variant="outline" onClick={() => router.push("/e/dashboard")}>
-                Dashboard
-              </Button>
-            </div>
-          </div>
-        </header>
-
-        {/* Main Content */}
-        <main className="container mx-auto px-4 py-8 flex-grow">
-          <div className="mb-6">
+      <AppLayout userRole="educator">
+        <div className="space-y-8">
+          <div className="flex justify-between items-center">
             <Button variant="outline" onClick={() => router.push(`/e/tasks/${taskId}`)}>
               ← Back to Task
             </Button>
           </div>
           
-          <Card className="shadow-lg">
-            <CardHeader>
+          <SharedCard>
+            <div className="space-y-4">
               <Skeleton className="h-8 w-64" />
-              <Skeleton className="h-4 w-96 mt-2" />
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
+              <Skeleton className="h-4 w-96" />
+              <div className="space-y-4 pt-4">
                 <Skeleton className="h-4 w-full" />
                 <Skeleton className="h-4 w-5/6" />
                 <Skeleton className="h-20 w-full mt-6" />
                 <Skeleton className="h-32 w-full mt-6" />
               </div>
-            </CardContent>
-          </Card>
-        </main>
-
-        {/* Footer */}
-        <footer className="py-6 px-4 bg-white border-t mt-auto">
-          <div className="container mx-auto">
-            <div className="flex flex-col md:flex-row justify-between items-center">
-              <div className="text-center md:text-left mb-4 md:mb-0">
-                <p className="text-gray-500">© {new Date().getFullYear()} Talent3X. Oulu Pilot.</p>
-              </div>
-              <div className="flex space-x-6">
-                <Link href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
-                  Terms of Use
-                </Link>
-                <Link href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
-                  Disclaimer
-                </Link>
-                <Link href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
-                  Privacy Policy
-                </Link>
-              </div>
             </div>
-          </div>
-        </footer>
-      </div>
+          </SharedCard>
+        </div>
+      </AppLayout>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col">
-        {/* Header */}
-        <header className="bg-white shadow-sm">
-          <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-            <div className="flex items-center space-x-2">
-              <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center">
-                <span className="text-white font-bold text-xl">T</span>
-              </div>
-              <span className="text-2xl font-bold text-blue-800">Talent3X</span>
-            </div>
-            <div className="flex space-x-2">
-              <Button variant="outline" onClick={() => router.push("/e/tasks")}>
-                My Tasks
-              </Button>
-              <Button variant="outline" onClick={() => router.push("/e/dashboard")}>
-                Dashboard
-              </Button>
-            </div>
-          </div>
-        </header>
-
-        {/* Main Content */}
-        <main className="container mx-auto px-4 py-8 flex-grow">
-          <div className="mb-6">
-            <Button variant="outline" onClick={() => router.push(`/e/tasks/${taskId}`)}>
-              ← Back to Task
-            </Button>
-          </div>
-          
-          <Card className="shadow-lg">
-            <CardHeader>
-              <CardTitle className="text-red-600">Error</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-600">{error}</p>
+      <AppLayout userRole="educator">
+        <div className="space-y-8">
+          <SharedCard>
+            <div className="py-8 text-center">
+              <p className="text-red-400">{error}</p>
               <Button 
-                className="mt-4 bg-blue-600 hover:bg-blue-700"
+                className="mt-4"
                 onClick={() => router.push(`/e/tasks/${taskId}`)}
               >
                 Back to Task
               </Button>
-            </CardContent>
-          </Card>
-        </main>
-
-        {/* Footer */}
-        <footer className="py-6 px-4 bg-white border-t mt-auto">
-          <div className="container mx-auto">
-            <div className="flex flex-col md:flex-row justify-between items-center">
-              <div className="text-center md:text-left mb-4 md:mb-0">
-                <p className="text-gray-500">© {new Date().getFullYear()} Talent3X. Oulu Pilot.</p>
-              </div>
-              <div className="flex space-x-6">
-                <Link href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
-                  Terms of Use
-                </Link>
-                <Link href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
-                  Disclaimer
-                </Link>
-                <Link href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
-                  Privacy Policy
-                </Link>
-              </div>
             </div>
-          </div>
-        </footer>
-      </div>
+          </SharedCard>
+        </div>
+      </AppLayout>
     );
   }
 
   if (!task) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col">
-        {/* Header */}
-        <header className="bg-white shadow-sm">
-          <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-            <div className="flex items-center space-x-2">
-              <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center">
-                <span className="text-white font-bold text-xl">T</span>
-              </div>
-              <span className="text-2xl font-bold text-blue-800">Talent3X</span>
-            </div>
-            <div className="flex space-x-2">
-              <Button variant="outline" onClick={() => router.push("/e/tasks")}>
-                My Tasks
-              </Button>
-              <Button variant="outline" onClick={() => router.push("/e/dashboard")}>
-                Dashboard
-              </Button>
-            </div>
-          </div>
-        </header>
-
-        {/* Main Content */}
-        <main className="container mx-auto px-4 py-8 flex-grow">
-          <div className="mb-6">
-            <Button variant="outline" onClick={() => router.push(`/e/tasks/${taskId}`)}>
-              ← Back to Task
-            </Button>
-          </div>
-          
-          <Card className="shadow-lg">
-            <CardContent className="py-8 text-center">
-              <p className="text-gray-600">Task not found.</p>
+      <AppLayout userRole="educator">
+        <div className="space-y-8">
+          <SharedCard>
+            <div className="py-8 text-center">
+              <p className="text-muted-foreground">Task not found.</p>
               <Button 
-                className="mt-4 bg-blue-600 hover:bg-blue-700"
+                className="mt-4"
                 onClick={() => router.push("/e/tasks")}
               >
-                Back to Tasks
+                My Tasks
               </Button>
-            </CardContent>
-          </Card>
-        </main>
-
-        {/* Footer */}
-        <footer className="py-6 px-4 bg-white border-t mt-auto">
-          <div className="container mx-auto">
-            <div className="flex flex-col md:flex-row justify-between items-center">
-              <div className="text-center md:text-left mb-4 md:mb-0">
-                <p className="text-gray-500">© {new Date().getFullYear()} Talent3X. Oulu Pilot.</p>
-              </div>
-              <div className="flex space-x-6">
-                <Link href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
-                  Terms of Use
-                </Link>
-                <Link href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
-                  Disclaimer
-                </Link>
-                <Link href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
-                  Privacy Policy
-                </Link>
-              </div>
             </div>
-          </div>
-        </footer>
-      </div>
+          </SharedCard>
+        </div>
+      </AppLayout>
     );
   }
 
-  const students = assignments
+  // Prepare students data for RatingForm
+  const studentsData = assignments
+    .filter(assignment => assignment.profiles)
     .map(assignment => ({
       id: assignment.assignee,
-      username: assignment.profiles?.username || assignment.assignee
-    }))
-    .filter(student => student.username);
+      username: assignment.profiles!.username
+    }));
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col">
-      {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <div className="flex items-center space-x-2">
-            <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center">
-              <span className="text-white font-bold text-xl">T</span>
-            </div>
-            <span className="text-2xl font-bold text-blue-800">Talent3X</span>
-          </div>
-          <div className="flex space-x-2">
-            <Button variant="outline" onClick={() => router.push("/e/tasks")}>
-              My Tasks
-            </Button>
-            <Button variant="outline" onClick={() => router.push("/e/dashboard")}>
-              Dashboard
-            </Button>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="container mx-auto px-4 py-8 flex-grow">
-        <div className="mb-6">
+    <AppLayout userRole="educator">
+      <div className="space-y-8">
+        <div className="flex justify-between items-center">
           <Button variant="outline" onClick={() => router.push(`/e/tasks/${taskId}`)}>
             ← Back to Task
           </Button>
         </div>
         
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">Rate Task: {task.title}</h1>
-          <p className="text-gray-600">Provide ratings for each assigned student</p>
-        </div>
-        
-        <Card className="shadow-lg">
-          <CardHeader>
-            <CardTitle>Rate Task: {task.title}</CardTitle>
-            <CardDescription>
-              Provide ratings for each assigned student
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {students.length === 0 ? (
-              <div className="text-center py-8">
-                <div className="mx-auto w-24 h-24 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                  </svg>
-                </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-1">No students assigned</h3>
-                <p className="text-gray-500 mb-4">There are no students assigned to this task yet.</p>
-                <Button 
-                  variant="outline" 
-                  onClick={() => router.push(`/e/tasks/${taskId}`)}
-                >
-                  Back to Task
-                </Button>
-              </div>
-            ) : (
+        <SharedCard>
+          <div>
+            <h2 className="text-2xl font-semibold">Rate Task: {task.title}</h2>
+            <p className="text-xs uppercase text-muted-foreground">
+              Rate submissions for this task
+            </p>
+          </div>
+          
+          {assignments.length === 0 ? (
+            <div className="py-8 text-center">
+              <p className="text-muted-foreground">No students have been assigned to this task yet.</p>
+              <Button 
+                className="mt-4"
+                onClick={() => router.push(`/e/tasks/${taskId}`)}
+              >
+                Back to Task
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-6">
               <RatingForm 
                 taskId={taskId} 
-                students={students} 
-                skills={skills.map(s => ({ 
-                  id: s.id, 
-                  label: s.label,
-                  description: s.description || ""
-                }))} 
+                students={studentsData}
+                skills={skills.map(skill => ({
+                  ...skill,
+                  description: skill.description || ''
+                }))}
                 task={task}
               />
-            )}
-          </CardContent>
-        </Card>
-      </main>
-
-      {/* Footer */}
-      <footer className="py-6 px-4 bg-white border-t mt-auto">
-        <div className="container mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="text-center md:text-left mb-4 md:mb-0">
-              <p className="text-gray-500">© {new Date().getFullYear()} Talent3X. Oulu Pilot.</p>
             </div>
-            <div className="flex space-x-6">
-              <Link href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
-                Terms of Use
-              </Link>
-              <Link href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
-                Disclaimer
-              </Link>
-              <Link href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
-                Privacy Policy
-              </Link>
-            </div>
-          </div>
-        </div>
-      </footer>
-    </div>
+          )}
+        </SharedCard>
+      </div>
+    </AppLayout>
   );
 }

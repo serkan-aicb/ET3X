@@ -210,21 +210,21 @@ export default function StudentTaskDetail() {
   if (loading) {
     return (
       <AppLayout userRole="student">
-        <div className="space-y-6">
-          <div>
-            <Skeleton className="h-10 w-32" />
-          </div>
-          
+        <div className="space-y-8">
           <SharedCard>
-            <Skeleton className="h-8 w-64" />
-            <Skeleton className="h-4 w-96 mt-2" />
             <div className="space-y-4">
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-5/6" />
-              <Skeleton className="h-20 w-full mt-6" />
-              <Skeleton className="h-32 w-full mt-6" />
+              <Skeleton className="h-8 w-64" />
+              <Skeleton className="h-4 w-96" />
+              <div className="space-y-4 pt-4">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-5/6" />
+                <div className="grid grid-cols-2 gap-4 mt-6">
+                  <Skeleton className="h-20 w-full" />
+                  <Skeleton className="h-20 w-full" />
+                </div>
+                <Skeleton className="h-10 w-32 mt-6" />
+              </div>
             </div>
-            <Skeleton className="h-10 w-full" />
           </SharedCard>
         </div>
       </AppLayout>
@@ -234,24 +234,26 @@ export default function StudentTaskDetail() {
   if (!task) {
     return (
       <AppLayout userRole="student">
-        <SharedCard>
-          <div className="py-8 text-center">
-            <p className="text-muted-foreground">Task not found or not available.</p>
-            <Button 
-              className="mt-4"
-              onClick={() => router.push("/s/tasks")}
-            >
-              Browse Tasks
-            </Button>
-          </div>
-        </SharedCard>
+        <div className="space-y-8">
+          <SharedCard>
+            <div className="py-8 text-center">
+              <p className="text-muted-foreground">Task not found or not available.</p>
+              <Button 
+                className="mt-4"
+                onClick={() => router.push("/s/tasks")}
+              >
+                Browse Tasks
+              </Button>
+            </div>
+          </SharedCard>
+        </div>
       </AppLayout>
     );
   }
 
   return (
     <AppLayout userRole="student">
-      <div className="space-y-6">
+      <div className="space-y-8">
         <Button variant="outline" onClick={() => router.push("/s/tasks")}>
           ← Back to Tasks
         </Button>
@@ -309,12 +311,13 @@ export default function StudentTaskDetail() {
                 <h3 className="text-xs uppercase text-muted-foreground">Required Skills</h3>
                 <div className="flex flex-wrap gap-2 pt-2">
                   {task.skills_data.map((skill) => (
-                    <SharedPill 
+                    <span 
                       key={skill.id} 
+                      className="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium bg-white text-black border border-gray-200"
                       title={skill.description}
                     >
                       {skill.label}
-                    </SharedPill>
+                    </span>
                   ))}
                 </div>
               </div>
