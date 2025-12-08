@@ -722,11 +722,7 @@ export default function EducatorTaskDetail() {
                 <Button variant="outline" onClick={() => router.push(`/e/tasks/${taskId}/submissions`)}>
                   View Submissions
                 </Button>
-                {task.status === 'submitted' && (
-                  <Button onClick={() => router.push(`/e/tasks/${taskId}/rate`)}>
-                    Rate Submissions
-                  </Button>
-                )}
+                {/* Removed the old "Rate Submissions" button as we now rate students individually */}
               </>
             )}
           </div>

@@ -33,26 +33,62 @@ export default function ViewSubmissions() {
     const fetchData = async () => {
       const supabase = createClient();
       
-      // Get submissions with student profiles
-      const { data: submissionsData, error } = await supabase
-        .from('submissions')
-        .select(`
-          *,
-          profiles!submissions_submitter_fkey(username)
-        `)
-        .eq('task', taskId);
-      
-      if (error) {
-        console.error("Error fetching submissions:", error);
-        router.push(`/e/tasks/${taskId}`);
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        router.push('/login');
         return;
       }
       
-      if (submissionsData) {
-        setSubmissions(submissionsData);
+      try {
+        // Get submissions with student profiles that don't have ratings from this educator yet
+        const { data: submissionsData, error: submissionsError } = await supabase
+          .from('submissions')
+          .select(`
+            *,
+            profiles!submissions_submitter_fkey(username)
+          `)
+          .eq('task', taskId);
+
+        if (submissionsError) {
+          console.error("Error fetching submissions:", submissionsError);
+          router.push(`/e/tasks/${taskId}`);
+          return;
+        }
+
+        if (!submissionsData) {
+          setSubmissions([]);
+          setLoading(false);
+          return;
+        }
+
+        // Get IDs of students who have already been rated by this educator for this task
+        const { data: existingRatings, error: ratingsError } = await supabase
+          .from('ratings')
+          .select('rated_user')
+          .eq('task', taskId)
+          .eq('rater', user.id);
+
+        if (ratingsError) {
+          console.error("Error fetching ratings:", ratingsError);
+          setSubmissions(submissionsData);
+          setLoading(false);
+          return;
+        }
+
+        // Filter out submissions from students who have already been rated
+        const ratedUserIds = existingRatings?.map(rating => rating.rated_user) || [];
+        const pendingSubmissions = submissionsData.filter(
+          submission => !ratedUserIds.includes(submission.submitter)
+        );
+
+        setSubmissions(pendingSubmissions);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        router.push(`/e/tasks/${taskId}`);
+      } finally {
+        setLoading(false);
       }
-      
-      setLoading(false);
     };
     
     if (taskId) {
@@ -93,13 +129,6 @@ export default function ViewSubmissions() {
           <Button variant="outline" onClick={() => router.push(`/e/tasks/${taskId}`)}>
             ← Back to Task
           </Button>
-          {submissions.length > 0 && (
-            <Button 
-              onClick={() => router.push(`/e/tasks/${taskId}/rate`)}
-            >
-              Rate Submissions
-            </Button>
-          )}
         </div>
         
         <SharedCard>
@@ -117,8 +146,8 @@ export default function ViewSubmissions() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-medium text-foreground mb-1">No submissions yet</h3>
-              <p className="text-muted-foreground">Students haven&#39;t submitted anything for this task yet.</p>
+              <h3 className="text-lg font-medium text-foreground mb-1">All submissions rated</h3>
+              <p className="text-muted-foreground">You have rated all submissions for this task.</p>
             </div>
           ) : (
             <div className="space-y-6">
@@ -151,10 +180,15 @@ export default function ViewSubmissions() {
                       )}
                     </div>
                     
-                    <div className="text-right">
+                    <div className="flex flex-col items-end gap-2">
                       <p className="text-xs text-muted-foreground">
                         Submitted: {new Date(submission.created_at).toLocaleDateString()}
                       </p>
+                      <Button 
+                        onClick={() => router.push(`/e/tasks/${taskId}/submissions/${submission.id}/rate`)}
+                      >
+                        Rate Student
+                      </Button>
                     </div>
                   </div>
                 </SharedCard>

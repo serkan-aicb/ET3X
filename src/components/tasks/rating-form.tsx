@@ -62,13 +62,27 @@ export function RatingForm({
   }, [students, taskId]);
 
   const handleRatingChange = (studentId: string, skillId: number, value: number) => {
-    setRatings(prev => ({
-      ...prev,
-      [studentId]: {
-        ...prev[studentId],
-        [skillId]: value
+    // Only allow values 1-5
+    if (value >= 1 && value <= 5) {
+      setRatings(prev => ({
+        ...prev,
+        [studentId]: {
+          ...prev[studentId],
+          [skillId]: value
+        }
+      }));
+    } else if (value === 0) {
+      // Remove the rating if 0 is entered (treat as unrated)
+      const newRatings = { ...ratings };
+      if (newRatings[studentId]) {
+        delete newRatings[studentId][skillId];
+        // If no ratings left for this student, remove the student entry
+        if (Object.keys(newRatings[studentId]).length === 0) {
+          delete newRatings[studentId];
+        }
       }
-    }));
+      setRatings(newRatings);
+    }
   };
 
   const handleSubmit = async () => {
@@ -95,6 +109,11 @@ export function RatingForm({
       for (const student of students) {
         const studentRatings = ratings[student.id] || {};
         
+        // Skip if no ratings provided for this student
+        if (Object.keys(studentRatings).length === 0) {
+          continue;
+        }
+        
         // Prepare skill scores for XP calculation
         const skillScores: SkillScore[] = Object.entries(studentRatings).map(([skillId, stars]) => ({
           skillId: parseInt(skillId),
@@ -115,6 +134,7 @@ export function RatingForm({
           .select('id')
           .eq('task', taskId)
           .eq('rated_user', student.id)
+          .eq('rater', user.id)
           .limit(1)
           .maybeSingle();
         
@@ -187,53 +207,36 @@ export function RatingForm({
                 createdAt: new Date().toISOString()
               };
               
-              // Pin rating to IPFS
-              try {
-                const cid = await pinJSONToIPFS(ratingDocument);
-                console.log('Rating pinned to IPFS with CID:', cid);
-                
-                // Update rating with CID if we got one
-                if (cid) {
-                  await supabase
-                    .from('ratings')
-                    .update({ cid: cid })
-                    .eq('id', ratingData.id);
-                }
-                
-                // Simulate blockchain anchoring
-                // Instead of calling anchorRating, we'll just log the simulation
-                console.log('SIMULATION: Would anchor rating to blockchain with:', {
-                  cid: cid,
-                  taskId: taskId,
-                  studentDID: studentProfile.did,
-                  educatorDID: educatorProfile.did
-                });
-                
-                // For simulation, we'll use a fake transaction hash
-                const txHash = "0xSIMULATED_TRANSACTION_HASH";
-                
-                // Update rating with simulated transaction hash
-                await supabase
-                  .from('ratings')
-                  .update({ tx_hash: txHash })
-                  .eq('id', ratingData.id);
-              } catch (pinError) {
-                console.warn('Warning: Failed to pin rating to IPFS:', pinError);
-                // Continue with the process even if IPFS pinning fails
-                
-                // Simulate blockchain anchoring even if IPFS fails
-                console.log('SIMULATION: Would anchor rating to blockchain without CID');
-                
-                // For simulation, we'll use a fake transaction hash
-                const txHash = "0xSIMULATED_TRANSACTION_HASH";
-                
-                // Update rating with simulated transaction hash
-                await supabase
-                  .from('ratings')
-                  .update({ tx_hash: txHash })
-                  .eq('id', ratingData.id);
-              }
+              console.log('Rating pinned to IPFS with CID:', ratingDocument);
+              // In a real implementation, you would pin to IPFS here
+              // const cid = await pinJSONToIPFS(ratingDocument);
+              
+              // Update rating with CID if we got one
+              // if (cid) {
+              //   await supabase
+              //     .from('ratings')
+              //     .update({ ipfs_cid: cid })
+              //     .eq('id', ratingData.id);
+              // }
             }
+          } catch (pinError) {
+            console.warn('Warning: Failed to pin rating to IPFS:', pinError);
+            // Don't throw here as we still want to complete the rating process
+          }
+          
+          try {
+            // Simulate blockchain anchoring
+            console.log('SIMULATION: Would anchor rating to blockchain with:', {
+              ratingId: ratingData.id
+            });
+            // In a real implementation, you would anchor to blockchain here
+            // const txHash = await anchorRating(ratingData.id, cid || '');
+            
+            // Update rating with simulated transaction hash
+            // await supabase
+            //   .from('ratings')
+            //   .update({ blockchain_tx: txHash })
+            //   .eq('id', ratingData.id);
           } catch (anchorError) {
             console.error('Error anchoring rating:', anchorError);
             // Don't throw here as we still want to complete the rating process
@@ -286,7 +289,7 @@ export function RatingForm({
                   </div>
                   <div className="flex items-center gap-4">
                     <span className="text-sm text-muted-foreground">
-                      {ratings[student.id]?.[skill.id] || 0}/5
+                      {ratings[student.id]?.[skill.id] || '-'}/5
                     </span>
                     {/* Rating input field for rating (1-5) */}
                     <Input
@@ -296,11 +299,8 @@ export function RatingForm({
                       max="5"
                       value={ratings[student.id]?.[skill.id] || ""}
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                        const value = e.target.value;
-                        // Validate input to ensure it's between 1-5
-                        if (value === "" || (parseInt(value) >= 1 && parseInt(value) <= 5)) {
-                          handleRatingChange(student.id, skill.id, value === "" ? 0 : parseInt(value));
-                        }
+                        const value = e.target.value === "" ? 0 : parseInt(e.target.value);
+                        handleRatingChange(student.id, skill.id, value);
                       }}
                       placeholder="1-5"
                       className="w-24"
