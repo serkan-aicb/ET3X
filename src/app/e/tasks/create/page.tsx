@@ -156,7 +156,23 @@ export default function CreateTask() {
         
         console.log("RPC result:", rpcData, rpcError);
         
-        if (rpcError) throw rpcError;
+        // Handle RPC errors specifically
+        if (rpcError) {
+          // Delete the created task since the assignment failed
+          await supabase
+            .from('tasks')
+            .delete()
+            .eq('id', taskData.id);
+          
+          // Provide a more specific error message based on the error
+          if (rpcError.message.includes('assigned_by')) {
+            setMessage("There was an issue with the assignment system. Please contact support. (Error: Column 'assigned_by' not found)");
+          } else {
+            setMessage(`Failed to assign task to students: ${rpcError.message}`);
+          }
+          setLoading(false);
+          return;
+        }
         
         // Check if there were any missing usernames
         if (rpcData.missing_usernames && rpcData.missing_usernames.length > 0) {

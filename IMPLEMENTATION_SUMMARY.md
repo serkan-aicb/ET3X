@@ -45,6 +45,7 @@ This implementation introduces a new university flow for Talent3X where educator
 - Network errors: Displays generic error messages
 - Large username lists: Shows a warning but allows proceeding
 - Database errors: Provides appropriate error feedback to users
+- Specific error handling for database schema mismatches
 
 ### User Experience
 - Clear instructions for pasting usernames
@@ -57,6 +58,13 @@ This implementation introduces a new university flow for Talent3X where educator
 
 - Unit tests for username processing logic (6 test cases)
 - All tests passing
+
+## Recent Updates
+
+### Database Schema Fix
+- Updated the RPC function to ensure compatibility with the current database schema
+- Improved error handling in the frontend to provide better feedback when database issues occur
+- Added documentation for applying database updates
 
 ## Future Considerations
 
@@ -80,6 +88,7 @@ This implementation introduces a new university flow for Talent3X where educator
 4. `src/app/e/tasks/create/process-usernames.test.js` - Unit tests for username processing
 5. `BULK_ASSIGNMENT_FEATURE.md` - Documentation for the new feature
 6. `IMPLEMENTATION_SUMMARY.md` - This summary file
+7. `BULK_ASSIGNMENT_DB_UPDATE.md` - Database update instructions
 
 ## Usage Instructions
 
@@ -90,3 +99,10 @@ This implementation introduces a new university flow for Talent3X where educator
 5. The system will validate usernames and either:
    - Create the task and assignments if all usernames are valid
    - Show an error with invalid usernames if any don't exist
+
+## Troubleshooting
+
+If you encounter database errors:
+1. Check that the latest SQL script has been applied to your database
+2. Verify that all required columns exist in the task_assignments table
+3. Ensure the pgcrypto extension is enabled in your database
