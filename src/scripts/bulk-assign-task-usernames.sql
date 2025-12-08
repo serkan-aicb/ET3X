@@ -31,7 +31,8 @@ BEGIN
   END IF;
   
   IF usernames IS NULL OR array_length(usernames, 1) IS NULL THEN
-    RETURN QUERY SELECT ARRAY[]::text[], ARRAY[]::text[];
+    -- Return empty arrays if no usernames provided
+    RETURN QUERY SELECT ARRAY[]::text[] AS assigned_usernames, ARRAY[]::text[] AS missing_usernames;
     RETURN;
   END IF;
 
@@ -69,7 +70,10 @@ BEGIN
     FROM unnest(profile_ids, valid_usernames) AS u(pid, pun);
   END IF;
   
-  RETURN QUERY SELECT valid_usernames, invalid_usernames;
+  -- Always return the arrays, even if empty
+  RETURN QUERY SELECT 
+    COALESCE(valid_usernames, ARRAY[]::text[]) AS assigned_usernames,
+    COALESCE(invalid_usernames, ARRAY[]::text[]) AS missing_usernames;
 END;
 $$ LANGUAGE plpgsql;
 

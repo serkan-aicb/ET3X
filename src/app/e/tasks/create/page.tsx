@@ -158,7 +158,7 @@ export default function CreateTask() {
             usernames: processedUsernames
           });
         
-        console.log("RPC result:", rpcData, rpcError);
+        console.log("RPC result:", { rpcData, rpcError });
         
         // Handle RPC errors specifically
         if (rpcError) {
@@ -178,6 +178,22 @@ export default function CreateTask() {
           return;
         }
         
+        // Check if rpcData exists and has the expected structure
+        if (!rpcData) {
+          setMessage("An unexpected error occurred while assigning students to the task.");
+          setLoading(false);
+          return;
+        }
+        
+        // Log the structure of rpcData for debugging
+        console.log("RPC data structure:", {
+          rpcData,
+          hasAssignedUsernames: 'assigned_usernames' in rpcData,
+          hasMissingUsernames: 'missing_usernames' in rpcData,
+          assignedUsernamesType: typeof rpcData.assigned_usernames,
+          missingUsernamesType: typeof rpcData.missing_usernames
+        });
+        
         // Check if there were any missing usernames
         if (rpcData.missing_usernames && rpcData.missing_usernames.length > 0) {
           // Set missing usernames to display to the user
@@ -195,7 +211,9 @@ export default function CreateTask() {
         }
         
         // Success - task created and assigned
-        setMessage(`Task created and assigned to ${rpcData.assigned_usernames.length} students.`);
+        const assignedUsernames = rpcData.assigned_usernames || [];
+        const assignedCount = assignedUsernames.length;
+        setMessage(`Task created and assigned to ${assignedCount} students.`);
       } else {
         // Success - task created without assignments
         setMessage("Task created successfully!");
