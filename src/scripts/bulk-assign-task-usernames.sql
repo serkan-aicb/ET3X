@@ -16,13 +16,13 @@ RETURNS TABLE (
   assigned_usernames text[],
   missing_usernames text[]
 )
-SECURITY DEFINER  -- Runs with creator privileges, but we check permissions in RLS policies
+SECURITY DEFINER
 AS $$
 DECLARE
-  profile_record   RECORD;
-  valid_usernames  text[] := ARRAY[]::text[];
+  profile_record RECORD;
+  valid_usernames text[] := ARRAY[]::text[];
   invalid_usernames text[] := ARRAY[]::text[];
-  profile_ids      uuid[] := ARRAY[]::uuid[];
+  profile_ids uuid[] := ARRAY[]::uuid[];
   current_username text;
 BEGIN
   -- Validate input
@@ -48,7 +48,7 @@ BEGIN
     
     IF FOUND THEN
       valid_usernames := array_append(valid_usernames, current_username);
-      profile_ids     := array_append(profile_ids, profile_record.id);
+      profile_ids := array_append(profile_ids, profile_record.id);
     ELSE
       invalid_usernames := array_append(invalid_usernames, current_username);
     END IF;
@@ -56,23 +56,16 @@ BEGIN
   
   -- If we have valid usernames, create task assignments
   IF array_length(valid_usernames, 1) > 0 THEN
+    -- Insert task assignments for all valid usernames
     INSERT INTO task_assignments (
-      id,
       task,
       assignee,
-      assignee_username,
-      assigned_by,
-      assigned_at,
-      status
+      assignee_username
     )
     SELECT 
-      gen_random_uuid(),   -- requires pgcrypto extension
       task_id,
       pid,
-      pun,
-      auth.uid(),
-      NOW(),
-      'in_progress'
+      pun
     FROM unnest(profile_ids, valid_usernames) AS u(pid, pun);
   END IF;
   
@@ -80,7 +73,9 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- Grant execute permission to authenticated users
 GRANT EXECUTE ON FUNCTION assign_task_to_usernames(uuid, text[]) TO authenticated;
 
+-- Add a comment to document the function
 COMMENT ON FUNCTION assign_task_to_usernames(uuid, text[]) 
 IS 'Bulk assigns a task to multiple students by username. Returns lists of successfully assigned and missing usernames.';

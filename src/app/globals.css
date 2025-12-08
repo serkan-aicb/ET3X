@@ -152,6 +152,21 @@
   --sidebar-ring: #38BDF8;
 }
 
+/* Skill checkbox styling */
+.skill-checkbox input[type='checkbox'] {
+  width: 18px;
+  height: 18px;
+  appearance: none;
+  border: 2px solid white;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.skill-checkbox input[type='checkbox']:checked {
+  background-color: #8254ff; /* purple */
+  border-color: #8254ff;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

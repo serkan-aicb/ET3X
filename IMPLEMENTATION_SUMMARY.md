@@ -14,6 +14,7 @@ This implementation introduces a new university flow for Talent3X where educator
 - Creates task assignments for valid usernames
 - Returns lists of successfully assigned and missing usernames
 - Implements security through `SECURITY DEFINER` and RLS policies
+- Simplified the function to only insert essential fields to avoid column mismatch issues
 
 ### 2. UI Changes (`src/app/e/tasks/create/page.tsx`)
 
@@ -26,8 +27,20 @@ This implementation introduces a new university flow for Talent3X where educator
 - Implemented new submission workflow with RPC calls
 - Added proper error handling and user feedback
 - Included extensive comments for future maintenance
+- Added `is_requestable` field to distinguish between browseable and directly assigned tasks
 
-### 3. Helper Scripts
+### 3. UI Enhancement (`src/app/globals.css`)
+
+- Added CSS styling for skill checkboxes to ensure visibility in dark mode
+- Checkboxes now have white borders and purple fill when selected
+
+### 4. Database Schema Update (`src/scripts/add-is-requestable-column.sql`)
+
+- Added `is_requestable` column to the tasks table
+- Defaults to `true` for new tasks
+- Set to `false` for tasks with direct username assignments
+
+### 5. Helper Scripts
 
 - Created test script for username processing logic
 - Created documentation for the new feature
@@ -46,6 +59,7 @@ This implementation introduces a new university flow for Talent3X where educator
 - Large username lists: Shows a warning but allows proceeding
 - Database errors: Provides appropriate error feedback to users
 - Specific error handling for database schema mismatches
+- Automatic cleanup of partially created tasks when assignment fails
 
 ### User Experience
 - Clear instructions for pasting usernames
@@ -53,6 +67,7 @@ This implementation introduces a new university flow for Talent3X where educator
 - Real-time validation feedback
 - Success/error messaging
 - Graceful handling of edge cases
+- Visible checkboxes for skill selection in dark mode
 
 ## Testing
 
@@ -63,8 +78,14 @@ This implementation introduces a new university flow for Talent3X where educator
 
 ### Database Schema Fix
 - Updated the RPC function to ensure compatibility with the current database schema
+- Simplified the function to only insert essential fields
 - Improved error handling in the frontend to provide better feedback when database issues occur
 - Added documentation for applying database updates
+
+### New Features
+- Added `is_requestable` field to distinguish between browseable and directly assigned tasks
+- Updated CSS to make skill checkboxes visible in dark mode
+- Created migration script for adding the `is_requestable` column
 
 ## Future Considerations
 
@@ -79,6 +100,7 @@ This implementation introduces a new university flow for Talent3X where educator
 2. Remove deprecated features in future iterations
 3. Add more comprehensive integration tests
 4. Monitor performance with large username lists
+5. Update student task browsing logic to exclude non-requestable tasks
 
 ## Files Created/Modified
 
@@ -89,6 +111,9 @@ This implementation introduces a new university flow for Talent3X where educator
 5. `BULK_ASSIGNMENT_FEATURE.md` - Documentation for the new feature
 6. `IMPLEMENTATION_SUMMARY.md` - This summary file
 7. `BULK_ASSIGNMENT_DB_UPDATE.md` - Database update instructions
+8. `src/app/globals.css` - Added CSS for skill checkbox visibility
+9. `src/scripts/add-is-requestable-column.sql` - Migration script for is_requestable column
+10. `src/scripts/update-student-task-query.sql` - Example query for student task browsing
 
 ## Usage Instructions
 
@@ -106,3 +131,7 @@ If you encounter database errors:
 1. Check that the latest SQL script has been applied to your database
 2. Verify that all required columns exist in the task_assignments table
 3. Ensure the pgcrypto extension is enabled in your database
+
+If tasks with assigned usernames still appear in the Browse Tasks page:
+1. Ensure the student task browsing query has been updated to exclude non-requestable tasks
+2. Verify that the `is_requestable` column is properly set to `false` for tasks with username assignments

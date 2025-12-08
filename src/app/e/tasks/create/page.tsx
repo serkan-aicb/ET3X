@@ -119,6 +119,9 @@ export default function CreateTask() {
         setMessage("Warning: You are trying to assign a very large number of students. This may take a while to process.");
       }
       
+      // Determine if the task should be requestable
+      const isRequestable = processedUsernames.length === 0;
+      
       // Create task - remove seats and task_mode since they're no longer needed
       const { data: taskData, error: taskError } = await supabase
         .from('tasks')
@@ -134,6 +137,7 @@ export default function CreateTask() {
           due_date: dueDate || null,
           status: 'open',
           // Removed task_mode
+          is_requestable: isRequestable // Add is_requestable field
         })
         .select()
         .single();
@@ -348,7 +352,7 @@ export default function CreateTask() {
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-60 overflow-y-auto p-4 border rounded-lg border-border bg-muted">
                 {availableSkills.map((skill) => (
-                  <div key={skill.id} className="flex items-start space-x-2">
+                  <div key={skill.id} className="flex items-start space-x-2 skill-checkbox">
                     <Checkbox
                       id={`skill-${skill.id}`}
                       checked={skills.includes(skill.id)}
@@ -378,7 +382,7 @@ export default function CreateTask() {
                 </div>
               )}
             </div>
-            
+
             {message && (
               <div className={`p-3 rounded-lg ${message.includes("successfully") || message.includes("assigned to") ? "bg-green-900/30 text-green-400 border border-green-800/50" : "bg-red-900/30 text-red-400 border border-red-800/50"}`}>
                 {message}
