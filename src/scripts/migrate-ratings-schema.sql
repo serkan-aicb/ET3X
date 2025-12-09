@@ -52,6 +52,16 @@ DROP POLICY IF EXISTS "Task creators can view task ratings for their tasks" ON t
 CREATE POLICY "Task creators can view task ratings for their tasks" ON task_ratings
   FOR SELECT USING (task_id IN (SELECT id FROM tasks WHERE creator = auth.uid()));
 
+// Add INSERT policy for task_ratings
+DROP POLICY IF EXISTS "Raters can insert task ratings they create" ON task_ratings;
+CREATE POLICY "Raters can insert task ratings they create" ON task_ratings
+  FOR INSERT WITH CHECK (auth.uid() = rater_id);
+
+// Add UPDATE policy for task_ratings (needed for relayer to update on_chain status)
+DROP POLICY IF EXISTS "Raters can update their own task ratings" ON task_ratings;
+CREATE POLICY "Raters can update their own task ratings" ON task_ratings
+  FOR UPDATE USING (auth.uid() = rater_id);
+
 -- Add RLS policies for task_rating_skills table
 ALTER TABLE task_rating_skills ENABLE ROW LEVEL SECURITY;
 
@@ -66,3 +76,13 @@ CREATE POLICY "Raters can view skills for task ratings they created" ON task_rat
 DROP POLICY IF EXISTS "Task creators can view skills for task ratings on their tasks" ON task_rating_skills;
 CREATE POLICY "Task creators can view skills for task ratings on their tasks" ON task_rating_skills
   FOR SELECT USING (EXISTS (SELECT 1 FROM task_ratings tr JOIN tasks t ON tr.task_id = t.id WHERE tr.id = task_rating_skills.rating_id AND t.creator = auth.uid()));
+
+// Add INSERT policy for task_rating_skills
+DROP POLICY IF EXISTS "Raters can insert skills for their own task ratings" ON task_rating_skills;
+CREATE POLICY "Raters can insert skills for their own task ratings" ON task_rating_skills
+  FOR INSERT WITH CHECK (EXISTS (SELECT 1 FROM task_ratings WHERE task_ratings.id = task_rating_skills.rating_id AND task_ratings.rater_id = auth.uid()));
+
+// Add UPDATE policy for task_rating_skills (needed for relayer to update on_chain status and tx_hash)
+DROP POLICY IF EXISTS "Raters can update skills for their own task ratings" ON task_rating_skills;
+CREATE POLICY "Raters can update skills for their own task ratings" ON task_rating_skills
+  FOR UPDATE USING (EXISTS (SELECT 1 FROM task_ratings WHERE task_ratings.id = task_rating_skills.rating_id AND task_ratings.rater_id = auth.uid()));

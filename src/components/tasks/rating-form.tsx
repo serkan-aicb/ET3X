@@ -31,30 +31,8 @@ export function RatingForm({
 
   // Load existing ratings when component mounts
   useEffect(() => {
-    const loadExistingRatings = async () => {
-      const supabase = createClient();
-      
-      for (const student of students) {
-        // Check if there's already a rating for this student on this task
-        const { data: existingRating, error } = await supabase
-          .from('ratings')
-          .select('skills, notes')
-          .eq('task', taskId)
-          .eq('rated_user', student.id)
-          .limit(1)
-          .maybeSingle();
-        
-        if (existingRating && !error) {
-          // Set existing ratings
-          setRatings(prev => ({
-            ...prev,
-            [student.id]: existingRating.skills as Record<number, number>
-          }));
-        }
-      }
-    };
-    
-    loadExistingRatings();
+    // This effect is no longer needed as we're using the new normalized schema
+    // The old code that loaded existing ratings from the 'ratings' table has been removed
   }, [students, taskId]);
 
   const handleRatingChange = (studentId: string, skillId: number, value: number) => {

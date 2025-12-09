@@ -86,11 +86,11 @@ export default function RateSingleStudent() {
         
         // Check if this student has already been rated by this educator
         const { data: existingRating, error: ratingError } = await supabase
-          .from('ratings')
+          .from('task_ratings')
           .select('id')
-          .eq('task', taskId)
-          .eq('rated_user', submissionData.submitter)
-          .eq('rater', user.id)
+          .eq('task_id', taskId)
+          .eq('rated_user_id', submissionData.submitter)
+          .eq('rater_id', user.id)
           .limit(1)
           .maybeSingle();
         

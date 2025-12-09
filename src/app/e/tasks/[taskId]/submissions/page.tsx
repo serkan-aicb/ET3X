@@ -64,10 +64,10 @@ export default function ViewSubmissions() {
 
         // Get IDs of students who have already been rated by this educator for this task
         const { data: existingRatings, error: ratingsError } = await supabase
-          .from('ratings')
-          .select('rated_user')
-          .eq('task', taskId)
-          .eq('rater', user.id);
+          .from('task_ratings')
+          .select('rated_user_id')
+          .eq('task_id', taskId)
+          .eq('rater_id', user.id);
 
         if (ratingsError) {
           console.error("Error fetching ratings:", ratingsError);
@@ -77,7 +77,7 @@ export default function ViewSubmissions() {
         }
 
         // Filter out submissions from students who have already been rated
-        const ratedUserIds = existingRatings?.map(rating => rating.rated_user) || [];
+        const ratedUserIds = existingRatings?.map(rating => rating.rated_user_id) || [];
         const pendingSubmissions = submissionsData.filter(
           submission => !ratedUserIds.includes(submission.submitter)
         );

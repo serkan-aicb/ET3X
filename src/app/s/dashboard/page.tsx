@@ -128,10 +128,10 @@ export default function StudentDashboard() {
             
             // Check if there's a rating for this assignment
             const { data: ratings } = await supabase
-              .from('ratings')
+              .from('task_ratings')
               .select('id')
-              .eq('task', assignment.task)
-              .eq('rated_user', user.id)
+              .eq('task_id', assignment.task)
+              .eq('rated_user_id', user.id)
               .limit(1);
             
             // If submitted but not rated, it's pending

@@ -85,16 +85,17 @@ export default function StudentProfile() {
       }
       
       // Get aggregated task ratings (grouped by task_id)
-      const { data: ratingsData, error: ratingsError } = await supabase
-        .from('ratings')
+      // We need to join task_ratings with task_rating_skills to get the data
+      const { data: taskRatingsData, error: taskRatingsError } = await supabase
+        .from('task_ratings')
         .select(`
           *,
           tasks(title)
         `)
-        .eq('rated_user', user.id)
+        .eq('rated_user_id', user.id)
         .order('created_at', { ascending: false });
       
-      if (!ratingsError && ratingsData) {
+      if (!taskRatingsError && taskRatingsData) {
         // Group ratings by task_id and calculate averages
         const taskRatingsMap = new Map<string, {
           taskId: string;
@@ -103,7 +104,7 @@ export default function StudentProfile() {
           totalXP: number;
         }>();
         
-        ratingsData.forEach(rating => {
+        taskRatingsData.forEach(rating => {
           const taskId = rating.task;
           if (!taskRatingsMap.has(taskId)) {
             taskRatingsMap.set(taskId, {
