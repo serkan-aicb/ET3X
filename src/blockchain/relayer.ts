@@ -282,12 +282,9 @@ async function processUnratedSessions() {
         console.log(`Processing rating session: ${rating.id}`);
         
         // Load related skill rows from task_rating_skills with skill names
-        const { data: skills, error: skillsError } = await supabase
+        const { data: skillsData, error: skillsError } = await supabase
           .from('task_rating_skills')
-          .select(`
-            *,
-            skill:skills(name)
-          `)
+          .select('*')
           .eq('rating_id', rating.id);
         
         if (skillsError) {
@@ -295,10 +292,31 @@ async function processUnratedSessions() {
           continue;
         }
         
-        if (!skills || skills.length === 0) {
+        if (!skillsData || skillsData.length === 0) {
           console.warn(`No skills found for rating ${rating.id}. Skipping.`);
           continue;
         }
+        
+        // Fetch skill names separately since embedded queries aren't working
+        const skillIds = skillsData.map(skill => skill.skill_id);
+        const { data: skillDetails, error: skillsDetailsError } = await supabase
+          .from('skills')
+          .select('id, label')
+          .in('id', skillIds);
+        
+        if (skillsDetailsError) {
+          console.error(`Failed to fetch skill details:`, skillsDetailsError.message);
+          continue;
+        }
+        
+        // Merge skill data with skill names
+        const skills = skillsData.map(skill => {
+          const skillDetail = skillDetails.find(s => s.id === skill.skill_id);
+          return {
+            ...skill,
+            skill: skillDetail ? { name: skillDetail.label } : null
+          };
+        });
         
         // Fetch DIDs for rater and rated user separately
         let raterDid = '';
@@ -306,7 +324,7 @@ async function processUnratedSessions() {
         
         try {
           const { data: raterData, error: raterError } = await supabase
-            .from('user_profiles')
+            .from('profiles')
             .select('did')
             .eq('id', rating.rater_id)
             .single();
@@ -320,7 +338,7 @@ async function processUnratedSessions() {
         
         try {
           const { data: ratedData, error: ratedError } = await supabase
-            .from('user_profiles')
+            .from('profiles')
             .select('did')
             .eq('id', rating.rated_user_id)
             .single();
