@@ -70,9 +70,27 @@ const TALENT3X_SKILL_RATINGS_ABI = [
       },
       {
         "indexed": false,
+        "internalType": "string",
+        "name": "raterDid",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "ratedDid",
+        "type": "string"
+      },
+      {
+        "indexed": false,
         "internalType": "uint16",
         "name": "skillId",
         "type": "uint16"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "skillName",
+        "type": "string"
       },
       {
         "indexed": false,
@@ -108,9 +126,24 @@ const TALENT3X_SKILL_RATINGS_ABI = [
         "type": "bytes32"
       },
       {
+        "internalType": "string",
+        "name": "raterDid",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "ratedDid",
+        "type": "string"
+      },
+      {
         "internalType": "uint16",
         "name": "skillId",
         "type": "uint16"
+      },
+      {
+        "internalType": "string",
+        "name": "skillName",
+        "type": "string"
       },
       {
         "internalType": "uint8",
@@ -248,10 +281,13 @@ async function processUnratedSessions() {
       try {
         console.log(`Processing rating session: ${rating.id}`);
         
-        // Load related skill rows from task_rating_skills
+        // Load related skill rows from task_rating_skills with skill names
         const { data: skills, error: skillsError } = await supabase
           .from('task_rating_skills')
-          .select('*')
+          .select(`
+            *,
+            skill:skills(name)
+          `)
           .eq('rating_id', rating.id);
         
         if (skillsError) {
@@ -264,6 +300,38 @@ async function processUnratedSessions() {
           continue;
         }
         
+        // Fetch DIDs for rater and rated user separately
+        let raterDid = '';
+        let ratedDid = '';
+        
+        try {
+          const { data: raterData, error: raterError } = await supabase
+            .from('user_profiles')
+            .select('did')
+            .eq('id', rating.rater_id)
+            .single();
+          
+          if (!raterError && raterData) {
+            raterDid = raterData.did || '';
+          }
+        } catch (err) {
+          console.warn(`Failed to fetch rater DID for rating ${rating.id}:`, (err as Error).message);
+        }
+        
+        try {
+          const { data: ratedData, error: ratedError } = await supabase
+            .from('user_profiles')
+            .select('did')
+            .eq('id', rating.rated_user_id)
+            .single();
+          
+          if (!ratedError && ratedData) {
+            ratedDid = ratedData.did || '';
+          }
+        } catch (err) {
+          console.warn(`Failed to fetch rated user DID for rating ${rating.id}:`, (err as Error).message);
+        }
+        
         // Compute hashes
         const ratingSessionHash = computeRatingSessionHash(rating, skills);
         const taskIdHash = hashString(rating.task_id);
@@ -273,6 +341,8 @@ async function processUnratedSessions() {
         console.log(`  Rating Session Hash: ${ratingSessionHash}`);
         console.log(`  Task ID Hash: ${taskIdHash}`);
         console.log(`  Subject ID Hash: ${subjectIdHash}`);
+        console.log(`  Rater DID: ${raterDid}`);
+        console.log(`  Rated DID: ${ratedDid}`);
         
         // Update the hashes in the database
         const { error: updateError } = await supabase
@@ -301,12 +371,18 @@ async function processUnratedSessions() {
           try {
             console.log(`Anchoring skill ${skill.skill_id} for rating ${rating.id}...`);
             
-            // Call the contract function
+            // Get skill name
+            const skillName = skill.skill?.name || `Skill ${skill.skill_id}`;
+            
+            // Call the contract function with the new parameters
             const tx = await contract.anchorSingleSkillRating(
               ratingSessionHash,
               taskIdHash,
               subjectIdHash,
+              raterDid,
+              ratedDid,
               skill.skill_id,
+              skillName,
               skill.stars
             );
             

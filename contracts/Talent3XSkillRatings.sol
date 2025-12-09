@@ -15,7 +15,10 @@ contract Talent3XSkillRatings {
         bytes32 ratingSessionHash,
         bytes32 taskIdHash,
         bytes32 subjectIdHash,
+        string raterDid,
+        string ratedDid,
         uint16 skillId,
+        string skillName,
         uint8 stars,
         uint40 timestamp
     );
@@ -52,14 +55,20 @@ contract Talent3XSkillRatings {
      * @param ratingSessionHash Hash of the rating session
      * @param taskIdHash Hash of the task ID
      * @param subjectIdHash Hash of the subject ID (rated user)
+     * @param raterDid DID of the rater
+     * @param ratedDid DID of the rated person
      * @param skillId ID of the skill being rated
+     * @param skillName Name of the skill being rated
      * @param stars Rating stars (0-5)
      */
     function anchorSingleSkillRating(
         bytes32 ratingSessionHash,
         bytes32 taskIdHash,
         bytes32 subjectIdHash,
+        string memory raterDid,
+        string memory ratedDid,
         uint16 skillId,
+        string memory skillName,
         uint8 stars
     ) external onlyRelayer {
         // Validate stars are in range 0-5
@@ -70,7 +79,10 @@ contract Talent3XSkillRatings {
             ratingSessionHash,
             taskIdHash,
             subjectIdHash,
+            raterDid,
+            ratedDid,
             skillId,
+            skillName,
             stars,
             uint40(block.timestamp)
         );

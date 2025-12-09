@@ -1,0 +1,159 @@
+{
+  "address": "0xd8967446Df51dc7242252FAc74b9ab377543D3df",
+  "abi": [
+    {
+      "inputs": [],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "bytes32",
+          "name": "ratingSessionHash",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes32",
+          "name": "taskIdHash",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes32",
+          "name": "subjectIdHash",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "raterDid",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "ratedDid",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint16",
+          "name": "skillId",
+          "type": "uint16"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "skillName",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint8",
+          "name": "stars",
+          "type": "uint8"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint40",
+          "name": "timestamp",
+          "type": "uint40"
+        }
+      ],
+      "name": "SkillRatingAnchored",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "ratingSessionHash",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "taskIdHash",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "subjectIdHash",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "string",
+          "name": "raterDid",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "ratedDid",
+          "type": "string"
+        },
+        {
+          "internalType": "uint16",
+          "name": "skillId",
+          "type": "uint16"
+        },
+        {
+          "internalType": "string",
+          "name": "skillName",
+          "type": "string"
+        },
+        {
+          "internalType": "uint8",
+          "name": "stars",
+          "type": "uint8"
+        }
+      ],
+      "name": "anchorSingleSkillRating",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "relayer",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_relayer",
+          "type": "address"
+        }
+      ],
+      "name": "setRelayer",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "transactionHash": "0xbb9a77a325504eed8e2709c99789fdaf439bcf21cf9ce73144f4351f059737ce"
+}
