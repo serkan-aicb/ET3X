@@ -745,15 +745,16 @@ export default function EducatorTaskDetail() {
                            request.applicant_username ? request.applicant_username :
                            `User ${request.applicant?.substring(0, 8) || request.id.substring(0, 8)}...`}
                         </span>
-                        {request.profiles?.matriculation_number && (
-                          <span className="text-sm text-muted-foreground">Student Number: {request.profiles.matriculation_number}</span>
-                        )}
+                        <span className="text-sm text-muted-foreground">
+                          Student Number: {request.profiles?.matriculation_number || 'Not available'}
+                        </span>
                         {request.profiles === null && (
                           <span className="text-sm text-muted-foreground">Profile loading failed</span>
                         )}
                         {!request.profiles && !request.applicant_username && (
                           <span className="text-sm text-muted-foreground">Loading profile...</span>
                         )}
+
                       </div>
                     </div>
                     <div className="space-x-2">
@@ -801,9 +802,10 @@ export default function EducatorTaskDetail() {
                          assignment.profiles?.did ? assignment.profiles.did : 
                          `User ${assignment.assignee.substring(0, 8)}...`}
                       </span>
-                      {assignment.profiles?.matriculation_number && (
-                        <span className="text-sm text-muted-foreground">Student Number: {assignment.profiles.matriculation_number}</span>
-                      )}
+                      <span className="text-sm text-muted-foreground">
+                        Student Number: {assignment.profiles?.matriculation_number || 'Not available'}
+                      </span>
+
                       {/* Show rating information if available */}
                       {assignment.ratings && assignment.ratings.length > 0 && (
                         <div className="mt-2">

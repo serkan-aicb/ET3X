@@ -193,7 +193,9 @@ export async function GET(request: Request) {
       }
       
       const redirectPath = userData.role === 'student' 
-        ? '/s/collect-matriculation' 
+        // NOTE: Changed from /s/collect-matriculation to /s/dashboard
+        // Student number collection is now optional
+        ? '/s/dashboard' 
         : userData.role === 'educator' 
           ? '/e/dashboard' 
           : '/admin/overview'

@@ -63,11 +63,8 @@ export default function StudentDashboard() {
         return;
       }
       
-      // If user doesn't have a matriculation number, redirect to collection page
-      if (!profile.matriculation_number) {
-        router.push("/s/collect-matriculation");
-        return;
-      }
+      // NOTE: Removed forced redirect to /s/collect-matriculation
+      // Student number is now optional and users can proceed without it
       
       setUser({
         id: user.id,

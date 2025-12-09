@@ -14,7 +14,8 @@
     "lint:custom": "npx tsx src/scripts/lint.ts",
     "type-check": "npx tsx src/scripts/type-check.ts",
     "db:setup": "node src/scripts/setup-db.js",
-    "test": "jest"
+    "test": "jest",
+    "relayer": "npx tsx src/blockchain/relayer.ts"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",

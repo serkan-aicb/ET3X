@@ -1,137 +1,97 @@
-# Talent3X University Flow Implementation Summary
+# Talent3X Polygon MAINNET Integration Implementation Summary
 
-## Overview
+This document summarizes all the files created and modified to implement the Polygon MAINNET integration for Talent3X with one on-chain transaction per skill rating.
 
-This implementation introduces a new university flow for Talent3X where educators assign tasks directly to students by pasting usernames during task creation, eliminating the need for students to request tasks or submit results through the platform.
+## New Files Created
 
-## Components Implemented
+### Smart Contract Files
+1. `contracts/Talent3XSkillRatings.sol` - Minimal, secure Solidity contract for Polygon MAINNET that records each skill rating as a separate on-chain transaction with only events (no storage)
+2. `contracts/deploySkillRatings.js` - Deployment script for the new contract
+3. `contracts/setRelayer.js` - Script to set the authorized relayer address
+4. `contracts/Talent3XSkillRatings-README.md` - Detailed deployment instructions
 
-### 1. Database Changes (`src/scripts/bulk-assign-task-usernames.sql`)
+### Database Migration Files
+1. `src/scripts/migrate-ratings-schema.sql` - SQL script to create new normalized tables (task_ratings and task_rating_skills)
+2. `src/scripts/migrate-ratings-data.js` - JavaScript script to migrate existing data from old JSON structure to new normalized tables
+3. `src/scripts/update-task-ratings-on-chain-function.sql` - PostgreSQL function to update on-chain status for task ratings
+4. `src/scripts/deprecate-old-ratings-columns.sql` - Script to deprecate old columns in the ratings table
 
-- Created RPC function `assign_task_to_usernames(task_id uuid, usernames text[])`
-- Ensures `profiles.username` has a unique index
-- Validates usernames against existing profiles
-- Creates task assignments for valid usernames
-- Returns lists of successfully assigned and missing usernames
-- Implements security through `SECURITY DEFINER` and RLS policies
-- Simplified the function to only insert essential fields to avoid column mismatch issues
+### Relayer Service
+1. `src/blockchain/relayer.ts` - TypeScript-based relayer that reads unrated sessions from Supabase, computes hashes, and calls the smart contract on Polygon MAINNET once per skill
 
-### 2. UI Changes (`src/app/e/tasks/create/page.tsx`)
+### Frontend Component
+1. `src/components/tasks/onchain-indicator.tsx` - UI component to display on-chain status and PolygonScan links
 
-- Removed deprecated fields:
-  - "Number of Participants" (seats)
-  - "Task Mode" (Single Assignment / Multi Assignment)
-- Added new "Assigned Usernames" textarea for bulk assignment
-- Implemented username processing logic (trimming, deduplication)
-- Added validation for large username lists
-- Implemented new submission workflow with RPC calls
-- Added proper error handling and user feedback
-- Included extensive comments for future maintenance
-- Added `is_requestable` field to distinguish between browseable and directly assigned tasks
+### Documentation
+1. `POLYGON_MAINNET_INTEGRATION_GUIDE.md` - Comprehensive guide for deploying and integrating the new system
 
-### 3. UI Enhancement (`src/app/globals.css`)
+## Modified Files
 
-- Added CSS styling for skill checkboxes to ensure visibility in dark mode
-- Checkboxes now have white borders and purple fill when selected
+### Configuration
+1. `package.json` - Added "relayer" script to run the relayer service
 
-### 4. Database Schema Update (`src/scripts/add-is-requestable-column.sql`)
+### Frontend
+1. `src/app/s/profile/page.tsx` - Integrated the on-chain indicator component to display on-chain status for skill ratings
 
-- Added `is_requestable` column to the tasks table
-- Defaults to `true` for new tasks
-- Set to `false` for tasks with direct username assignments
+## Implementation Details
 
-### 5. Helper Scripts
+### 1. Solidity Contract (`Talent3XSkillRatings.sol`)
+- Events-only approach with no storage writes
+- One blockchain transaction per skill rating
+- No PII stored on-chain (only hashed identifiers)
+- Functions:
+  - `setRelayer()` - Sets the authorized relayer address (owner-only)
+  - `anchorSingleSkillRating()` - Anchors a single skill rating to the blockchain (relayer-only)
+- Event: `SkillRatingAnchored` with parameters:
+  - `ratingSessionHash` (bytes32)
+  - `taskIdHash` (bytes32)
+  - `subjectIdHash` (bytes32)
+  - `skillId` (uint16)
+  - `stars` (uint8)
+  - `timestamp` (uint40)
 
-- Created test script for username processing logic
-- Created documentation for the new feature
+### 2. Database Schema Changes
+#### New Tables
+- `task_ratings` - One row per rating session (Educator rates a User for a Task)
+  - Columns: id, task_id, rater_id, rated_user_id, stars_avg, xp, rating_session_hash, task_id_hash, subject_id_hash, on_chain, created_at
+- `task_rating_skills` - One row per skill rating within a session
+  - Columns: id, rating_id, skill_id, stars, tx_hash, on_chain, created_at
 
-## Key Features
+#### Migration Process
+1. Create new tables with proper indexes and RLS policies
+2. Migrate existing data from old JSON structure to new normalized tables
+3. Update on-chain status for migrated data
+4. Deprecate old columns in the ratings table
 
-### Security
-- RPC function uses `SECURITY DEFINER` but respects underlying RLS policies
-- Educators can only assign tasks they created themselves
-- Input validation for all user-provided data
-- Authentication checks before any database operations
+### 3. Relayer Service (`src/blockchain/relayer.ts`)
+- Reads unrated sessions from Supabase
+- Computes cryptographic hashes:
+  - `ratingSessionHash` - keccak256 of canonical JSON containing rating session data
+  - `taskIdHash` - keccak256(text(task_id))
+  - `subjectIdHash` - keccak256(text(rated_user_id))
+- Calls `anchorSingleSkillRating()` on the contract once per skill
+- Updates database with transaction hashes and on-chain status
+- Retry logic for RPC failures
 
-### Error Handling
-- Invalid usernames: Shows a list of missing usernames
-- Network errors: Displays generic error messages
-- Large username lists: Shows a warning but allows proceeding
-- Database errors: Provides appropriate error feedback to users
-- Specific error handling for database schema mismatches
-- Automatic cleanup of partially created tasks when assignment fails
+### 4. Frontend Integration
+- Added `OnChainIndicator` component to display on-chain status
+- Integrated component into student profile page to show on-chain status for skill ratings
+- Links to PolygonScan for transactions with valid transaction hashes
 
-### User Experience
-- Clear instructions for pasting usernames
-- Support for Google Sheets column pasting
-- Real-time validation feedback
-- Success/error messaging
-- Graceful handling of edge cases
-- Visible checkboxes for skill selection in dark mode
+## Deployment Instructions
 
-## Testing
+1. Deploy smart contract using `node contracts/deploySkillRatings.js`
+2. Set relayer address using `node contracts/setRelayer.js`
+3. Apply database schema using `src/scripts/migrate-ratings-schema.sql`
+4. Migrate existing data using `node src/scripts/migrate-ratings-data.js`
+5. Execute on-chain status update function using `src/scripts/update-task-ratings-on-chain-function.sql`
+6. Deprecate old columns using `src/scripts/deprecate-old-ratings-columns.sql`
+7. Run relayer service using `npm run relayer`
 
-- Unit tests for username processing logic (6 test cases)
-- All tests passing
+## Security Features
 
-## Recent Updates
-
-### Database Schema Fix
-- Updated the RPC function to ensure compatibility with the current database schema
-- Simplified the function to only insert essential fields
-- Improved error handling in the frontend to provide better feedback when database issues occur
-- Added documentation for applying database updates
-
-### New Features
-- Added `is_requestable` field to distinguish between browseable and directly assigned tasks
-- Updated CSS to make skill checkboxes visible in dark mode
-- Created migration script for adding the `is_requestable` column
-
-## Future Considerations
-
-### Deprecated Features (Marked for Removal)
-1. Task request system (`task_requests` table and related UI)
-2. Student submission system (`submissions` table and related UI)
-3. "Number of Participants" field
-4. "Task Mode" field
-
-### Next Steps
-1. Update rating UI to work directly with assigned students
-2. Remove deprecated features in future iterations
-3. Add more comprehensive integration tests
-4. Monitor performance with large username lists
-5. Update student task browsing logic to exclude non-requestable tasks
-
-## Files Created/Modified
-
-1. `src/scripts/bulk-assign-task-usernames.sql` - SQL migration for RPC function
-2. `src/app/e/tasks/create/page.tsx` - Updated Create Task page UI and logic
-3. `src/scripts/test-bulk-assign.ts` - Test script for RPC function
-4. `src/app/e/tasks/create/process-usernames.test.js` - Unit tests for username processing
-5. `BULK_ASSIGNMENT_FEATURE.md` - Documentation for the new feature
-6. `IMPLEMENTATION_SUMMARY.md` - This summary file
-7. `BULK_ASSIGNMENT_DB_UPDATE.md` - Database update instructions
-8. `src/app/globals.css` - Added CSS for skill checkbox visibility
-9. `src/scripts/add-is-requestable-column.sql` - Migration script for is_requestable column
-10. `src/scripts/update-student-task-query.sql` - Example query for student task browsing
-
-## Usage Instructions
-
-1. Navigate to the "Create Task" page as an educator
-2. Fill in the task details (title, description, etc.)
-3. In the "Assigned Usernames" field, paste student usernames (one per line)
-4. Click "Create Task"
-5. The system will validate usernames and either:
-   - Create the task and assignments if all usernames are valid
-   - Show an error with invalid usernames if any don't exist
-
-## Troubleshooting
-
-If you encounter database errors:
-1. Check that the latest SQL script has been applied to your database
-2. Verify that all required columns exist in the task_assignments table
-3. Ensure the pgcrypto extension is enabled in your database
-
-If tasks with assigned usernames still appear in the Browse Tasks page:
-1. Ensure the student task browsing query has been updated to exclude non-requestable tasks
-2. Verify that the `is_requestable` column is properly set to `false` for tasks with username assignments
+1. Only the designated relayer can call `anchorSingleSkillRating`
+2. Owner can change the relayer address at any time
+3. Stars are validated to be between 0-5
+4. No sensitive data is stored on-chain, only hashes
+5. Polygon MAINNET only (no testnet configs generated)

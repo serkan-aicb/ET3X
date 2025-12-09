@@ -60,20 +60,18 @@ export default function CollectMatriculationPage() {
     
     const trimmedNumber = matriculationNumber.trim();
     
-    if (!trimmedNumber) {
-      setError("Please enter your student number.");
-      return;
-    }
-    
-    // Validate student number format
-    if (trimmedNumber.length < 5 || trimmedNumber.length > 20) {
-      setError("Student number must be between 5 and 20 characters.");
-      return;
-    }
-    
-    if (!/^[A-Za-z0-9]+$/.test(trimmedNumber)) {
-      setError("Student number can only contain letters and numbers.");
-      return;
+    // Allow empty student numbers (make it truly optional)
+    if (trimmedNumber) {
+      // Validate student number format only if provided
+      if (trimmedNumber.length < 5 || trimmedNumber.length > 20) {
+        setError("Student number must be between 5 and 20 characters.");
+        return;
+      }
+      
+      if (!/^[A-Za-z0-9]+$/.test(trimmedNumber)) {
+        setError("Student number can only contain letters and numbers.");
+        return;
+      }
     }
     
     setSaving(true);
@@ -89,10 +87,10 @@ export default function CollectMatriculationPage() {
         throw new Error("User not authenticated");
       }
       
-      // Update profile with student number
+      // Update profile with student number (can be null/empty)
       const { error: updateError } = await supabase
         .from('profiles')
-        .update({ matriculation_number: trimmedNumber })
+        .update({ matriculation_number: trimmedNumber || null })
         .eq('id', user.id);
       
       if (updateError) throw updateError;
@@ -192,9 +190,9 @@ export default function CollectMatriculationPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
               </svg>
             </div>
-            <CardTitle className="text-2xl text-foreground">Student Number</CardTitle>
+            <CardTitle className="text-2xl text-foreground">Student Number (Optional)</CardTitle>
             <CardDescription className="text-muted-foreground">
-              Please enter your student number to complete registration
+              You can provide your student number for identification purposes, or skip this step.
             </CardDescription>
           </CardHeader>
           <form onSubmit={handleSubmit}>
@@ -204,12 +202,11 @@ export default function CollectMatriculationPage() {
                 <Input
                   id="matriculationNumber"
                   type="text"
-                  placeholder="e.g., 123456 or STUD2023001"
+                  placeholder="e.g., 123456 or STUD2023001 (optional)"
                   value={matriculationNumber}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => setMatriculationNumber(e.target.value)}
-                  required
                 />
-                <p className="text-sm text-muted-foreground mt-1">5-20 characters, letters and numbers only</p>
+                <p className="text-sm text-muted-foreground mt-1">5-20 characters, letters and numbers only (optional)</p>
               </div>
               {error && (
                 <div className="p-3 rounded-lg bg-red-900/30 text-red-400 border border-red-800/50">
@@ -234,6 +231,15 @@ export default function CollectMatriculationPage() {
                       Saving...
                     </span>
                   ) : "Save and Continue"}
+                </Button>
+                
+                {/* Add a skip button */}
+                <Button 
+                  variant="outline"
+                  className="w-full mt-4"
+                  onClick={() => router.push("/s/dashboard")}
+                >
+                  Skip for Now
                 </Button>
               </div>
             </CardFooter>

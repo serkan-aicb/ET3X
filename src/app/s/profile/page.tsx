@@ -9,6 +9,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Tables } from '@/lib/supabase/types';
 import { AppLayout } from "@/components/app-layout";
 import { SharedCard } from "@/components/shared-card";
+import { OnChainIndicator } from "@/components/tasks/onchain-indicator";
 
 type Profile = Tables<'profiles'> & {
   matriculation_number?: string | null;
@@ -32,6 +33,8 @@ type IndividualSkillRating = {
   taskId: string;
   taskTitle: string;
   createdAt: string;
+  onChain?: boolean;
+  txHash?: string | null;
 };
 
 export default function StudentProfile() {
@@ -132,32 +135,35 @@ export default function StudentProfile() {
       }
       
       // Get individual skill ratings for all ratings (to calculate average and show last 5)
-      const { data: allRatings, error: allRatingsError } = await supabase
-        .from('ratings')
+      // We need to join with the new task_rating_skills table to get on-chain status
+      const { data: allSkillRatings, error: allSkillsError } = await supabase
+        .from('task_rating_skills')
         .select(`
           *,
-          tasks(title)
+          task_ratings!inner(
+            task_id,
+            rated_user_id,
+            created_at,
+            on_chain,
+            tx_hash,
+            tasks(title)
+          )
         `)
-        .eq('rated_user', user.id)
-        .order('created_at', { ascending: false });
-      
-      if (!allRatingsError && allRatings) {
-        // Extract individual skill ratings
-        const individualSkillRatings: IndividualSkillRating[] = [];
-        allRatings.forEach(rating => {
-          if (rating.skills) {
-            Object.entries(rating.skills).forEach(([skillId, skillValue]) => {
-              individualSkillRatings.push({
-                skillId: parseInt(skillId),
-                skillValue: typeof skillValue === 'number' ? skillValue : 0,
-                taskId: rating.task,
-                taskTitle: rating.tasks?.title || "Unknown Task",
-                createdAt: rating.created_at
-              });
-            });
-          }
-        });
-        
+        .eq('task_ratings.rated_user_id', user.id)
+        .order('task_ratings.created_at', { ascending: false });
+
+      if (!allSkillsError && allSkillRatings) {
+        // Extract individual skill ratings with on-chain data
+        const individualSkillRatings: IndividualSkillRating[] = allSkillRatings.map(rating => ({
+          skillId: rating.skill_id,
+          skillValue: rating.stars,
+          taskId: rating.task_ratings.task_id,
+          taskTitle: rating.task_ratings.tasks?.title || "Unknown Task",
+          createdAt: rating.task_ratings.created_at,
+          onChain: rating.on_chain,
+          txHash: rating.tx_hash
+        }));
+
         // Sort by date and take last 5
         individualSkillRatings.sort((a, b) => 
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
@@ -346,11 +352,11 @@ export default function StudentProfile() {
                     </div>
                   ) : (
                     <p className="font-medium text-foreground">
-                      {profile?.matriculation_number || 'Not provided'}
+                      {profile?.matriculation_number || 'Not available'}
                     </p>
                   )}
                 </div>
-                
+
                 {/* Stats Section */}
                 <div className="pt-4 border-t border-border">
                   <h3 className="text-xs uppercase text-muted-foreground mb-2">Statistics</h3>
@@ -412,21 +418,22 @@ export default function StudentProfile() {
                 </p>
               ) : (
                 <div className="space-y-4">
-                  {skillRatings.map((skillRating, index) => (
-                    <div key={index} className="flex items-center justify-between p-4 border rounded-lg border-border hover:bg-muted/50 transition-colors">
-                      <div>
-                        <h3 className="font-medium text-foreground">
-                          {getSkillName(skillRating.skillId)}
-                        </h3>
+                  {skillRatings.map((rating, index) => (
+                    <div key={`${rating.skillId}-${rating.taskId}-${index}`} className="flex items-center justify-between p-4 border rounded-lg border-border">
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <h4 className="font-medium">{getSkillName(rating.skillId)}</h4>
+                          <OnChainIndicator onChain={!!rating.onChain} txHash={rating.txHash} />
+                        </div>
                         <p className="text-sm text-muted-foreground">
-                          {skillRating.taskTitle} • {new Date(skillRating.createdAt).toLocaleDateString()}
+                          Task: {rating.taskTitle}
                         </p>
                       </div>
-                      <div className="flex items-center space-x-4">
-                        <div>
-                          <p className="text-sm text-muted-foreground">Rating</p>
-                          <p className="font-medium text-foreground">{skillRating.skillValue}/5</p>
-                        </div>
+                      <div className="flex items-center gap-4">
+                        <span className="text-lg font-bold">{rating.skillValue}/5</span>
+                        <span className="text-sm text-muted-foreground">
+                          {new Date(rating.createdAt).toLocaleDateString()}
+                        </span>
                       </div>
                     </div>
                   ))}

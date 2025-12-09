@@ -36,14 +36,13 @@ export function AppLayout({
     const fetchUserData = async () => {
       const supabase = createClient();
       
-      // Get user data
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError || !user) {
         router.push("/");
         return;
       }
       
-      // Get profile based on role
+      // Get user profile
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('username, did, matriculation_number')
@@ -56,11 +55,8 @@ export function AppLayout({
         return;
       }
       
-      // For students, check if they have a matriculation number
-      if (userRole === "student" && !profile.matriculation_number) {
-        router.push("/s/collect-matriculation");
-        return;
-      }
+      // NOTE: Removed forced redirect to /s/collect-matriculation for students
+      // Student number is now optional and users can proceed without it
       
       setUser({
         id: user.id,
@@ -68,7 +64,8 @@ export function AppLayout({
         username: profile.username,
         did: profile.did,
         ...(userRole === "student" ? { matriculation_number: profile.matriculation_number } : {})
-      });    };
+      });
+    };
     
     fetchUserData();
   }, [router, userRole]);
