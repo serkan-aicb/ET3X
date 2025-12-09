@@ -8,10 +8,6 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { createClient } from "@/lib/supabase/client";
 import { SkillScore, Level, computeXP } from "@/lib/utils/xp";
-// Import the IPFS client
-import { pinJSONToIPFS } from "@/lib/pinata/client";
-// Comment out the blockchain import for now
-// import { anchorRating } from "@/lib/polygon/client";
 import { Tables } from '@/lib/supabase/types';
 
 type Task = Tables<'tasks'>;
@@ -128,126 +124,37 @@ export function RatingForm({
           dueAt: task.due_date ? new Date(task.due_date) : null
         });
         
-        // Check if a rating already exists for this student on this task
-        const { data: existingRating, error: checkError } = await supabase
-          .from('ratings')
-          .select('id')
-          .eq('task', taskId)
-          .eq('rated_user', student.id)
-          .eq('rater', user.id)
-          .limit(1)
-          .maybeSingle();
+        // Create new task rating record in the normalized schema
+        const { data: taskRatingData, error: insertError } = await supabase
+          .from('task_ratings')
+          .insert({
+            task_id: taskId,
+            rater_id: user.id,
+            rated_user_id: student.id,
+            stars_avg: starsAvg,
+            xp: xp
+          })
+          .select()
+          .single();
         
-        let ratingData;
-        if (existingRating && !checkError) {
-          // Update existing rating
-          const { data, error: updateError } = await supabase
-            .from('ratings')
-            .update({
-              skills: studentRatings,
-              stars_avg: starsAvg,
-              xp: xp,
-              updated_at: new Date().toISOString()
-            })
-            .eq('id', existingRating.id)
-            .select()
-            .single();
-          
-          if (updateError) throw updateError;
-          ratingData = data;
-        } else {
-          // Create new rating record
-          const { data, error: insertError } = await supabase
-            .from('ratings')
-            .insert({
-              task: taskId,
-              rater: user.id,
-              rated_user: student.id,
-              skills: studentRatings,
-              stars_avg: starsAvg,
-              xp: xp
-            })
-            .select()
-            .single();
-          
-          if (insertError) throw insertError;
-          ratingData = data;
-        }
+        if (insertError) throw insertError;
         
-        // Handle IPFS and blockchain anchoring
-        if (ratingData) {
-          try {
-            // Get student profile to get DID
-            const { data: studentProfile, error: profileError } = await supabase
-              .from('profiles')
-              .select('did')
-              .eq('id', student.id)
-              .single();
-            
-            if (profileError) {
-              console.error('Error fetching student profile:', profileError);
-            } else if (studentProfile?.did) {
-              // Prepare rating data for IPFS
-              const ratingDocument = {
-                ratingId: ratingData.id,
-                taskId: taskId,
-                taskTitle: task.title,
-                student: {
-                  id: student.id,
-                  username: student.username,
-                  did: studentProfile.did
-                },
-                educator: {
-                  id: user.id,
-                  did: educatorProfile.did
-                },
-                skills: studentRatings,
-                starsAvg: starsAvg,
-                xp: xp,
-                createdAt: new Date().toISOString()
-              };
-              
-              console.log('Rating pinned to IPFS with CID:', ratingDocument);
-              // In a real implementation, you would pin to IPFS here
-              // const cid = await pinJSONToIPFS(ratingDocument);
-              
-              // Update rating with CID if we got one
-              // if (cid) {
-              //   await supabase
-              //     .from('ratings')
-              //     .update({ ipfs_cid: cid })
-              //     .eq('id', ratingData.id);
-              // }
-            }
-          } catch (pinError) {
-            console.warn('Warning: Failed to pin rating to IPFS:', pinError);
-            // Don't throw here as we still want to complete the rating process
-          }
-          
-          try {
-            // Simulate blockchain anchoring
-            console.log('SIMULATION: Would anchor rating to blockchain with:', {
-              ratingId: ratingData.id
-            });
-            // In a real implementation, you would anchor to blockchain here
-            // const txHash = await anchorRating(ratingData.id, cid || '');
-            
-            // Update rating with simulated transaction hash
-            // await supabase
-            //   .from('ratings')
-            //   .update({ blockchain_tx: txHash })
-            //   .eq('id', ratingData.id);
-          } catch (anchorError) {
-            console.error('Error anchoring rating:', anchorError);
-            // Don't throw here as we still want to complete the rating process
-          }
-        }
+        // Create task rating skills records
+        const skillEntries = Object.entries(studentRatings);
+        const taskRatingSkillsData = skillEntries.map(([skillId, stars]) => ({
+          rating_id: taskRatingData.id,
+          skill_id: parseInt(skillId),
+          stars: stars
+        }));
+        
+        const { error: skillsInsertError } = await supabase
+          .from('task_rating_skills')
+          .insert(taskRatingSkillsData);
+        
+        if (skillsInsertError) throw skillsInsertError;
       }
       
-      setMessage("Ratings submitted successfully!");
-      
-      // Instead of updating the entire task status to 'rated', we should check if all assigned students have ratings
-      // For now, we'll leave the task status update logic as is since it's complex to determine when all students are rated
+      setMessage("Ratings submitted successfully! They will be anchored to the blockchain shortly.");
       
       // Redirect back to the task detail page after successful submission
       setTimeout(() => {

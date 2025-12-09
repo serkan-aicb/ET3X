@@ -9,19 +9,37 @@ import { Tables } from '@/lib/supabase/types';
 import { AppLayout } from "@/components/app-layout";
 import { SharedCard } from "@/components/shared-card";
 
-type Rating = Tables<'ratings'> & {
+// Define custom types for the new normalized schema
+type TaskRating = {
+  id: string;
+  task_id: string;
+  rater_id: string;
+  rated_user_id: string;
+  stars_avg: number;
+  xp: number;
+  rating_session_hash: string | null;
+  task_id_hash: string | null;
+  subject_id_hash: string | null;
+  on_chain: boolean;
+  created_at: string;
   tasks: {
     title: string;
   } | null;
-  // Add skills data to the rating type
-  skills_data?: Array<{id: number, label: string, description: string, stars: number}>;
+  task_rating_skills: Array<{
+    skill_id: number;
+    stars: number;
+    tx_hash: string | null;
+    on_chain: boolean;
+    label: string;
+    description: string;
+  }>;
 };
 
 // Add a type for skills
 type Skill = Tables<'skills'>;
 
 export default function ViewRating() {
-  const [rating, setRating] = useState<Rating | null>(null);
+  const [rating, setRating] = useState<TaskRating | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const params = useParams();
@@ -40,43 +58,42 @@ export default function ViewRating() {
       
       // Get rating for this task and user along with skills data
       const { data, error } = await supabase
-        .from('ratings')
+        .from('task_ratings')
         .select(`
           *,
           tasks(title)
         `)
-        .eq('task', taskId)
-        .eq('rated_user', user.id)
+        .eq('task_id', taskId)
+        .eq('rated_user_id', user.id)
         .single();
       
       if (!error && data) {
-        // Fetch skills data to get labels and descriptions
-        const { data: skillsData, error: skillsError } = await supabase
-          .from('skills')
-          .select('*');
+        // Fetch task rating skills with skill details
+        const { data: taskRatingSkills, error: skillsError } = await supabase
+          .from('task_rating_skills')
+          .select(`
+            *,
+            skills(label, description)
+          `)
+          .eq('rating_id', data.id);
         
-        if (!skillsError && skillsData) {
+        if (!skillsError && taskRatingSkills) {
           // Enhance the rating with skill details
-          const skillsWithDetails = [];
-          if (data.skills && typeof data.skills === 'object' && !Array.isArray(data.skills)) {
-            for (const [skillId, stars] of Object.entries(data.skills)) {
-              const skill = skillsData.find(s => s.id === parseInt(skillId));
-              if (skill) {
-                skillsWithDetails.push({
-                  id: skill.id,
-                  label: skill.label,
-                  description: skill.description,
-                  stars: Number(stars)
-                });
-              }
-            }
-          }
+          const skillsWithDetails = taskRatingSkills.map(ratingSkill => ({
+            ...ratingSkill,
+            label: ratingSkill.skills?.label || `Skill ${ratingSkill.skill_id}`,
+            description: ratingSkill.skills?.description || ''
+          }));
+          
           setRating({
             ...data,
-            skills_data: skillsWithDetails
+            task_rating_skills: skillsWithDetails
           });
         } else {
-          setRating(data);
+          setRating({
+            ...data,
+            task_rating_skills: []
+          });
         }
       }
       
@@ -130,6 +147,10 @@ export default function ViewRating() {
     );
   }
 
+  // Check if all skills are on-chain
+  const allSkillsOnChain = rating.task_rating_skills.every(skill => skill.on_chain);
+  const anySkillsOnChain = rating.task_rating_skills.some(skill => skill.on_chain);
+
   return (
     <AppLayout userRole="student">
       <div className="space-y-8">
@@ -143,7 +164,7 @@ export default function ViewRating() {
           
           <div className="space-y-6">
             {/* Blockchain confirmation */}
-            {rating.tx_hash && rating.tx_hash === "0xSIMULATED_TRANSACTION_HASH" && (
+            {allSkillsOnChain && (
               <div className="bg-green-900/30 border-l-4 border-green-800/50 p-4 rounded-r">
                 <div className="flex">
                   <div className="flex-shrink-0">
@@ -154,6 +175,23 @@ export default function ViewRating() {
                   <div className="ml-3">
                     <p className="text-sm text-green-400">
                       This rating has been recorded on the blockchain.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {!allSkillsOnChain && anySkillsOnChain && (
+              <div className="bg-yellow-900/30 border-l-4 border-yellow-800/50 p-4 rounded-r">
+                <div className="flex">
+                  <div className="flex-shrink-0">
+                    <svg className="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-sm text-yellow-400">
+                      Some skills are being recorded on the blockchain. This may take a few minutes.
                     </p>
                   </div>
                 </div>
@@ -175,23 +213,23 @@ export default function ViewRating() {
             <div>
               <h3 className="text-lg font-medium mb-4 text-foreground">Skills Rated</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {rating.skills_data && rating.skills_data.length > 0 ? (
-                  rating.skills_data.map((skill) => (
-                    <div key={skill.id} className="border rounded-lg p-4 hover:bg-muted transition-colors border-border">
+                {rating.task_rating_skills && rating.task_rating_skills.length > 0 ? (
+                  rating.task_rating_skills.map((skill) => (
+                    <div key={skill.skill_id} className="border rounded-lg p-4 hover:bg-muted transition-colors border-border">
                       <div className="flex justify-between items-center mb-2">
                         <span className="font-medium text-foreground">{skill.label}</span>
                         <span className="font-bold text-foreground">{skill.stars}/5 stars</span>
                       </div>
                       <p className="text-sm text-muted-foreground">{skill.description}</p>
-                    </div>
-                  ))
-                ) : rating.skills && typeof rating.skills === 'object' && !Array.isArray(rating.skills) ? (
-                  Object.entries(rating.skills).map(([skillId, stars]) => (
-                    <div key={skillId} className="border rounded-lg p-4 hover:bg-muted transition-colors border-border">
-                      <div className="flex justify-between items-center">
-                        <span className="font-medium text-foreground">Skill {skillId}</span>
-                        <span className="font-bold text-foreground">{String(stars)}/5 stars</span>
-                      </div>
+                      {skill.on_chain ? (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 mt-2">
+                          On-chain
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 mt-2">
+                          Processing
+                        </span>
+                      )}
                     </div>
                   ))
                 ) : (
@@ -201,25 +239,14 @@ export default function ViewRating() {
             </div>
             
             <div className="flex flex-wrap gap-4">
-              {rating.cid && (
-                <Button 
-                  variant="outline"
-                  onClick={() => window.open(`https://ipfs.io/ipfs/${rating.cid}`, '_blank')}
-                >
-                  View Rating on IPFS
-                </Button>
-              )}
-                
-              {rating.tx_hash && (
+              {anySkillsOnChain && (
                 <Button 
                   variant="outline"
                   onClick={() => {
-                    // Check if this is a simulated transaction
-                    if (rating.tx_hash === "0xSIMULATED_TRANSACTION_HASH") {
-                      // For now, we'll just alert that it's recorded on blockchain
-                      alert("This rating has been recorded on the blockchain.");
-                    } else {
-                      window.open(`https://amoy.polygonscan.com/tx/${rating.tx_hash}`, '_blank');
+                    // Find the first skill with a transaction hash
+                    const skillWithTx = rating.task_rating_skills.find(skill => skill.tx_hash);
+                    if (skillWithTx?.tx_hash) {
+                      window.open(`https://polygonscan.com/tx/${skillWithTx.tx_hash}`, '_blank');
                     }
                   }}
                 >

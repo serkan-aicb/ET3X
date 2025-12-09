@@ -11,10 +11,9 @@ NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 ENVELOPE_MASTER_KEY=your_envelope_master_key
-PINATA_JWT=your_pinata_jwt
 POLYGON_RPC_URL=https://polygon-amoy.infura.io/v3/your-infura-key
-WALLET_PRIVATE_KEY=your_wallet_private_key
-CONTRACT_ADDRESS=your_contract_address
+RELAYER_PRIVATE_KEY=your_relayer_private_key
+T3X_SKILL_RATINGS_CONTRACT_ADDRESS=your_contract_address
 SITE_BASE=https://uni.talent3x.io
 ```
 
