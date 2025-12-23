@@ -24,7 +24,6 @@ type Submission = Tables<'submissions'> & {
   profiles: {
     username: string;
   } | null;
-  submitted_at: string; // Adding this field which exists in DB but might not be in types
 };
 
 // Define pagination and filtering state
@@ -131,8 +130,8 @@ export default function ViewSubmissions() {
     
     // Apply sorting
     result.sort((a, b) => {
-      const dateA = new Date(a.submitted_at);
-      const dateB = new Date(b.submitted_at);
+      const dateA = a.created_at ? new Date(a.created_at) : new Date(0);
+      const dateB = b.created_at ? new Date(b.created_at) : new Date(0);
       
       if (sortOption === "submitted_at_desc") {
         return dateB.getTime() - dateA.getTime();
@@ -281,7 +280,7 @@ export default function ViewSubmissions() {
                              `User ${submission.submitter?.substring(0, 8) || submission.id.substring(0, 8)}...`}
                           </div>
                           <div className="text-xs text-muted-foreground mt-1">
-                            Submitted: {new Date(submission.submitted_at).toLocaleDateString()}
+                            Submitted: {submission.created_at ? new Date(submission.created_at).toLocaleDateString() : '-'}
                           </div>
                         </div>
                       </TableCell>
