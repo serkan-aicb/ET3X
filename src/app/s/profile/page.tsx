@@ -14,11 +14,7 @@ import { OnChainIndicator } from "@/components/tasks/onchain-indicator";
 type Profile = Tables<'profiles'> & {
   matriculation_number?: string | null;
 };
-type Rating = Tables<'ratings'> & {
-  tasks: {
-    title: string;
-  } | null;
-};
+// Removed old Rating type since we're using the new schema directly
 type Skill = Tables<'skills'>;
 type AggregatedTaskRating = {
   taskId: string;
@@ -32,9 +28,40 @@ type IndividualSkillRating = {
   skillValue: number;
   taskId: string;
   taskTitle: string;
-  createdAt: string;
+  createdAt: string | undefined;
   onChain?: boolean;
   txHash?: string | null;
+};
+
+// Type for task ratings from the new schema
+type TaskRating = {
+  id: string;
+  task_id: string;
+  stars_avg: number;
+  xp: number;
+  created_at: string;
+  tasks: {
+    title: string;
+  } | null;
+};
+
+// Type for skill ratings from the new schema
+type SkillRating = {
+  id: string;
+  skill_id: number;
+  stars: number;
+  tx_hash: string | null;
+  on_chain: boolean;
+  created_at: string;
+  task_ratings: {
+    task_id: string;
+    created_at: string;
+    on_chain: boolean;
+    tx_hash: string | null;
+    tasks: {
+      title: string;
+    } | null;
+  } | null;
 };
 
 export default function StudentProfile() {
@@ -85,12 +112,12 @@ export default function StudentProfile() {
       }
       
       // Get aggregated task ratings (grouped by task_id)
-      // We need to join task_ratings with task_rating_skills to get the data
+      // We need to join task_ratings with tasks to get the task title
       const { data: taskRatingsData, error: taskRatingsError } = await supabase
         .from('task_ratings')
         .select(`
           *,
-          tasks(title)
+          tasks!task_ratings_task_id_fkey(title)
         `)
         .eq('rated_user_id', user.id)
         .order('created_at', { ascending: false });
@@ -105,7 +132,7 @@ export default function StudentProfile() {
         }>();
         
         taskRatingsData.forEach(rating => {
-          const taskId = rating.task;
+          const taskId = rating.task_id;
           if (!taskRatingsMap.has(taskId)) {
             taskRatingsMap.set(taskId, {
               taskId,
@@ -141,13 +168,13 @@ export default function StudentProfile() {
         .from('task_rating_skills')
         .select(`
           *,
-          task_ratings!inner(
+          task_ratings!task_rating_skills_rating_id_fkey(
             task_id,
             rated_user_id,
             created_at,
             on_chain,
             tx_hash,
-            tasks(title)
+            tasks!task_ratings_task_id_fkey(title)
           )
         `)
         .eq('task_ratings.rated_user_id', user.id)
@@ -158,16 +185,16 @@ export default function StudentProfile() {
         const individualSkillRatings: IndividualSkillRating[] = allSkillRatings.map(rating => ({
           skillId: rating.skill_id,
           skillValue: rating.stars,
-          taskId: rating.task_ratings.task_id,
-          taskTitle: rating.task_ratings.tasks?.title || "Unknown Task",
-          createdAt: rating.task_ratings.created_at,
+          taskId: rating.task_ratings?.task_id,
+          taskTitle: rating.task_ratings?.tasks?.title || "Unknown Task",
+          createdAt: rating.task_ratings?.created_at,
           onChain: rating.on_chain,
           txHash: rating.tx_hash
         }));
 
         // Sort by date and take last 5
         individualSkillRatings.sort((a, b) => 
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
         );
         setSkillRatings(individualSkillRatings.slice(0, 5));
       }
@@ -433,7 +460,7 @@ export default function StudentProfile() {
                       <div className="flex items-center gap-4">
                         <span className="text-lg font-bold">{rating.skillValue}/5</span>
                         <span className="text-sm text-muted-foreground">
-                          {new Date(rating.createdAt).toLocaleDateString()}
+                          {rating.createdAt ? new Date(rating.createdAt).toLocaleDateString() : '-'}
                         </span>
                       </div>
                     </div>
