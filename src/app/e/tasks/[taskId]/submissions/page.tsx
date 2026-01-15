@@ -26,9 +26,7 @@ type Submission = Tables<'submissions'> & {
   } | null;
 };
 
-// Define pagination and filtering state
-const PAGE_SIZE_OPTIONS = [10, 25, 50];
-const DEFAULT_PAGE_SIZE = 25;
+// No pagination - show all submissions
 
 // Define sort options
 const SORT_OPTIONS = [
@@ -39,10 +37,8 @@ const SORT_OPTIONS = [
 export default function ViewSubmissions() {
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortOption, setSortOption] = useState("submitted_at_desc");
-  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const router = useRouter();
   const params = useParams();
   const taskId = params.taskId as string;
@@ -101,8 +97,6 @@ export default function ViewSubmissions() {
         );
 
         setSubmissions(pendingSubmissions);
-        // Reset to first page when data changes
-        setCurrentPage(0);
       } catch (error) {
         console.error("Error fetching data:", error);
         router.push(`/e/tasks/${taskId}`);
@@ -116,7 +110,7 @@ export default function ViewSubmissions() {
     }
   }, [taskId, router]);
 
-  // Apply filtering, sorting, and pagination
+  // Apply filtering and sorting
   const filteredAndSortedSubmissions = useMemo(() => {
     let result = [...submissions];
     
@@ -142,13 +136,6 @@ export default function ViewSubmissions() {
     
     return result;
   }, [submissions, searchTerm, sortOption]);
-  
-  // Calculate pagination
-  const totalItems = filteredAndSortedSubmissions.length;
-  const totalPages = Math.ceil(totalItems / pageSize);
-  const startIndex = currentPage * pageSize;
-  const endIndex = Math.min(startIndex + pageSize, totalItems);
-  const paginatedSubmissions = filteredAndSortedSubmissions.slice(startIndex, endIndex);
   
   if (loading) {
     return (
@@ -206,39 +193,18 @@ export default function ViewSubmissions() {
                 />
               </div>
               
-              <div className="flex gap-2">
-                <Select value={sortOption} onValueChange={setSortOption}>
-                  <SelectTrigger className="w-40">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {SORT_OPTIONS.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                
-                <Select 
-                  value={pageSize.toString()} 
-                  onValueChange={(value) => {
-                    setPageSize(Number(value));
-                    setCurrentPage(0); // Reset to first page when page size changes
-                  }}
-                >
-                  <SelectTrigger className="w-24">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {PAGE_SIZE_OPTIONS.map((size) => (
-                      <SelectItem key={size} value={size.toString()}>
-                        {size}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              <Select value={sortOption} onValueChange={setSortOption}>
+                <SelectTrigger className="w-40">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {SORT_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
           
@@ -270,7 +236,7 @@ export default function ViewSubmissions() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {paginatedSubmissions.map((submission) => (
+                  {filteredAndSortedSubmissions.map((submission) => (
                     <TableRow key={submission.id} className="border-b-border/20 hover:bg-muted/10">
                       <TableCell className="py-4">
                         <div>
@@ -299,38 +265,7 @@ export default function ViewSubmissions() {
             </div>
           )}
           
-          {/* Pagination Controls */}
-          {filteredAndSortedSubmissions.length > 0 && (
-            <div className="flex flex-col sm:flex-row items-center justify-between pt-4 gap-4">
-              <div className="text-sm text-muted-foreground">
-                Showing {startIndex + 1}-{endIndex} of {totalItems} submissions
-              </div>
-              
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setCurrentPage(prev => Math.max(0, prev - 1))}
-                  disabled={currentPage === 0}
-                >
-                  <ChevronLeftIcon className="h-4 w-4" />
-                </Button>
-                
-                <div className="text-sm text-muted-foreground">
-                  Page {currentPage + 1} of {totalPages}
-                </div>
-                
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setCurrentPage(prev => Math.min(totalPages - 1, prev + 1))}
-                  disabled={currentPage === totalPages - 1 || totalPages === 0}
-                >
-                  <ChevronRightIcon className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          )}
+
         </SharedCard>
       </div>
     </AppLayout>
