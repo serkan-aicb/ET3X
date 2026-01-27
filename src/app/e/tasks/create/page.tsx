@@ -37,8 +37,6 @@ export default function CreateTask() {
   
   // New state for assigned usernames (part of the new bulk assignment flow)
   const [assignedUsernames, setAssignedUsernames] = useState("");
-  // State for displaying missing usernames
-  const [missingUsernames, setMissingUsernames] = useState<string[]>([]);
   
   const router = useRouter();
 
@@ -100,7 +98,6 @@ export default function CreateTask() {
     e.preventDefault();
     setLoading(true);
     setMessage("");
-    setMissingUsernames([]);
     
     try {
       const supabase = createClient();
@@ -146,77 +143,24 @@ export default function CreateTask() {
       
       if (taskError) throw taskError;
       
-      // If we have assigned usernames, call the RPC function
-      // This is the core of the new bulk assignment flow
+      // If we have assigned usernames, call the auto-submit RPC
+      // This is the core of the new bulk assignment flow using submissions as single source of truth
       if (processedUsernames.length > 0) {
-        console.log("Calling RPC with usernames:", processedUsernames);
+        console.log("Calling auto-submit RPC with usernames:", processedUsernames);
         
-        // Call the RPC function to assign usernames to the task
-        const { data: rpcData, error: rpcError } = await supabase
-          .rpc('assign_task_to_usernames', {
-            task_id: taskData.id,
-            usernames: processedUsernames
+        const { error: autoSubmitError } = await supabase
+          .rpc('auto_submit_task_for_students', {
+            p_task_id: taskData.id,
+            p_usernames: processedUsernames
           });
-        
-        console.log("RPC result:", { rpcData, rpcError });
-        
-        // Handle RPC errors specifically
-        if (rpcError) {
-          // Delete the created task since the assignment failed
-          await supabase
-            .from('tasks')
-            .delete()
-            .eq('id', taskData.id);
-          
-          // Provide a more specific error message based on the error
-          if (rpcError.message.includes('assigned_by')) {
-            setMessage("There was an issue with the assignment system. Please contact support. (Error: Column 'assigned_by' not found)");
-          } else {
-            setMessage(`Failed to assign task to students: ${rpcError.message}`);
-          }
-          setLoading(false);
-          return;
+
+        if (autoSubmitError) {
+          console.warn('Auto-submit failed (non-critical):', autoSubmitError.message);
         }
-        
-        // Check if rpcData exists and has the expected structure
-        if (!rpcData) {
-          setMessage("An unexpected error occurred while assigning students to the task.");
-          setLoading(false);
-          return;
-        }
-        
-        // Log the structure of rpcData for debugging
-        console.log("RPC data structure:", {
-          rpcData,
-          hasAssignedUsernames: 'assigned_usernames' in rpcData,
-          hasMissingUsernames: 'missing_usernames' in rpcData,
-          assignedUsernamesType: typeof rpcData.assigned_usernames,
-          missingUsernamesType: typeof rpcData.missing_usernames
-        });
-        
-        // Check if there were any missing usernames
-        if (rpcData.missing_usernames && rpcData.missing_usernames.length > 0) {
-          // Set missing usernames to display to the user
-          setMissingUsernames(rpcData.missing_usernames);
-          
-          // Delete the created task since some usernames were invalid
-          await supabase
-            .from('tasks')
-            .delete()
-            .eq('id', taskData.id);
-          
-          setMessage(`The following usernames do not exist: ${rpcData.missing_usernames.join(', ')}. Task was not created.`);
-          setLoading(false);
-          return;
-        }
-        
-        // Success - task created and assigned
-        const assignedUsernames = rpcData.assigned_usernames || [];
-        const assignedCount = assignedUsernames.length;
-        setMessage(`Task created and assigned to ${assignedCount} students.`);
+
+        setMessage(`Task created and auto-submitted for ${processedUsernames.length} students. You can rate immediately.`);
       } else {
-        // Success - task created without assignments
-        setMessage("Task created successfully!");
+        setMessage('Task created successfully!');
       }
       
       // Redirect to tasks page after a short delay
@@ -346,18 +290,6 @@ export default function CreateTask() {
               <p className="text-sm text-muted-foreground">
                 You can paste a full column from Google Sheets. Each line will be treated as one username.
               </p>
-              
-              {/* Display missing usernames if any */}
-              {missingUsernames.length > 0 && (
-                <div className="mt-2 p-3 bg-red-900/30 text-red-400 border border-red-800/50 rounded-lg">
-                  <p className="font-medium">The following usernames do not exist:</p>
-                  <ul className="list-disc list-inside mt-1">
-                    {missingUsernames.map((username, index) => (
-                      <li key={index}>{username}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
             </div>
             
             <div className="space-y-4">

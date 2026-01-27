@@ -28,7 +28,6 @@ type IndividualSkillRating = {
   skillValue: number;
   taskId: string;
   taskTitle: string;
-  createdAt: string | undefined;
   onChain?: boolean;
   txHash?: string | null;
 };
@@ -193,15 +192,9 @@ if (allSkillsError) {
           skillValue: rating.stars,
           taskId: rating.task_ratings?.task_id,
           taskTitle: rating.task_ratings?.tasks?.title || "Unknown Task",
-          createdAt: rating.task_ratings?.created_at,
           onChain: rating.on_chain,
           txHash: rating.tx_hash
         }));
-
-        // Sort by date and take last 5
-        individualSkillRatings.sort((a, b) => 
-          new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
-        );
         setSkillRatings(individualSkillRatings.slice(0, 5));
       }
       
@@ -462,9 +455,6 @@ if (allSkillsError) {
                       </div>
                       <div className="flex items-center gap-4">
                         <span className="text-lg font-bold">{rating.skillValue}/5</span>
-                        <span className="text-sm text-muted-foreground">
-                          {rating.createdAt ? new Date(rating.createdAt).toLocaleDateString() : '-'}
-                        </span>
                       </div>
                     </div>
                   ))}
