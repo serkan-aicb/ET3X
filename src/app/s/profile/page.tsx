@@ -9,7 +9,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Tables } from '@/lib/supabase/types';
 import { AppLayout } from "@/components/app-layout";
 import { SharedCard } from "@/components/shared-card";
-import { OnChainIndicator } from "@/components/tasks/onchain-indicator";
+
 
 type Profile = Tables<'profiles'> & {
   matriculation_number?: string | null;
@@ -455,10 +455,7 @@ if (allSkillsError) {
                   {skillRatings.map((rating, index) => (
                     <div key={`${rating.skillId}-${rating.taskId}-${index}`} className="flex items-center justify-between p-4 border rounded-lg border-border">
                       <div className="space-y-2">
-                        <div className="flex items-center gap-2">
-                          <h4 className="font-medium">{getSkillName(rating.skillId)}</h4>
-                          <OnChainIndicator onChain={!!rating.onChain} txHash={rating.txHash} />
-                        </div>
+                        <h4 className="font-medium">{getSkillName(rating.skillId)}</h4>
                         <p className="text-sm text-muted-foreground">
                           Task: {rating.taskTitle}
                         </p>
