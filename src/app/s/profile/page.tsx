@@ -474,7 +474,7 @@ export default function StudentProfile() {
                           <p className="font-medium text-foreground">{taskRating.avgRating}/5</p>
                         </div>
                         <div>
-                          <p className="text-sm text-muted-foreground">Skill-Level</p>
+                          <p className="text-sm text-muted-foreground">Level</p>
                           <p className="font-medium text-foreground">
                             {taskRating.taskDifficulty || "—"}
                           </p>
