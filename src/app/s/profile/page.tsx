@@ -20,16 +20,15 @@ type AggregatedTaskRating = {
   taskId: string;
   taskTitle: string;
   avgRating: number;
-  totalXP: number;
   ratingCount: number;
+  taskDifficulty: "Novice" | "Skilled" | "Expert" | "Master" | null;
 };
-type IndividualSkillRating = {
+
+// Type for aggregated skill ratings
+type AggregatedSkillRating = {
   skillId: number;
-  skillValue: number;
-  taskId: string;
-  taskTitle: string;
-  onChain?: boolean;
-  txHash?: string | null;
+  weightedAverage: number;
+  ratingCount: number;
 };
 
 // Type for task ratings from the new schema
@@ -68,7 +67,7 @@ export default function StudentProfile() {
   const [matriculationNumber, setMatriculationNumber] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [aggregatedTaskRatings, setAggregatedTaskRatings] = useState<AggregatedTaskRating[]>([]);
-  const [skillRatings, setSkillRatings] = useState<IndividualSkillRating[]>([]);
+  const [skillRatings, setSkillRatings] = useState<AggregatedSkillRating[]>([]);
   const [skills, setSkills] = useState<Skill[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -127,7 +126,7 @@ export default function StudentProfile() {
           taskId: string;
           taskTitle: string;
           ratings: number[];
-          totalXP: number;
+          taskDifficulty: "Novice" | "Skilled" | "Expert" | "Master" | null;
         }>();
         
         taskRatingsData.forEach(rating => {
@@ -137,13 +136,17 @@ export default function StudentProfile() {
               taskId,
               taskTitle: rating.tasks?.title || "Unknown Task",
               ratings: [],
-              totalXP: 0
+              taskDifficulty: (rating.tasks as { skill_level?: "Novice" | "Skilled" | "Expert" | "Master" | null })?.skill_level || null
             });
           }
           
           const taskEntry = taskRatingsMap.get(taskId)!;
           taskEntry.ratings.push(rating.stars_avg);
-          taskEntry.totalXP += rating.xp;
+          // Set task difficulty from the first rating's task (assuming all ratings for a task have same difficulty)
+          const skillLevel = (rating.tasks as { skill_level?: "Novice" | "Skilled" | "Expert" | "Master" | null })?.skill_level;
+          if (!taskEntry.taskDifficulty && skillLevel) {
+            taskEntry.taskDifficulty = skillLevel;
+          }
         });
         
         // Calculate averages and create final array
@@ -153,49 +156,96 @@ export default function StudentProfile() {
             taskId: task.taskId,
             taskTitle: task.taskTitle,
             avgRating: parseFloat(avgRating.toFixed(1)),
-            totalXP: task.totalXP,
-            ratingCount: task.ratings.length
+            ratingCount: task.ratings.length,
+            taskDifficulty: task.taskDifficulty
           };
         });
         
         setAggregatedTaskRatings(aggregatedRatings.slice(0, 5)); // Show only last 5
       }
       
-      // Get individual skill ratings for all ratings (to calculate average and show last 5)
-      // We need to join with the new task_rating_skills table to get on-chain status
+      // Get individual skill ratings for all ratings (to calculate average and show all skills)
+      // We need to join with the new task_rating_skills table to get on-chain status and task difficulty
       const { data: allSkillRatings, error: allSkillsError } = await supabase
-  .from('task_rating_skills')
-  .select(`
-    *,
-    task_ratings!inner(
-      task_id,
-      rated_user_id,
-      created_at,
-      tasks!task_ratings_task_id_fkey(title)
-    )
-  `)
-  .eq('task_ratings.rated_user_id', user.id)
-  .order('created_at', {
-    foreignTable: 'task_ratings',
-    ascending: false
-  });
+        .from('task_rating_skills')
+        .select(`
+          *,
+          task_ratings!inner(
+            task_id,
+            rated_user_id,
+            created_at,
+            tasks!task_ratings_task_id_fkey(title, skill_level)
+          )
+        `)
+        .eq('task_ratings.rated_user_id', user.id);
 
-if (allSkillsError) {
-  console.error('Skill ratings query error:', allSkillsError);
-}
-
+      if (allSkillsError) {
+        console.error('Skill ratings query error:', allSkillsError);
+      }
 
       if (!allSkillsError && allSkillRatings) {
-        // Extract individual skill ratings with on-chain data
-        const individualSkillRatings: IndividualSkillRating[] = allSkillRatings.map(rating => ({
+        // Extract individual skill ratings with task difficulty
+        const rawSkillRatings = allSkillRatings.map(rating => ({
           skillId: rating.skill_id,
           skillValue: rating.stars,
           taskId: rating.task_ratings?.task_id,
           taskTitle: rating.task_ratings?.tasks?.title || "Unknown Task",
+          taskDifficulty: (rating.task_ratings?.tasks?.skill_level as "Novice" | "Skilled" | "Expert" | "Master" | null) || null,
           onChain: rating.on_chain,
           txHash: rating.tx_hash
         }));
-        setSkillRatings(individualSkillRatings.slice(0, 5));
+        
+        // Group by skill to calculate weighted averages
+        const skillRatingsMap = new Map<number, {
+          skillId: number;
+          ratings: { value: number; difficulty: "Novice" | "Skilled" | "Expert" | "Master" | null }[];
+        }>();
+        
+        rawSkillRatings.forEach(rating => {
+          if (!skillRatingsMap.has(rating.skillId)) {
+            skillRatingsMap.set(rating.skillId, {
+              skillId: rating.skillId,
+              ratings: []
+            });
+          }
+          
+          const skillEntry = skillRatingsMap.get(rating.skillId)!;
+          skillEntry.ratings.push({
+            value: rating.skillValue,
+            difficulty: rating.taskDifficulty
+          });
+        });
+        
+        // Calculate weighted averages for each skill
+        const aggregatedSkillRatings: { skillId: number; weightedAverage: number; ratingCount: number }[] = 
+          Array.from(skillRatingsMap.values()).map(skill => {
+            // Difficulty weights mapping
+            const difficultyWeights: Record<string, number> = {
+              "Novice": 0.5,
+              "Skilled": 1.25,
+              "Expert": 2.0,
+              "Master": 3.0
+            };
+            
+            let weightedSum = 0;
+            let totalWeight = 0;
+            
+            skill.ratings.forEach(rating => {
+              const weight = rating.difficulty ? difficultyWeights[rating.difficulty] : 1;
+              weightedSum += rating.value * weight;
+              totalWeight += weight;
+            });
+            
+            const weightedAverage = totalWeight > 0 ? weightedSum / totalWeight : 0;
+            
+            return {
+              skillId: skill.skillId,
+              weightedAverage: parseFloat(weightedAverage.toFixed(2)),
+              ratingCount: skill.ratings.length
+            };
+          });
+        
+        setSkillRatings(aggregatedSkillRatings);
       }
       
       setLoading(false);
@@ -204,17 +254,16 @@ if (allSkillsError) {
     fetchData();
   }, [router]);
 
-  // Calculate average skill rating and total XP
-  const ratingStats = aggregatedTaskRatings.reduce((acc, taskRating) => {
-    acc.totalRatings += taskRating.ratingCount;
-    acc.sumOfRatings += taskRating.avgRating * taskRating.ratingCount;
-    acc.totalXP += taskRating.totalXP;
-    return acc;
-  }, { totalRatings: 0, sumOfRatings: 0, totalXP: 0 });
+  // Calculate weighted average rating across all skills
+  const calculateOverallWeightedAverage = (): string => {
+    if (skillRatings.length === 0) return "—";
+    
+    const totalWeightedSum = skillRatings.reduce((sum, skill) => sum + skill.weightedAverage, 0);
+    const average = totalWeightedSum / skillRatings.length;
+    return average.toFixed(2);
+  };
 
-  const averageSkillRating = ratingStats.totalRatings > 0 
-    ? (ratingStats.sumOfRatings / ratingStats.totalRatings).toFixed(1) 
-    : "0.0";
+  const overallWeightedAverage = calculateOverallWeightedAverage();
 
   // Get skill name by ID
   const getSkillName = (skillId: number) => {
@@ -390,11 +439,7 @@ if (allSkillsError) {
                   <div className="space-y-2">
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Average Rating</span>
-                      <span className="font-medium text-foreground">{averageSkillRating}/5.0</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Total XP</span>
-                      <span className="font-medium text-foreground">{ratingStats.totalXP}</span>
+                      <span className="font-medium text-foreground">{overallWeightedAverage}/5.0</span>
                     </div>
                   </div>
                 </div>
@@ -421,14 +466,16 @@ if (allSkillsError) {
                           {taskRating.ratingCount} rating{taskRating.ratingCount !== 1 ? 's' : ''}
                         </p>
                       </div>
-                      <div className="flex items-center space-x-4">
+                      <div className="flex items-center space-x-6">
                         <div>
                           <p className="text-sm text-muted-foreground">Average</p>
                           <p className="font-medium text-foreground">{taskRating.avgRating}/5</p>
                         </div>
                         <div>
-                          <p className="text-sm text-muted-foreground">XP</p>
-                          <p className="font-medium text-foreground">{taskRating.totalXP}</p>
+                          <p className="text-sm text-muted-foreground">Difficulty</p>
+                          <p className="font-medium text-foreground">
+                            {taskRating.taskDifficulty || "—"}
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -437,24 +484,24 @@ if (allSkillsError) {
               )}
             </SharedCard>
             
-            {/* Last 5 Individual Skill Ratings */}
-            <SharedCard title="Recent Skill Ratings" description="Your most recent individual skill ratings">
+            {/* Full Skill Ratings Section */}
+            <SharedCard title="Skill Ratings" description="Your weighted average ratings across all skills">
               {skillRatings.length === 0 ? (
                 <p className="text-muted-foreground text-center py-4">
                   No skill ratings available yet.
                 </p>
               ) : (
                 <div className="space-y-4">
-                  {skillRatings.map((rating, index) => (
-                    <div key={`${rating.skillId}-${rating.taskId}-${index}`} className="flex items-center justify-between p-4 border rounded-lg border-border">
-                      <div className="space-y-2">
-                        <h4 className="font-medium">{getSkillName(rating.skillId)}</h4>
+                  {skillRatings.map((skill) => (
+                    <div key={skill.skillId} className="flex items-center justify-between p-4 border rounded-lg border-border">
+                      <div className="space-y-1">
+                        <h4 className="font-medium">{getSkillName(skill.skillId)}</h4>
                         <p className="text-sm text-muted-foreground">
-                          Task: {rating.taskTitle}
+                          {skill.ratingCount} rating{skill.ratingCount !== 1 ? 's' : ''}
                         </p>
                       </div>
-                      <div className="flex items-center gap-4">
-                        <span className="text-lg font-bold">{rating.skillValue}/5</span>
+                      <div className="text-right">
+                        <span className="text-lg font-bold">{skill.weightedAverage}/5</span>
                       </div>
                     </div>
                   ))}
