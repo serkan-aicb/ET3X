@@ -165,20 +165,26 @@ export default function StudentProfile() {
       // Get individual skill ratings for all ratings (to calculate average and show last 5)
       // We need to join with the new task_rating_skills table to get on-chain status
       const { data: allSkillRatings, error: allSkillsError } = await supabase
-        .from('task_rating_skills')
-        .select(`
-          *,
-          task_ratings!task_rating_skills_rating_id_fkey(
-            task_id,
-            rated_user_id,
-            created_at,
-            on_chain,
-            tx_hash,
-            tasks!task_ratings_task_id_fkey(title)
-          )
-        `)
-        .eq('task_ratings.rated_user_id', user.id)
-        .order('task_ratings.created_at', { ascending: false });
+  .from('task_rating_skills')
+  .select(`
+    *,
+    task_ratings!inner(
+      task_id,
+      rated_user_id,
+      created_at,
+      tasks!task_ratings_task_id_fkey(title)
+    )
+  `)
+  .eq('task_ratings.rated_user_id', user.id)
+  .order('created_at', {
+    foreignTable: 'task_ratings',
+    ascending: false
+  });
+
+if (allSkillsError) {
+  console.error('Skill ratings query error:', allSkillsError);
+}
+
 
       if (!allSkillsError && allSkillRatings) {
         // Extract individual skill ratings with on-chain data
