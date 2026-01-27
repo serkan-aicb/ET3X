@@ -110,12 +110,12 @@ export default function StudentProfile() {
       }
       
       // Get aggregated task ratings (grouped by task_id)
-      // We need to join task_ratings with tasks to get the task title
+      // We need to join task_ratings with tasks to get the task title and skill_level
       const { data: taskRatingsData, error: taskRatingsError } = await supabase
         .from('task_ratings')
         .select(`
           *,
-          tasks!task_ratings_task_id_fkey(title)
+          tasks!task_ratings_task_id_fkey(title, skill_level)
         `)
         .eq('rated_user_id', user.id)
         .order('created_at', { ascending: false });
@@ -131,19 +131,21 @@ export default function StudentProfile() {
         
         taskRatingsData.forEach(rating => {
           const taskId = rating.task_id;
+          
           if (!taskRatingsMap.has(taskId)) {
             taskRatingsMap.set(taskId, {
               taskId,
               taskTitle: rating.tasks?.title || "Unknown Task",
               ratings: [],
-              taskDifficulty: (rating.tasks as { skill_level?: "Novice" | "Skilled" | "Expert" | "Master" | null })?.skill_level || null
+              taskDifficulty: (rating.tasks?.skill_level as "Novice" | "Skilled" | "Expert" | "Master" | null) ?? null
             });
           }
           
           const taskEntry = taskRatingsMap.get(taskId)!;
           taskEntry.ratings.push(rating.stars_avg);
+          
           // Set task difficulty from the first rating's task (assuming all ratings for a task have same difficulty)
-          const skillLevel = (rating.tasks as { skill_level?: "Novice" | "Skilled" | "Expert" | "Master" | null })?.skill_level;
+          const skillLevel = (rating.tasks?.skill_level as "Novice" | "Skilled" | "Expert" | "Master" | null) ?? null;
           if (!taskEntry.taskDifficulty && skillLevel) {
             taskEntry.taskDifficulty = skillLevel;
           }
@@ -472,7 +474,7 @@ export default function StudentProfile() {
                           <p className="font-medium text-foreground">{taskRating.avgRating}/5</p>
                         </div>
                         <div>
-                          <p className="text-sm text-muted-foreground">Difficulty</p>
+                          <p className="text-sm text-muted-foreground">Skill-Level</p>
                           <p className="font-medium text-foreground">
                             {taskRating.taskDifficulty || "—"}
                           </p>
