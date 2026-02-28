@@ -372,6 +372,43 @@ export default function DashboardContent({
               </table>
             </div>
           </div>
+
+          {/* Ratings Table */}
+          <div className="bg-card p-6 rounded-xl border">
+            <h2 className="text-2xl font-bold text-foreground mb-4">Recent Ratings</h2>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b">
+                    <th className="py-2 text-left text-foreground">Task ID</th>
+                    <th className="py-2 text-left text-foreground">Stars Avg</th>
+                    <th className="py-2 text-left text-foreground">Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(detailedData?.ratings || []).slice(0, 5).map((rating, index) => (
+                    <tr key={index} className="border-b">
+                      <td className="py-2 font-mono text-sm text-muted-foreground">{rating.taskId.substring(0, 8)}...</td>
+                      <td className="py-2">
+                        <div className="flex items-center">
+                          <span className="mr-2">{rating.starsAvg.toFixed(1)}</span>
+                          <div className="flex">
+                            {'★'.repeat(Math.floor(rating.starsAvg)).split('').map((star, i) => (
+                              <span key={i} className="text-yellow-500">{star}</span>
+                            ))}
+                            {'☆'.repeat(5 - Math.floor(rating.starsAvg)).split('').map((star, i) => (
+                              <span key={i} className="text-yellow-500">{star}</span>
+                            ))}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="py-2 text-muted-foreground">{new Date(rating.createdAt).toLocaleDateString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </main>
 

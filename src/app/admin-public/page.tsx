@@ -31,20 +31,25 @@ async function getPublicDashboardData() {
       .select('*', { count: 'exact', head: true })
       .eq('status', 'open');
 
-    const { count: inProgressTasks } = await supabase
-      .from('tasks')
-      .select('*', { count: 'exact', head: true })
-      .eq('status', 'in_progress');
+    // Get assigned tasks count from task_assignments table (tasks assigned to students)
+    const { count: assignedTasksFromAssignments } = await supabase
+      .from('task_assignments')
+      .select('*', { count: 'exact', head: true });
 
-    const { count: submittedTasks } = await supabase
-      .from('tasks')
-      .select('*', { count: 'exact', head: true })
-      .eq('status', 'submitted');
+    // Get delivered/submitted tasks count from submissions table
+    const { count: submittedTasksFromSubmissions } = await supabase
+      .from('submissions')
+      .select('*', { count: 'exact', head: true });
 
-    const { count: gradedTasks } = await supabase
-      .from('tasks')
-      .select('*', { count: 'exact', head: true })
-      .eq('status', 'graded');
+    // Get rated tasks count from ratings table
+    const { count: ratedTasksFromRatings } = await supabase
+      .from('ratings')
+      .select('*', { count: 'exact', head: true });
+
+    // Use the more accurate counts from the related tables
+    const inProgressTasks = assignedTasksFromAssignments || 0;
+    const submittedTasks = submittedTasksFromSubmissions || 0;
+    const gradedTasks = ratedTasksFromRatings || 0;
 
     // Get user statistics
     const { count: totalUsers } = await supabase
@@ -96,9 +101,21 @@ async function getPublicDashboardData() {
       .order('id', { ascending: false })
       .limit(10);
 
-    // Note: We're not fetching ratings here since they might be sensitive
-    // Instead, we'll create an empty array for now
-    const ratings: RatingDetail[] = [];
+    // Fetch ratings data for displaying rating information
+    const { data: ratingsData } = await supabase
+      .from('ratings')
+      .select('id, task, stars_avg, created_at')
+      .order('created_at', { ascending: false })
+      .limit(10);
+
+    // Convert ratings data to the expected format
+    const ratings: RatingDetail[] = ratingsData?.map(rating => ({
+      id: rating.id,
+      taskId: rating.task,
+      taskTitle: `Task ${rating.task.substring(0, 8)}...`, // Placeholder since we don't fetch task title here
+      starsAvg: rating.stars_avg,
+      createdAt: rating.created_at
+    })) || [];
 
     return {
       stats: {
@@ -128,7 +145,7 @@ async function getPublicDashboardData() {
           role: profile.role,
           createdAt: profile.created_at
         })) || [],
-        ratings: ratings, // TODO: Implement ratings fetching if needed in the future
+        ratings: ratings,
         skills: skills?.map(skill => ({
           id: skill.id,
           label: skill.label,
