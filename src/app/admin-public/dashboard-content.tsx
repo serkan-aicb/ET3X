@@ -215,8 +215,8 @@ export default function DashboardContent({
           
           <Card className="shadow-lg rounded-xl overflow-hidden transform transition-all hover:scale-105 border">
             <CardHeader className="bg-card">
-              <CardTitle className="text-foreground">Rated Tasks</CardTitle>
-              <CardDescription className="text-muted-foreground">Rated and finalized</CardDescription>
+              <CardTitle className="text-foreground">Rated Skills</CardTitle>
+              <CardDescription className="text-muted-foreground">Skills that have been rated</CardDescription>
             </CardHeader>
             <CardContent className="pt-4">
               <div className="text-4xl font-bold text-primary">{stats.ratedTasks}</div>
@@ -362,7 +362,7 @@ export default function DashboardContent({
                   </tr>
                 </thead>
                 <tbody>
-                  {(detailedData?.skills || []).slice(0, 5).map((skill, index) => (
+                  {(detailedData?.skills || []).slice(0, 20).map((skill, index) => (
                     <tr key={index} className="border-b">
                       <td className="py-2 font-medium text-foreground">{skill.label}</td>
                       <td className="py-2 text-muted-foreground">{skill.description || 'No description'}</td>
@@ -373,9 +373,9 @@ export default function DashboardContent({
             </div>
           </div>
 
-          {/* Ratings Table */}
+          {/* Skill Ratings Table */}
           <div className="bg-card p-6 rounded-xl border">
-            <h2 className="text-2xl font-bold text-foreground mb-4">Recent Ratings</h2>
+            <h2 className="text-2xl font-bold text-foreground mb-4">Recent Skill Ratings</h2>
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
@@ -386,7 +386,7 @@ export default function DashboardContent({
                   </tr>
                 </thead>
                 <tbody>
-                  {(detailedData?.ratings || []).slice(0, 5).map((rating, index) => (
+                  {(detailedData?.ratings || []).slice(0, 50).map((rating, index) => (
                     <tr key={index} className="border-b">
                       <td className="py-2 font-mono text-sm text-muted-foreground">{rating.taskId.substring(0, 8)}...</td>
                       <td className="py-2">

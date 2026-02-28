@@ -351,6 +351,115 @@ export type Database = {
           }
         ]
       }
+      task_ratings: {
+        Row: {
+          id: string
+          task_id: string
+          rater_id: string
+          rated_user_id: string
+          stars_avg: number
+          xp: number
+          rating_session_hash: string | null
+          task_id_hash: string | null
+          subject_id_hash: string | null
+          on_chain: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          task_id: string
+          rater_id: string
+          rated_user_id: string
+          stars_avg?: number
+          xp?: number
+          rating_session_hash?: string | null
+          task_id_hash?: string | null
+          subject_id_hash?: string | null
+          on_chain?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          task_id?: string
+          rater_id?: string
+          rated_user_id?: string
+          stars_avg?: number
+          xp?: number
+          rating_session_hash?: string | null
+          task_id_hash?: string | null
+          subject_id_hash?: string | null
+          on_chain?: boolean
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_ratings_rater_id_fkey"
+            columns: ["rater_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_ratings_rated_user_id_fkey"
+            columns: ["rated_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_ratings_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      task_rating_skills: {
+        Row: {
+          id: string
+          rating_id: string
+          skill_id: number
+          stars: number
+          tx_hash: string | null
+          on_chain: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          rating_id: string
+          skill_id: number
+          stars: number
+          tx_hash?: string | null
+          on_chain?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          rating_id?: string
+          skill_id?: number
+          stars?: number
+          tx_hash?: string | null
+          on_chain?: boolean
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_rating_skills_rating_id_fkey"
+            columns: ["rating_id"]
+            isOneToOne: false
+            referencedRelation: "task_ratings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_rating_skills_skill_id_fkey"
+            columns: ["skill_id"]
+            isOneToOne: false
+            referencedRelation: "skills"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: {
       [_ in never]: never
