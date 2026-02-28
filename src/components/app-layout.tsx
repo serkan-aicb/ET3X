@@ -124,6 +124,10 @@ export function AppLayout({
             )}
             
             <div className="flex space-x-2">
+              <Button variant="outline" onClick={() => router.push("/admin-public")}>
+                Public Dashboard
+              </Button>
+              
               {userRole !== "admin" && (
                 <Button variant="outline" onClick={() => router.push(getMyTasksLink())}>
                   My Tasks

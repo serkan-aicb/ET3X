@@ -97,6 +97,18 @@ export default function Home() {
                 </Button>
               </Link>
             </motion.div>
+            
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              transition={{ type: "spring", stiffness: 400, damping: 17 }}
+            >
+              <Link href="/admin-public">
+                <Button variant="secondary" size="lg" className="w-64">
+                  Public Dashboard
+                </Button>
+              </Link>
+            </motion.div>
           </div>
         </motion.div>
 
