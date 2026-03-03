@@ -67,32 +67,44 @@ async function getGovernanceLiveData(): Promise<GovernanceLiveData> {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 
-  // ── Q1: Exact student count (no row fetch) ─────────────────
-  const { count: studentCount } = await supabase
-    .from("profiles")
-    .select("*", { count: "exact", head: true })
-    .eq("role", "student");
-  const totalStudents = studentCount ?? 0;
+  // Skills total is always 168 (static)
+  const skillsTotal = 168;
 
-  // ── Q2: Exact total skill ratings (no row fetch) ───────────
-  // Source of truth: COUNT(*) FROM task_rating_skills
-  const { count: skillRatingCount, error: countError } = await supabase
-    .from("task_rating_skills")
-    .select("*", { count: "exact", head: true });
-  if (countError) throw new Error(`task_rating_skills count: ${countError.message}`);
+  // Note: Total skill ratings will be calculated from selected tasks only after we have the task list
 
-  // ── Q3: ALL skill rating rows — paginated ──────────────────
-  // Each row = 1 skill assessment. All aggregation is skill-level.
-  const skillRatings = await fetchAllRows<SkillRatingRow>(
+  // ── Q3: ALL skill rating rows with task_id — paginated ─────
+  // Need to join via task_ratings to filter by task_id
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const skillRatingsWithTask = await fetchAllRows<any>(
     (from, to) =>
       supabase
         .from("task_rating_skills")
-        .select("skill_id, rating_id, created_at")
+        .select("skill_id, rating_id, created_at, task_ratings!inner(task_id, rated_user_id)")
         .range(from, to)
   );
+  
+  // Flatten the nested structure from the join
+  type SkillRatingWithTask = SkillRatingRow & { task_id: string; rated_user_id: string };
+  const skillRatings: SkillRatingWithTask[] = skillRatingsWithTask.map((row: {
+    skill_id: number;
+    rating_id: string;
+    created_at: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    task_ratings: any;
+  }) => {
+    const taskInfo = Array.isArray(row.task_ratings) ? row.task_ratings[0] : row.task_ratings;
+    return {
+      skill_id: row.skill_id,
+      rating_id: row.rating_id,
+      created_at: row.created_at,
+      task_id: taskInfo?.task_id ?? '',
+      rated_user_id: taskInfo?.rated_user_id ?? '',
+    };
+  });
 
   // ── Q4: ALL rating sessions — full table, paginated ────────
-  const ratingSessions = await fetchAllRows<RatingSessionRow>(
+  // Fetch all for potential use, but we'll filter to Oulu tasks
+  const allRatingSessions = await fetchAllRows<RatingSessionRow>(
     (from, to) =>
       supabase
         .from("task_ratings")
@@ -135,10 +147,14 @@ async function getGovernanceLiveData(): Promise<GovernanceLiveData> {
   // Hard cap at 4
   const tasks: TaskRow[] = uniqueTasks.slice(0, EXPECTED_OULU_TASK_COUNT);
   const ouluTaskIds = new Set(tasks.map((t) => t.id));
+  
+  // ── Filter ALL data to only the 4 selected Oulu tasks ──────
+  const filteredSkillRatings = skillRatings.filter((r) => ouluTaskIds.has(r.task_id));
+  const filteredRatingSessions = allRatingSessions.filter((s) => ouluTaskIds.has(s.task_id));
 
   // ── Build lookup maps ──────────────────────────────────────
   const sessionMap = new Map<string, RatingSessionRow>(
-    ratingSessions.map((s) => [s.id, s])
+    filteredRatingSessions.map((s) => [s.id, s])
   );
   const skillDomainMap = new Map<number, string | null>(
     allSkills.map((s) => [s.id, s.oulu_domain])
@@ -170,14 +186,15 @@ async function getGovernanceLiveData(): Promise<GovernanceLiveData> {
   const allActivatedSkillIds = new Set<number>();
   const allDomainsInRatings = new Set<string>();
 
-  // Distinct sessions / rated students from ALL task_ratings (global avg)
-  const allRatingSessionIds = new Set<string>(ratingSessions.map((s) => s.id));
-  const allRatedUserIds = new Set<string>(ratingSessions.map((s) => s.rated_user_id));
+  // Distinct sessions / rated students from filtered task_ratings (selected tasks only)
+  const allRatingSessionIds = new Set<string>(filteredRatingSessions.map((s) => s.id));
+  const allRatedUserIds = new Set<string>(filteredRatingSessions.map((s) => s.rated_user_id));
 
   // ── Single-pass aggregation — SKILL-LEVEL ─────────────────
   // Each iteration = 1 task_rating_skills row = 1 skill assessment.
   // Domain tile "assessments" and heatmap cells both count skill rows.
-  for (const row of skillRatings) {
+  // ONLY using filtered data from the 4 selected Oulu tasks.
+  for (const row of filteredSkillRatings) {
     const session = sessionMap.get(row.rating_id);
     const domain = skillDomainMap.get(row.skill_id);
 
@@ -214,25 +231,36 @@ async function getGovernanceLiveData(): Promise<GovernanceLiveData> {
     }
   }
 
-  // ── Executive metrics ──────────────────────────────────────
+  // ── Executive metrics (from selected tasks only) ───────────
   const activatedSubSkills = allActivatedSkillIds.size;
   const genericDomainsCovered = `${allDomainsInRatings.size}/6`;
-  // Avg = total distinct sessions / distinct rated students (1 decimal)
+  
+  // Participating students = distinct rated users within selected tasks
+  const participatingStudents = new Set(filteredRatingSessions.map((s) => s.rated_user_id)).size;
+  
+  // Total skill ratings = count of skill rating rows from selected tasks
+  const totalSkillRatingsSelected = filteredSkillRatings.length;
+  
+  // Avg assessments per student = total sessions / distinct students (1 decimal)
   const avgRaw =
-    allRatedUserIds.size > 0
-      ? allRatingSessionIds.size / allRatedUserIds.size
+    participatingStudents > 0
+      ? filteredRatingSessions.length / participatingStudents
       : 0;
   const avgAssessmentsPerStudent = avgRaw > 0 ? avgRaw.toFixed(1) : "—";
 
   // ── Per-domain stats ───────────────────────────────────────
+  // Calculate total ratings across all domains for share calculation
+  const totalRatingsAllDomains = DOMAIN_KEYS.reduce(
+    (sum, dk) => sum + (domainBuckets.get(dk)?.ratingCount ?? 0),
+    0
+  );
+  
   const domainStats = DOMAIN_KEYS.map((dk) => {
     const bucket = domainBuckets.get(dk)!;
-    // cohortPercent per domain = students assessed in domain / ALL rated students.
-    // Denominator = allRatedUserIds (students with any task_rating), NOT total profiles.
-    // This ensures each domain gets its own independent per-domain percentage.
-    const cohortPercent =
-      allRatedUserIds.size > 0
-        ? Math.round((bucket.ratedStudentIds.size / allRatedUserIds.size) * 100)
+    // Domain share = (domain ratings / total ratings from selected tasks) * 100
+    const domainSharePercent =
+      totalRatingsAllDomains > 0
+        ? Math.round((bucket.ratingCount / totalRatingsAllDomains) * 100)
         : 0;
     // taskMatrix: skill rows per Oulu task, aligned to tasks[] order
     const taskMatrix = tasks.map((t) => bucket.taskCounts.get(t.id) ?? 0);
@@ -240,13 +268,13 @@ async function getGovernanceLiveData(): Promise<GovernanceLiveData> {
       domainKey: dk,
       activatedSubSkills: bucket.skillIds.size,
       totalRatings: bucket.ratingCount,
-      coveragePercent: cohortPercent,
+      coveragePercent: domainSharePercent, // Now represents domain share %
       lastAssessmentDate: bucket.lastDate,
       taskMatrix,
     };
   });
 
-  // ── Competence distribution ────────────────────────────────
+  // ── Competence distribution (from selected tasks only) ─────
   let fourDomains = 0;
   let fiveDomains = 0;
   let sixDomains = 0;
@@ -267,19 +295,20 @@ async function getGovernanceLiveData(): Promise<GovernanceLiveData> {
       ? {
           selectedTaskIds: tasks.map((t) => t.id),
           selectedTaskCount: tasks.length,
-          totalSkillRatings: skillRatingCount ?? 0,
+          totalSkillRatings: totalSkillRatingsSelected,
           activatedSubSkills,
-          sessionsCount: allRatingSessionIds.size,
-          ratedStudentsCount: allRatedUserIds.size,
-          skillRatingRowsFetched: skillRatings.length,
+          sessionsCount: filteredRatingSessions.length,
+          ratedStudentsCount: participatingStudents,
+          skillRatingRowsFetched: filteredSkillRatings.length,
           domainStatsSummary: domainStats.map((d) => ({
             domain: d.domainKey.slice(0, 30),
             activated: d.activatedSubSkills,
             ratings: d.totalRatings,
-            cohort: `${d.coveragePercent}%`,
+            domainShare: `${d.coveragePercent}%`,
             matrix: d.taskMatrix,
           })),
           sumDomainRatings: domainStats.reduce((s, d) => s + d.totalRatings, 0),
+          sumDomainShares: domainStats.reduce((s, d) => s + d.coveragePercent, 0),
         }
       : undefined;
 
@@ -289,8 +318,9 @@ async function getGovernanceLiveData(): Promise<GovernanceLiveData> {
   }
 
   return {
-    participatingStudents: totalStudents,
-    totalSkillRatings: skillRatingCount ?? 0,
+    participatingStudents,
+    totalSkillRatings: totalSkillRatingsSelected,
+    skillsTotal,
     activatedSubSkills,
     genericDomainsCovered,
     avgAssessmentsPerStudent,

@@ -13,6 +13,7 @@ import { ProgrammeBenefitsCard } from "./components/ProgrammeBenefitsCard";
 export interface GovernanceLiveData {
   participatingStudents: number;
   totalSkillRatings: number;
+  skillsTotal: number;       // Always 168
   activatedSubSkills: number;
   genericDomainsCovered: string;
   avgAssessmentsPerStudent: string;
@@ -22,7 +23,7 @@ export interface GovernanceLiveData {
     domainKey: string;         // exact oulu_domain TEXT value from public.skills
     activatedSubSkills: number;
     totalRatings: number;
-    coveragePercent: number;
+    coveragePercent: number;   // Domain share % of total ratings
     lastAssessmentDate: string;
     taskMatrix: number[];      // assessment counts aligned to tasks[]
   }[];
@@ -132,6 +133,7 @@ export default function GovernanceDashboardContent({
           <ExecutiveMetricsRow
             participatingStudents={liveData.participatingStudents}
             totalSkillRatings={liveData.totalSkillRatings}
+            skillsTotal={liveData.skillsTotal}
             activatedSubSkills={liveData.activatedSubSkills}
             genericDomainsCovered={liveData.genericDomainsCovered}
             avgAssessmentsPerStudent={liveData.avgAssessmentsPerStudent}

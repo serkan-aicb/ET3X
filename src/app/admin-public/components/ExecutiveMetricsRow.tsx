@@ -36,6 +36,7 @@ function MetricCard({ title, value, accent, icon: Icon }: MetricCardProps) {
 interface ExecutiveMetricsRowProps {
   participatingStudents: number;
   totalSkillRatings: number;
+  skillsTotal: number;  // Always 168
   activatedSubSkills: number;
   genericDomainsCovered: string;
   avgAssessmentsPerStudent: string;
@@ -44,6 +45,7 @@ interface ExecutiveMetricsRowProps {
 export function ExecutiveMetricsRow({
   participatingStudents,
   totalSkillRatings,
+  skillsTotal,
   activatedSubSkills,
   genericDomainsCovered,
   avgAssessmentsPerStudent,
@@ -51,7 +53,7 @@ export function ExecutiveMetricsRow({
   const metrics = [
     { title: "Participating Students", value: participatingStudents, icon: Users },
     { title: "Total Skill Ratings", value: totalSkillRatings.toLocaleString(), accent: true, icon: BarChart3 },
-    { title: "Activated Sub-Skills", value: activatedSubSkills, icon: Layers },
+    { title: "Skills Total", value: skillsTotal, icon: Layers },
     { title: "Generic Domains Covered", value: genericDomainsCovered, accent: true, icon: Grid2X2 },
     { title: "Avg. Assessments / Student", value: avgAssessmentsPerStudent, icon: Activity },
   ];
