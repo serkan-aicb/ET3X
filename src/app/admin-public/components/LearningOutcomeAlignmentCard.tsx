@@ -30,7 +30,7 @@ export function LearningOutcomeAlignmentCard({ domains }: LearningOutcomeAlignme
       <h3 className="text-sm font-bold uppercase tracking-widest text-muted-foreground mb-1">
         Learning Outcome Alignment
       </h3>
-      <p className="text-xs text-muted-foreground mb-4">Bachelor Level — University of Oulu Framework</p>
+      <p className="text-xs text-muted-foreground mb-4">Bachelor Level Framework</p>
 
       <div className="space-y-4 overflow-y-auto max-h-[420px] pr-1">
         {domains.map((domain, idx) => (

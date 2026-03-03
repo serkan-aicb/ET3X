@@ -132,16 +132,19 @@ export type Database = {
           id: number
           label: string
           description: string | null
+          oulu_domain: string | null
         }
         Insert: {
           id?: number
           label: string
           description?: string | null
+          oulu_domain?: string | null
         }
         Update: {
           id?: number
           label?: string
           description?: string | null
+          oulu_domain?: string | null
         }
         Relationships: []
       }

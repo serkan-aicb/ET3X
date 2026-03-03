@@ -1,7 +1,18 @@
 "use client";
 
 import { useState } from "react";
+import { Brain, Leaf, MessageSquare, Globe, Heart, Network } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import type { DomainData } from "@/lib/oulgovernance-data";
+
+const DOMAIN_ICONS: LucideIcon[] = [
+  Brain,        // Analytical, Critical & Creative Thinking
+  Leaf,         // Sustainability, Responsibility & Ethics
+  MessageSquare,// Communication, Interaction & Digital
+  Globe,        // International & Multicultural
+  Heart,        // Well-being & Self-Development
+  Network,      // Multidisciplinary & Interdisciplinary
+];
 
 const DOMAIN_COLORS = [
   "border-blue-500/60 hover:border-blue-400",
@@ -41,6 +52,7 @@ function DomainTile({ domain, colorIndex, isExpanded, onToggle }: DomainTileProp
   const borderClass = DOMAIN_COLORS[colorIndex];
   const accentClass = DOMAIN_ACCENTS[colorIndex];
   const bgClass = DOMAIN_BG[colorIndex];
+  const DomainIcon = DOMAIN_ICONS[colorIndex];
 
   return (
     <div className="flex flex-col">
@@ -51,9 +63,15 @@ function DomainTile({ domain, colorIndex, isExpanded, onToggle }: DomainTileProp
         }`}
       >
         <div className="flex items-start justify-between gap-2">
-          <span className={`text-sm font-semibold leading-snug ${accentClass}`}>
-            {domain.title}
-          </span>
+          <div className="flex items-start gap-2 min-w-0">
+            <DomainIcon
+              className={`mt-0.5 h-4 w-4 shrink-0 ${accentClass}`}
+              strokeWidth={1.5}
+            />
+            <span className={`text-sm font-semibold leading-snug ${accentClass}`}>
+              {domain.title}
+            </span>
+          </div>
           <span className="mt-0.5 shrink-0 text-muted-foreground text-xs">
             {isExpanded ? "▲" : "▼"}
           </span>
@@ -134,7 +152,7 @@ export function DomainTilesGrid({ domains }: DomainTilesGridProps) {
           Generic Skill Domain Alignment
         </h2>
         <span className="text-xs text-muted-foreground">
-          University of Oulu — Bachelor Level Framework
+          Bachelor Level Framework
         </span>
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

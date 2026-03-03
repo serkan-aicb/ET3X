@@ -2,7 +2,6 @@
 
 import type { DomainData } from "@/lib/oulgovernance-data";
 
-const TASKS = ["Task 1", "Task 2", "Task 3", "Task 4"];
 
 const DOMAIN_SHORT = [
   "Analytical & Critical",
@@ -37,9 +36,25 @@ function getTextColor(value: number): string {
 
 interface TaskSkillHeatmapProps {
   domains: DomainData[];
+  tasks?: { id: string; title: string }[];
 }
 
-export function TaskSkillHeatmap({ domains }: TaskSkillHeatmapProps) {
+/** Extract a short display label from a task title.
+ *  "OBS Strategic Marketing Management - Task 3" → "Task 3"
+ *  Falls back to last segment after " - ", then truncates. */
+function shortTaskLabel(title: string): string {
+  const matchTask = title.match(/Task\s*\d+/i);
+  if (matchTask) return matchTask[0];
+  const idx = title.lastIndexOf(" - ");
+  if (idx !== -1) return title.slice(idx + 3).trim().slice(0, 20);
+  return title.slice(0, 20);
+}
+
+export function TaskSkillHeatmap({ domains, tasks = [] }: TaskSkillHeatmapProps) {
+  const taskLabels = tasks.length > 0
+    ? tasks.map((t) => shortTaskLabel(t.title))
+    : ["Task 1", "Task 2", "Task 3", "Task 4"];
+  const taskKeys = tasks.length > 0 ? tasks.map((t) => t.id) : taskLabels;
   const maxVal = Math.max(...domains.flatMap((d) => d.taskMatrix));
 
   return (
@@ -57,12 +72,12 @@ export function TaskSkillHeatmap({ domains }: TaskSkillHeatmapProps) {
               <th className="w-44 text-left text-xs font-semibold uppercase tracking-widest text-muted-foreground pb-2 pr-3">
                 Domain
               </th>
-              {TASKS.map((t) => (
+              {taskLabels.map((label, i) => (
                 <th
-                  key={t}
+                  key={taskKeys[i]}
                   className="text-center text-xs font-semibold uppercase tracking-widest text-muted-foreground pb-2 px-1"
                 >
-                  {t}
+                  {label}
                 </th>
               ))}
             </tr>
@@ -88,7 +103,7 @@ export function TaskSkillHeatmap({ domains }: TaskSkillHeatmapProps) {
                           backgroundColor: getHeatColor(norm),
                           color: getTextColor(norm),
                         }}
-                        title={`${domain.title} / ${TASKS[tIdx]}: ${val} assessments`}
+                        title={`${domain.title} / ${taskLabels[tIdx] ?? `Task ${tIdx + 1}`}: ${val} assessments`}
                       >
                         {val}
                       </div>

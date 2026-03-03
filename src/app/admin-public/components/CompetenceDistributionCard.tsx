@@ -23,8 +23,10 @@ interface CompetenceDistributionCardProps {
 // SVG donut chart (pure — no external library)
 function DonutChart({
   slices,
+  centerPercent,
 }: {
   slices: { value: number; color: string; label: string }[];
+  centerPercent: number;
 }) {
   const total = slices.reduce((s, sl) => s + sl.value, 0);
   const r = 60;
@@ -72,7 +74,7 @@ function DonutChart({
           );
         })}
         <text x={cx} y={cy - 6} textAnchor="middle" fill="#f8fafc" fontSize="18" fontWeight="bold">
-          87%
+          {centerPercent}%
         </text>
         <text x={cx} y={cy + 14} textAnchor="middle" fill="#94a3b8" fontSize="9">
           ≥4 domains
@@ -131,7 +133,7 @@ export function CompetenceDistributionCard({
       </h3>
       <p className="text-xs text-muted-foreground mb-4">Bachelor Level</p>
 
-      <DonutChart slices={slices} />
+      <DonutChart slices={slices} centerPercent={percentStudentsWith4PlusDomains} />
 
       <div className="mt-5 grid grid-cols-2 gap-3 border-t border-border pt-4">
         <div className="rounded-lg bg-muted/30 p-3 text-center">
