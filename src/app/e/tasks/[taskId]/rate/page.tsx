@@ -75,8 +75,8 @@ export default function RateTaskPage() {
 
         if (skillsError) {
           console.error("Error fetching skills:", skillsError);
-        } else if (skillsData) {
-          setSkills(skillsData);
+        } else {
+          setSkills(skillsData ?? []);
         }
 
         setLoading(false);
