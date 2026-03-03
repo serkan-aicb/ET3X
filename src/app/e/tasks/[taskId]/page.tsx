@@ -200,7 +200,16 @@ export default function EducatorTaskDetail() {
         if (isMounted) setSubmissions(submissionsData || []);
       } catch (e: unknown) {
         if (isMounted) {
-          const errorMessage = e instanceof Error ? e.message : String(e);
+          // Properly format Supabase/postgREST errors which are objects with message, code, details, hint
+          let errorMessage: string;
+          if (e instanceof Error) {
+            errorMessage = e.message;
+          } else if (typeof e === 'object' && e !== null) {
+            const errObj = e as { message?: string; code?: string; details?: string; hint?: string };
+            errorMessage = errObj.message || errObj.details || errObj.hint || JSON.stringify(e);
+          } else {
+            errorMessage = String(e);
+          }
           setErrorMessage(`Unexpected error: ${errorMessage}`);
         }
       } finally {
@@ -397,7 +406,16 @@ export default function EducatorTaskDetail() {
       router.refresh();
     } catch (e: unknown) {
       console.error("Error assigning task:", e);
-      const errorMessage = e instanceof Error ? e.message : String(e);
+      // Properly format Supabase/postgREST errors which are objects with message, code, details, hint
+      let errorMessage: string;
+      if (e instanceof Error) {
+        errorMessage = e.message;
+      } else if (typeof e === 'object' && e !== null) {
+        const errObj = e as { message?: string; code?: string; details?: string; hint?: string };
+        errorMessage = errObj.message || errObj.details || errObj.hint || JSON.stringify(e);
+      } else {
+        errorMessage = String(e);
+      }
       setMessage(`Error assigning task: ${errorMessage}`);
       setTimeout(() => setMessage(""), 5000);
     }
@@ -717,14 +735,11 @@ export default function EducatorTaskDetail() {
           </div>
           
           <div className="flex justify-end space-x-2">
-            {(task.status === 'submitted' || submissions.length > 0) && (
-              <>
-                <Button variant="outline" onClick={() => router.push(`/e/tasks/${taskId}/submissions`)}>
-                  View Submissions
-                </Button>
-                {/* Removed the old "Rate Submissions" button as we now rate students individually */}
-              </>
-            )}
+            {/* View Submissions button is always visible */}
+            <Button variant="outline" onClick={() => router.push(`/e/tasks/${taskId}/submissions`)}>
+              View Submissions
+            </Button>
+            {/* Removed the old "Rate Submissions" button as we now rate students individually */}
           </div>
         </SharedCard>
         
