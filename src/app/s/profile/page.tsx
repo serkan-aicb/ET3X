@@ -106,7 +106,8 @@ export default function StudentProfile() {
         .select('*');
       
       if (!skillsError && skillsData) {
-        setSkills(skillsData);
+        // Cast to Skill type - oulu_domain may be null from DB
+        setSkills(skillsData as Skill[]);
       }
       
       // Get aggregated task ratings (grouped by task_id)
