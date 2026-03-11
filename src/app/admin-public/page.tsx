@@ -25,6 +25,7 @@ type SkillRatingRow = {
   skill_id: number;
   rating_id: string;
   created_at: string;
+  stars: number;  // Added for average rating calculation
 };
 
 type RatingSessionRow = {
@@ -79,7 +80,7 @@ async function getGovernanceLiveData(): Promise<GovernanceLiveData> {
     (from, to) =>
       supabase
         .from("task_rating_skills")
-        .select("skill_id, rating_id, created_at, task_ratings!inner(task_id, rated_user_id)")
+        .select("skill_id, rating_id, created_at, stars, task_ratings!inner(task_id, rated_user_id)")
         .range(from, to)
   );
   
@@ -89,6 +90,7 @@ async function getGovernanceLiveData(): Promise<GovernanceLiveData> {
     skill_id: number;
     rating_id: string;
     created_at: string;
+    stars: number;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     task_ratings: any;
   }) => {
@@ -97,6 +99,7 @@ async function getGovernanceLiveData(): Promise<GovernanceLiveData> {
       skill_id: row.skill_id,
       rating_id: row.rating_id,
       created_at: row.created_at,
+      stars: row.stars,
       task_id: taskInfo?.task_id ?? '',
       rated_user_id: taskInfo?.rated_user_id ?? '',
     };
@@ -167,6 +170,11 @@ async function getGovernanceLiveData(): Promise<GovernanceLiveData> {
     lastDate: string;
     taskCounts: Map<string, number>; // skill rows per Oulu task_id (heatmap)
     ratedStudentIds: Set<string>;    // distinct students assessed in domain
+    // For Average Rating Heatmap
+    taskStarsSum: Map<string, number>;   // sum of stars per task
+    taskStarsCount: Map<string, number>; // count of ratings per task
+    // For Skill Density Heatmap
+    taskSkillIds: Map<string, Set<number>>; // unique skill IDs per task
   };
   const domainBuckets = new Map<string, DomainBucket>();
   for (const dk of DOMAIN_KEYS) {
@@ -176,6 +184,9 @@ async function getGovernanceLiveData(): Promise<GovernanceLiveData> {
       lastDate: "",
       taskCounts: new Map(),
       ratedStudentIds: new Set(),
+      taskStarsSum: new Map(),
+      taskStarsCount: new Map(),
+      taskSkillIds: new Map(),
     });
   }
 
@@ -219,6 +230,22 @@ async function getGovernanceLiveData(): Promise<GovernanceLiveData> {
             session.task_id,
             (bucket.taskCounts.get(session.task_id) ?? 0) + 1
           );
+          
+          // Average Rating Heatmap: accumulate stars
+          bucket.taskStarsSum.set(
+            session.task_id,
+            (bucket.taskStarsSum.get(session.task_id) ?? 0) + row.stars
+          );
+          bucket.taskStarsCount.set(
+            session.task_id,
+            (bucket.taskStarsCount.get(session.task_id) ?? 0) + 1
+          );
+          
+          // Skill Density Heatmap: track unique skills per task
+          if (!bucket.taskSkillIds.has(session.task_id)) {
+            bucket.taskSkillIds.set(session.task_id, new Set());
+          }
+          bucket.taskSkillIds.get(session.task_id)!.add(row.skill_id);
         }
       }
 
@@ -274,6 +301,36 @@ async function getGovernanceLiveData(): Promise<GovernanceLiveData> {
     };
   });
 
+  // ── Average Rating Matrix (for Average Rating Heatmap) ───────
+  // Rows = domains, Columns = tasks, Cell = average stars
+  const averageRatingMatrix = DOMAIN_KEYS.map((dk) => {
+    const bucket = domainBuckets.get(dk)!;
+    const taskRatings = tasks.map((t) => {
+      const sum = bucket.taskStarsSum.get(t.id) ?? 0;
+      const count = bucket.taskStarsCount.get(t.id) ?? 0;
+      // Return average with 2 decimal precision, or 0 if no ratings
+      return count > 0 ? Math.round((sum / count) * 100) / 100 : 0;
+    });
+    return {
+      domainKey: dk,
+      taskRatings,
+    };
+  });
+
+  // ── Skill Density Matrix (for Skill Density Heatmap) ──────────
+  // Rows = tasks, Columns = domains, Cell = unique skill count
+  const skillDensityMatrix = tasks.map((t) => {
+    const domainSkillCounts = DOMAIN_KEYS.map((dk) => {
+      const bucket = domainBuckets.get(dk)!;
+      const skillSet = bucket.taskSkillIds.get(t.id);
+      return skillSet ? skillSet.size : 0;
+    });
+    return {
+      taskId: t.id,
+      domainSkillCounts,
+    };
+  });
+
   // ── Competence distribution (from selected tasks only) ─────
   let fourDomains = 0;
   let fiveDomains = 0;
@@ -326,6 +383,8 @@ async function getGovernanceLiveData(): Promise<GovernanceLiveData> {
     avgAssessmentsPerStudent,
     tasks,
     domainStats,
+    averageRatingMatrix,
+    skillDensityMatrix,
     competenceDistribution: {
       averageAssessmentsPerStudent: Math.round(avgRaw),
       percentStudentsWith4PlusDomains,

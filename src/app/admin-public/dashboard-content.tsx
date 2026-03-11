@@ -27,6 +27,16 @@ export interface GovernanceLiveData {
     lastAssessmentDate: string;
     taskMatrix: number[];      // assessment counts aligned to tasks[]
   }[];
+  /** Average rating per task per domain — for Average Rating Heatmap */
+  averageRatingMatrix: {
+    domainKey: string;
+    taskRatings: number[];     // average rating per task, aligned to tasks[]
+  }[];
+  /** Skill density per task per domain — for Skill Density Heatmap */
+  skillDensityMatrix: {
+    taskId: string;
+    domainSkillCounts: number[];  // unique skill count per domain, aligned to DOMAIN_KEYS
+  }[];
   competenceDistribution: {
     averageAssessmentsPerStudent: number;
     percentStudentsWith4PlusDomains: number;
@@ -145,9 +155,14 @@ export default function GovernanceDashboardContent({
           <DomainTilesGrid domains={domains} />
         </section>
 
-        {/* Section 3 — Course Task Heatmap */}
+        {/* Section 3 — Course Task Heatmaps */}
         <section>
-          <TaskSkillHeatmap domains={domains} tasks={liveData.tasks} />
+          <TaskSkillHeatmap 
+            domains={domains} 
+            tasks={liveData.tasks}
+            averageRatingMatrix={liveData.averageRatingMatrix}
+            skillDensityMatrix={liveData.skillDensityMatrix}
+          />
         </section>
 
         {/* Section 4 — Competence Distribution + Learning Outcome Alignment */}
