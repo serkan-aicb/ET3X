@@ -275,6 +275,18 @@ async function getGovernanceLiveData(): Promise<GovernanceLiveData> {
       : 0;
   const avgAssessmentsPerStudent = avgRaw > 0 ? avgRaw.toFixed(1) : "—";
 
+  // ── Calculate actual skill counts per domain from database ─────────
+  // This is the SOURCE OF TRUTH - count skills by their oulu_domain assignment
+  const domainSkillCounts = new Map<string, number>();
+  for (const dk of DOMAIN_KEYS) {
+    domainSkillCounts.set(dk, 0);
+  }
+  for (const skill of allSkills) {
+    if (skill.oulu_domain && domainSkillCounts.has(skill.oulu_domain)) {
+      domainSkillCounts.set(skill.oulu_domain, domainSkillCounts.get(skill.oulu_domain)! + 1);
+    }
+  }
+
   // ── Per-domain stats ───────────────────────────────────────
   // Calculate total ratings across all domains for share calculation
   const totalRatingsAllDomains = DOMAIN_KEYS.reduce(
@@ -291,9 +303,11 @@ async function getGovernanceLiveData(): Promise<GovernanceLiveData> {
         : 0;
     // taskMatrix: skill rows per Oulu task, aligned to tasks[] order
     const taskMatrix = tasks.map((t) => bucket.taskCounts.get(t.id) ?? 0);
+    // Get the ACTUAL skill count for this domain from the database
+    const actualSkillCount = domainSkillCounts.get(dk) ?? 0;
     return {
       domainKey: dk,
-      activatedSubSkills: bucket.skillIds.size,
+      activatedSubSkills: actualSkillCount,  // REAL count from skills table
       totalRatings: bucket.ratingCount,
       coveragePercent: domainSharePercent, // Now represents domain share %
       lastAssessmentDate: bucket.lastDate,

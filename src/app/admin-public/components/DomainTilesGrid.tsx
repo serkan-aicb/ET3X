@@ -78,7 +78,7 @@ function DomainTile({ domain, colorIndex, isExpanded, onToggle }: DomainTileProp
         </div>
         <div className="mt-4 grid grid-cols-3 gap-2 text-center">
           <div>
-            <p className={`text-2xl font-bold ${accentClass}`}>28</p>
+            <p className={`text-2xl font-bold ${accentClass}`}>{domain.activatedSubSkills}</p>
             <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Sub-Skills</p>
           </div>
           <div>
