@@ -1,0 +1,10 @@
+export { SidebarProfileStudio } from './sidebar';
+export { ProfileHeader } from './profile-header';
+export { TrustMetricsCard } from './trust-metrics-card';
+export { ShareCard } from './share-card';
+export { TopSkillsCard } from './top-skills-card';
+export { FeaturedProofsCard } from './featured-proofs-card';
+export { VaultCard } from './vault-card';
+export { PublicProfilePreview } from './public-profile-preview';
+export { MobilePreview } from './mobile-preview';
+export { ProfileStudioLayout } from './layout';
