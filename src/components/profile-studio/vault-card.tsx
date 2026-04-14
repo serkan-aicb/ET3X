@@ -1,64 +1,82 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Shield, Lock, Unlock, Database } from 'lucide-react';
+import { Shield, Lock, User, FileCheck, Award, Link2 } from 'lucide-react';
 
-interface VaultCardProps {
-  isLocked?: boolean;
+interface VaultItem {
+  id: string;
+  label: string;
+  status: 'Private' | 'You control' | 'Shared';
+  icon: React.ReactNode;
 }
 
-export function VaultCard({ isLocked = true }: VaultCardProps) {
+interface VaultCardProps {
+  onOpenVault?: () => void;
+}
+
+export function VaultCard({ onOpenVault }: VaultCardProps) {
+  const vaultItems: VaultItem[] = [
+    { id: 'personal', label: 'Personal Data', status: 'Private', icon: <User className="h-4 w-4" /> },
+    { id: 'evaluations', label: 'Evaluations', status: 'Private', icon: <FileCheck className="h-4 w-4" /> },
+    { id: 'proofs', label: 'Proofs', status: 'You control', icon: <Award className="h-4 w-4" /> },
+    { id: 'connections', label: 'Connections', status: 'You control', icon: <Link2 className="h-4 w-4" /> },
+  ];
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'Private':
+        return 'text-gray-500';
+      case 'You control':
+        return 'text-blue-400';
+      case 'Shared':
+        return 'text-green-400';
+      default:
+        return 'text-gray-500';
+    }
+  };
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-base flex items-center space-x-2">
-          <Shield className="h-4 w-4 text-primary" />
-          <span>Vault</span>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="flex items-center justify-center py-4">
-          <div className="relative">
-            <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
-              {isLocked ? (
-                <Lock className="h-8 w-8 text-muted-foreground" />
-              ) : (
-                <Unlock className="h-8 w-8 text-green-500" />
-              )}
+    <div className="bg-[#111111] rounded-xl border border-[#1f1f1f] p-5 space-y-4">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-2">
+          <Shield className="h-4 w-4 text-blue-400" />
+          <h3 className="font-semibold text-white">Your Vault</h3>
+        </div>
+        <Lock className="h-4 w-4 text-gray-600" />
+      </div>
+
+      <p className="text-sm text-gray-500">
+        You own your data. Choose what to share and with whom.
+      </p>
+
+      {/* Vault Items */}
+      <div className="space-y-2">
+        {vaultItems.map((item) => (
+          <div 
+            key={item.id}
+            className="flex items-center justify-between py-2 px-3 bg-[#0a0a0a] rounded-lg border border-[#1f1f1f]"
+          >
+            <div className="flex items-center space-x-3">
+              <div className="text-gray-500">{item.icon}</div>
+              <span className="text-sm text-gray-300">{item.label}</span>
             </div>
-            <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-primary flex items-center justify-center">
-              <Database className="h-3 w-3 text-primary-foreground" />
-            </div>
+            <span className={`text-xs ${getStatusColor(item.status)}`}>
+              {item.status}
+            </span>
           </div>
-        </div>
+        ))}
+      </div>
 
-        <div className="text-center space-y-2">
-          <p className="font-medium text-foreground">
-            {isLocked ? 'Vault Locked' : 'Vault Active'}
-          </p>
-          <p className="text-sm text-muted-foreground">
-            {isLocked 
-              ? 'Your credentials are securely stored'
-              : 'Full control over your data'
-            }
-          </p>
-        </div>
-
-        <div className="space-y-2">
-          <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Storage</span>
-            <span className="font-medium">0 / 100 MB</span>
-          </div>
-          <div className="h-2 bg-muted rounded-full overflow-hidden">
-            <div className="h-full w-0 bg-primary transition-all" />
-          </div>
-        </div>
-
-        <Button variant="outline" className="w-full" disabled>
-          Manage Vault
-        </Button>
-      </CardContent>
-    </Card>
+      {/* Open Vault Button */}
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={onOpenVault}
+        className="w-full border-[#1f1f1f] bg-[#0a0a0a] text-gray-300 hover:bg-[#161616] hover:text-white"
+      >
+        Open Vault
+      </Button>
+    </div>
   );
 }

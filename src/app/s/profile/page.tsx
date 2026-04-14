@@ -6,21 +6,21 @@ import { createClient } from '@/lib/supabase/client';
 import { useProfile, useSkills, useSkillRatings, useTaskRatings } from '@/hooks';
 import {
   ProfileStudioLayout,
-  ProfileHeader,
-  TrustMetricsCard,
-  ShareCard,
+  ProfileIdentityCard,
+  ProfileStatsCard,
+  ShareProfileCard,
   TopSkillsCard,
   FeaturedProofsCard,
-  VaultCard,
-  PublicProfilePreview,
-  MobilePreview
+  VaultCard
 } from '@/components/profile-studio';
 import { Skeleton } from '@/components/ui/skeleton';
+import { toast } from 'sonner';
 
 export default function StudentProfile() {
   const router = useRouter();
   const [userId, setUserId] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   // Check authentication
   useEffect(() => {
@@ -41,7 +41,7 @@ export default function StudentProfile() {
   }, [router]);
 
   // Fetch data using hooks
-  const { profile, loading: profileLoading } = useProfile(userId);
+  const { profile, loading: profileLoading, refetch: refetchProfile } = useProfile(userId);
   const { skillsMap, loading: skillsLoading } = useSkills();
   const { topSkills, loading: skillsRatingsLoading } = useSkillRatings(userId, skillsMap);
   const { proofs, trustMetrics, loading: proofsLoading } = useTaskRatings(userId, skillsMap);
@@ -49,30 +49,74 @@ export default function StudentProfile() {
   const isLoading = profileLoading || skillsLoading || skillsRatingsLoading || proofsLoading || !isAuthenticated;
 
   const handlePreview = () => {
-    // TODO: Open public profile in new tab
-    console.log('Preview public profile');
+    // Navigate to public profile page
+    if (profile?.username) {
+      window.open(`/p/${profile.username}`, '_blank');
+    } else {
+      toast.error('Profile not ready for preview');
+    }
   };
 
-  const handleSave = () => {
-    // TODO: Save profile changes
-    console.log('Save changes');
+  const handleSave = async (profileData: { 
+    fullName?: string;
+    headline?: string;
+    institution?: string;
+    location?: string;
+    classYear?: string;
+    avatarUrl?: string;
+  }) => {
+    if (!userId) return;
+    
+    setIsSaving(true);
+    try {
+      const supabase = createClient();
+      
+      const updates: Record<string, string | null> = {};
+      if (profileData.fullName !== undefined) updates.full_name = profileData.fullName;
+      if (profileData.headline !== undefined) updates.headline = profileData.headline;
+      if (profileData.institution !== undefined) updates.institution = profileData.institution;
+      if (profileData.location !== undefined) updates.location = profileData.location;
+      if (profileData.classYear !== undefined) updates.class_year = profileData.classYear;
+      if (profileData.avatarUrl !== undefined) updates.avatar_url = profileData.avatarUrl;
+      
+      const { error } = await supabase
+        .from('profiles')
+        .update(updates)
+        .eq('id', userId);
+
+      if (error) throw error;
+      
+      await refetchProfile();
+      toast.success('Profile saved successfully');
+    } catch (error) {
+      console.error('Error saving profile:', error);
+      toast.error('Failed to save profile');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleOpenVault = () => {
+    router.push('/s/vault');
   };
 
   // Loading state
   if (isLoading || !profile) {
     return (
-      <div className="min-h-screen bg-background flex">
+      <div className="min-h-screen bg-[#000000] flex">
+        <div className="hidden lg:block w-64 h-screen bg-[#0a0a0a] border-r border-[#1f1f1f]" />
         <div className="flex-1 p-6">
-          <div className="max-w-6xl mx-auto space-y-6">
-            <Skeleton className="h-32 w-full" />
+          <div className="max-w-7xl mx-auto space-y-6">
+            <Skeleton className="h-40 w-full bg-[#111111]" />
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-2 space-y-6">
-                <Skeleton className="h-64 w-full" />
-                <Skeleton className="h-64 w-full" />
+                <Skeleton className="h-80 w-full bg-[#111111]" />
+                <Skeleton className="h-80 w-full bg-[#111111]" />
               </div>
               <div className="space-y-6">
-                <Skeleton className="h-48 w-full" />
-                <Skeleton className="h-48 w-full" />
+                <Skeleton className="h-48 w-full bg-[#111111]" />
+                <Skeleton className="h-64 w-full bg-[#111111]" />
+                <Skeleton className="h-48 w-full bg-[#111111]" />
               </div>
             </div>
           </div>
@@ -81,59 +125,63 @@ export default function StudentProfile() {
     );
   }
 
-  const topSkillNames = topSkills.slice(0, 4).map(s => s.name);
+  const topSkillNames = topSkills.slice(0, 5).map(s => s.name);
 
   return (
     <ProfileStudioLayout
       userName={profile.username}
       userDid={profile.did}
       onPreview={handlePreview}
-      onSave={handleSave}
+      onSave={() => {}}
+      isSaving={isSaving}
     >
       <div className="space-y-6">
-        {/* Identity Section */}
-        <ProfileHeader
-          userName={profile.username}
-          did={profile.did}
-          topSkills={topSkillNames}
-        />
-
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column - Skills & Proofs */}
-          <div className="lg:col-span-2 space-y-6">
-            <TopSkillsCard 
-              skills={topSkills} 
-              loading={skillsRatingsLoading} 
-            />
-            <FeaturedProofsCard 
-              proofs={proofs} 
-              loading={proofsLoading} 
+        {/* Top Section: Identity + Stats + Share */}
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
+          {/* Identity Card - Takes 7 columns */}
+          <div className="xl:col-span-7">
+            <ProfileIdentityCard
+              userId={userId!}
+              userName={profile.username}
+              did={profile.did}
+              avatarUrl={profile.avatar_url || undefined}
+              headline={profile.headline || undefined}
+              institution={profile.institution || undefined}
+              location={profile.location || undefined}
+              classYear={profile.class_year || undefined}
+              topSkills={topSkillNames}
+              isVerified={trustMetrics.verified}
+              onProfileUpdate={handleSave}
             />
           </div>
 
-          {/* Right Column - Metrics & Vault */}
-          <div className="space-y-6">
-            <TrustMetricsCard metrics={trustMetrics} />
-            <ShareCard userName={profile.username} />
-            <VaultCard />
+          {/* Right Column - Stats + Share + Vault */}
+          <div className="xl:col-span-5 space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <ProfileStatsCard
+                evaluations={trustMetrics.total_evaluations}
+                skills={topSkills.length}
+                proofs={trustMetrics.total_proofs}
+                isVerified={trustMetrics.verified}
+                isPublished={trustMetrics.total_proofs > 0}
+              />
+              <ShareProfileCard userName={profile.username} />
+            </div>
+            <VaultCard onOpenVault={handleOpenVault} />
           </div>
         </div>
 
-        {/* Preview Section */}
+        {/* Bottom Section: Skills + Proofs */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <PublicProfilePreview
-            userName={profile.username}
-            did={profile.did}
-            topSkills={topSkills}
-            proofs={proofs}
-            metrics={trustMetrics}
+          <TopSkillsCard 
+            skills={topSkills} 
+            loading={skillsRatingsLoading}
+            totalSkills={topSkills.length}
           />
-          <MobilePreview
-            userName={profile.username}
-            topSkills={topSkills}
-            proofs={proofs}
-            metrics={trustMetrics}
+          <FeaturedProofsCard 
+            proofs={proofs} 
+            loading={proofsLoading}
+            totalProofs={trustMetrics.total_proofs}
           />
         </div>
       </div>

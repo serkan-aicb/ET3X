@@ -6,8 +6,16 @@ export type TaskRating = Tables<'task_ratings'>;
 export type TaskRatingSkill = Tables<'task_rating_skills'>;
 export type Task = Tables<'tasks'>;
 
+// Extended profile type with additional fields for profile studio
 export type ProfileWithMatriculation = Profile & {
   matriculation_number?: string | null;
+  // Extended fields for profile editing
+  full_name?: string | null;
+  headline?: string | null;
+  institution?: string | null;
+  location?: string | null;
+  class_year?: string | null;
+  avatar_url?: string | null;
 };
 
 export type SkillLevel = 'Foundation' | 'Intermediate' | 'Advanced' | 'Exceptional';

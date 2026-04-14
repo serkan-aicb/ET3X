@@ -13,8 +13,10 @@ import {
   ClipboardList,
   Settings,
   Crown,
-  ChevronRight
+  Check,
+  Sparkles
 } from 'lucide-react';
+import Image from 'next/image';
 
 interface SidebarProfileStudioProps {
   userName: string;
@@ -53,33 +55,27 @@ export function SidebarProfileStudio({
     return name.slice(0, 2).toUpperCase();
   };
 
-  const truncateDid = (did: string) => {
-    if (did.length <= 20) return did;
-    return `${did.slice(0, 10)}...${did.slice(-8)}`;
-  };
-
   return (
-    <div className="w-64 h-full bg-card border-r border-border flex flex-col">
-      {/* User Block */}
-      <div className="p-6 border-b border-border">
-        <div className="flex items-center space-x-3">
-          <Avatar className="h-12 w-12">
-            <AvatarImage src={avatarUrl} alt={userName} />
-            <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-              {getInitials(userName)}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex-1 min-w-0">
-            <p className="font-semibold text-foreground truncate">@{userName}</p>
-            <p className="text-xs text-muted-foreground font-mono truncate">
-              {truncateDid(userDid)}
-            </p>
+    <div className="w-64 h-full bg-[#0a0a0a] border-r border-[#1f1f1f] flex flex-col">
+      {/* Logo */}
+      <div className="p-6 pb-4">
+        <div className="flex items-center space-x-2">
+          <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-cyan-400 rounded-lg flex items-center justify-center">
+            <Sparkles className="h-5 w-5 text-white" />
           </div>
+          <span className="text-xl font-bold text-white">Talent3X</span>
         </div>
       </div>
 
+      {/* Section Label */}
+      <div className="px-6 pb-2">
+        <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+          Profile Studio
+        </span>
+      </div>
+
       {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-1">
+      <nav className="flex-1 px-3 py-2 space-y-0.5">
         {navigationItems.map((item) => {
           const Icon = item.icon;
           const isActive = active === item.id;
@@ -89,47 +85,79 @@ export function SidebarProfileStudio({
               key={item.id}
               onClick={() => handleNavigate(item.id)}
               className={cn(
-                "w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                "w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium transition-all",
                 isActive
-                  ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  ? "bg-blue-500/10 text-blue-400 border border-blue-500/20"
+                  : "text-gray-400 hover:bg-[#161616] hover:text-gray-200"
               )}
             >
               <Icon className="h-4 w-4" />
               <span className="flex-1 text-left">{item.label}</span>
-              {isActive && <ChevronRight className="h-4 w-4" />}
             </button>
           );
         })}
       </nav>
 
-      {/* Profile Strength */}
-      <div className="p-4 border-t border-border">
-        <div className="space-y-2">
-          <div className="flex justify-between items-center text-sm">
-            <span className="text-muted-foreground">Profile Strength</span>
-            <span className="font-medium text-foreground">{profileStrength}%</span>
+      {/* Profile Strength Card */}
+      <div className="p-4 mx-3 mb-3 bg-[#111111] rounded-xl border border-[#1f1f1f]">
+        <div className="space-y-3">
+          <div className="flex justify-between items-center">
+            <span className="text-sm font-medium text-gray-300">Profile strength</span>
+            <span className="text-lg font-bold text-blue-400">{profileStrength}%</span>
           </div>
-          <Progress value={profileStrength} className="h-2" />
-          <p className="text-xs text-muted-foreground">
-            Complete your profile to increase visibility
+          <div className="h-2 bg-[#1f1f1f] rounded-full overflow-hidden">
+            <div 
+              className="h-full bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full transition-all"
+              style={{ width: `${profileStrength}%` }}
+            />
+          </div>
+          <p className="text-xs text-gray-500">
+            Keep going! Add more proofs and get evaluated.
           </p>
         </div>
       </div>
 
-      {/* Upgrade Block */}
-      <div className="p-4 border-t border-border">
-        <div className="bg-muted/50 rounded-lg p-4 space-y-3">
+      {/* Upgrade Card */}
+      <div className="p-4 mx-3 mb-3 bg-gradient-to-br from-[#111111] to-[#0d1117] rounded-xl border border-[#1f1f1f]">
+        <div className="space-y-3">
           <div className="flex items-center space-x-2">
-            <Crown className="h-4 w-4 text-amber-500" />
-            <span className="font-medium text-sm">Talent3X Pro</span>
+            <div className="w-6 h-6 bg-gradient-to-br from-amber-500 to-orange-500 rounded flex items-center justify-center">
+              <Sparkles className="h-3.5 w-3.5 text-white" />
+            </div>
+            <span className="font-semibold text-sm text-white">Unlock more with</span>
           </div>
-          <p className="text-xs text-muted-foreground">
-            Unlock advanced features and verified credentials
-          </p>
-          <Button variant="outline" size="sm" className="w-full" disabled>
-            Coming Soon
+          <p className="text-lg font-bold text-white">Talent3X Pro</p>
+          <ul className="space-y-1.5">
+            {['Advanced analytics', 'Private AI feedback', 'Priority assessment', 'Custom integrations'].map((feature, i) => (
+              <li key={i} className="flex items-center space-x-2 text-xs text-gray-400">
+                <Check className="h-3 w-3 text-green-500" />
+                <span>{feature}</span>
+              </li>
+            ))}
+          </ul>
+          <Button 
+            size="sm" 
+            className="w-full bg-blue-500 hover:bg-blue-600 text-white text-xs"
+            disabled
+          >
+            Upgrade (Coming Soon)
           </Button>
+        </div>
+      </div>
+
+      {/* User Card */}
+      <div className="p-4 mx-3 mb-4 bg-[#111111] rounded-xl border border-[#1f1f1f]">
+        <div className="flex items-center space-x-3">
+          <Avatar className="h-10 w-10 border-2 border-[#1f1f1f]">
+            <AvatarImage src={avatarUrl} alt={userName} />
+            <AvatarFallback className="bg-blue-500/20 text-blue-400 text-sm font-semibold">
+              {getInitials(userName)}
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex-1 min-w-0">
+            <p className="font-semibold text-sm text-white truncate">{userName}</p>
+            <p className="text-xs text-gray-500">Free Plan</p>
+          </div>
         </div>
       </div>
     </div>

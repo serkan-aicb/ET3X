@@ -1,103 +1,114 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { Award, TrendingUp } from 'lucide-react';
+import { Award, TrendingUp, BarChart3, PieChart, LineChart, Activity, Zap } from 'lucide-react';
 import { TopSkill } from '@/lib/profile/types';
 
 interface TopSkillsCardProps {
   skills: TopSkill[];
   loading?: boolean;
+  totalSkills?: number;
 }
 
-const levelColors: Record<string, string> = {
-  'Foundation': 'bg-slate-500',
-  'Intermediate': 'bg-blue-500',
-  'Advanced': 'bg-purple-500',
-  'Exceptional': 'bg-amber-500'
+const levelColors: Record<string, { bg: string; text: string }> = {
+  'Foundation': { bg: 'bg-gray-500/20', text: 'text-gray-400' },
+  'Intermediate': { bg: 'bg-blue-500/20', text: 'text-blue-400' },
+  'Advanced': { bg: 'bg-purple-500/20', text: 'text-purple-400' },
+  'Exceptional': { bg: 'bg-amber-500/20', text: 'text-amber-400' }
 };
 
-export function TopSkillsCard({ skills, loading }: TopSkillsCardProps) {
+const skillIcons = [BarChart3, PieChart, LineChart, Activity, Zap, TrendingUp];
+
+export function TopSkillsCard({ skills, loading, totalSkills = 0 }: TopSkillsCardProps) {
   if (loading) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base flex items-center space-x-2">
-            <Award className="h-4 w-4 text-primary" />
-            <span>Top Skills</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {[1, 2, 3].map((i) => (
+      <div className="bg-[#111111] rounded-xl border border-[#1f1f1f] p-5">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-semibold text-white">Top Skills</h3>
+          <div className="h-4 w-16 bg-[#1f1f1f] rounded animate-pulse" />
+        </div>
+        <div className="space-y-4">
+          {[1, 2, 3, 4, 5].map((i) => (
             <div key={i} className="space-y-2">
               <div className="flex justify-between">
-                <div className="h-4 w-24 bg-muted rounded animate-pulse" />
-                <div className="h-4 w-12 bg-muted rounded animate-pulse" />
+                <div className="h-4 w-32 bg-[#1f1f1f] rounded animate-pulse" />
+                <div className="h-4 w-12 bg-[#1f1f1f] rounded animate-pulse" />
               </div>
-              <div className="h-2 bg-muted rounded animate-pulse" />
+              <div className="h-2 bg-[#1f1f1f] rounded animate-pulse" />
             </div>
           ))}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     );
   }
 
   if (skills.length === 0) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base flex items-center space-x-2">
-            <Award className="h-4 w-4 text-primary" />
-            <span>Top Skills</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-8">
-            <TrendingUp className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-            <p className="text-muted-foreground">No skills rated yet</p>
-            <p className="text-sm text-muted-foreground mt-1">
-              Complete tasks to earn skill ratings
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="bg-[#111111] rounded-xl border border-[#1f1f1f] p-5">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-semibold text-white">Top Skills</h3>
+        </div>
+        <div className="text-center py-8">
+          <TrendingUp className="h-12 w-12 text-gray-600 mx-auto mb-3" />
+          <p className="text-gray-500">No skills rated yet</p>
+          <p className="text-sm text-gray-600 mt-1">
+            Complete tasks to earn skill ratings
+          </p>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-base flex items-center space-x-2">
-          <Award className="h-4 w-4 text-primary" />
-          <span>Top Skills</span>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-5">
-        {skills.map((skill) => (
-          <div key={skill.skill_id} className="space-y-2">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <span className="font-medium text-foreground">{skill.name}</span>
-                <Badge 
-                  variant="secondary" 
-                  className={`text-xs ${levelColors[skill.level]} text-white border-0`}
-                >
-                  {skill.level}
-                </Badge>
+    <div className="bg-[#111111] rounded-xl border border-[#1f1f1f] p-5">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-5">
+        <h3 className="font-semibold text-white">Top Skills</h3>
+        {totalSkills > 0 && (
+          <button className="text-sm text-blue-400 hover:text-blue-300 transition-colors">
+            View all ({totalSkills})
+          </button>
+        )}
+      </div>
+
+      {/* Skills List */}
+      <div className="space-y-4">
+        {skills.slice(0, 6).map((skill, index) => {
+          const Icon = skillIcons[index % skillIcons.length];
+          const colors = levelColors[skill.level] || levelColors['Foundation'];
+          
+          return (
+            <div key={skill.skill_id} className="space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 bg-[#0a0a0a] rounded-lg flex items-center justify-center border border-[#1f1f1f]">
+                    <Icon className="h-4 w-4 text-gray-500" />
+                  </div>
+                  <span className="font-medium text-white">{skill.name}</span>
+                  <Badge 
+                    variant="secondary" 
+                    className={`text-xs ${colors.bg} ${colors.text} border-0 font-medium`}
+                  >
+                    {skill.level}
+                  </Badge>
+                </div>
+                <span className="text-sm font-semibold text-white">{skill.score}%</span>
               </div>
-              <div className="flex items-center space-x-2 text-sm">
-                <span className="font-semibold text-foreground">{skill.score}</span>
-                <span className="text-muted-foreground">/100</span>
+              <div className="h-2 bg-[#1f1f1f] rounded-full overflow-hidden ml-11">
+                <div 
+                  className="h-full bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full transition-all"
+                  style={{ width: `${skill.score}%` }}
+                />
               </div>
             </div>
-            <Progress value={skill.score} className="h-2" />
-            <p className="text-xs text-muted-foreground">
-              Based on {skill.evidence_count} evaluation{skill.evidence_count !== 1 ? 's' : ''}
-            </p>
-          </div>
-        ))}
-      </CardContent>
-    </Card>
+          );
+        })}
+      </div>
+
+      {/* Footer */}
+      <p className="text-xs text-gray-600 mt-4 pt-4 border-t border-[#1f1f1f]">
+        Skills are verified by evaluations on Talent3X
+      </p>
+    </div>
   );
 }
