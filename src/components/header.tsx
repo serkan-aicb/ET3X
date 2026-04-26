@@ -9,11 +9,15 @@ import Image from "next/image";
 export function Header({
   title = "Talent3X",
   userRole = "student",
-  username
+  username,
+  realName,
+  email
 }: {
   title?: string;
   userRole?: "student" | "educator" | "admin";
   username?: string;
+  realName?: string | null;
+  email?: string;
 }) {
   const router = useRouter();
 
@@ -62,9 +66,9 @@ export function Header({
         </Link>
 
         <div className="flex items-center space-x-4">
-          {username && (
+          {(username || realName || email) && (
             <span className="text-muted-foreground hidden sm:block">
-              Welcome, <span className="font-semibold">@{username}</span>
+              Welcome, <span className="font-semibold text-foreground">{realName || (email ? email.split('@')[0] : `@${username}`)}</span>
             </span>
           )}
 

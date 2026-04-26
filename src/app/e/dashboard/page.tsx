@@ -127,7 +127,7 @@ export default function EducatorDashboard() {
         <div>
           <h1 className="text-3xl font-bold text-foreground">Educator Dashboard</h1>
           <p className="text-muted-foreground">
-            Welcome back, <span className="font-semibold">@{user?.username}</span>
+            Welcome back, <span className="font-semibold text-foreground">{user?.real_name || (user?.email ? user?.email.split('@')[0] : `@${user?.username}`)}</span>
           </p>
         </div>
         

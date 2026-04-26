@@ -42,6 +42,10 @@ export type Database = {
           updated_at: string
           matriculation_number: string | null
           real_name: string | null
+          headline: string | null
+          bio: string | null
+          avatar_url: string | null
+          public_slug: string | null
         }
         Insert: {
           id: string
@@ -54,6 +58,10 @@ export type Database = {
           updated_at?: string
           matriculation_number?: string | null
           real_name?: string | null
+          headline?: string | null
+          bio?: string | null
+          avatar_url?: string | null
+          public_slug?: string | null
         }
         Update: {
           id?: string
@@ -66,6 +74,10 @@ export type Database = {
           updated_at?: string
           matriculation_number?: string | null
           real_name?: string | null
+          headline?: string | null
+          bio?: string | null
+          avatar_url?: string | null
+          public_slug?: string | null
         }
         Relationships: []
       }

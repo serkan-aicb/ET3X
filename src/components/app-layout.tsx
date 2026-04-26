@@ -119,7 +119,7 @@ export function AppLayout({
           <div className="flex items-center space-x-4">
             {user && (
               <span className="text-muted-foreground hidden sm:block">
-                Welcome, <span className="font-semibold">@{user.username}</span>
+                Welcome, <span className="font-semibold text-foreground">{user.real_name || (user.email ? user.email.split('@')[0] : `@${user.username}`)}</span>
               </span>
             )}
             
