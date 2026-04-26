@@ -95,7 +95,7 @@ BEGIN
   END IF;
   
   -- Check uniqueness and add suffix if needed
-  WHILE EXISTS (SELECT 1 FROM profiles WHERE public_slug = final_slug) DO
+  WHILE EXISTS (SELECT 1 FROM profiles WHERE public_slug = final_slug) LOOP
     counter := counter + 1;
     final_slug := final_slug || '-' || counter;
   END LOOP;
