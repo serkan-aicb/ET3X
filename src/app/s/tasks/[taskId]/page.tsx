@@ -23,6 +23,7 @@ export default function StudentTaskDetail() {
   const [loading, setLoading] = useState(true);
   const [requesting, setRequesting] = useState(false);
   const [message, setMessage] = useState("");
+  const [alreadyRequested, setAlreadyRequested] = useState(false);
   const router = useRouter();
   const params = useParams();
   const taskId = params.taskId as string;
@@ -158,6 +159,7 @@ export default function StudentTaskDetail() {
       
       if (existingRequests && existingRequests.length > 0) {
         setMessage("You have already requested this task.");
+        setAlreadyRequested(true);
         setRequesting(false);
         return;
       }
@@ -194,7 +196,8 @@ export default function StudentTaskDetail() {
       }
       
       // Show success message
-      setMessage("Task requested successfully! The educator will review your request.");
+      setMessage("Task requested successfully! The professor will review your request.");
+      setAlreadyRequested(true);
     } catch (error: unknown) {
       console.error("Error requesting task:", error);
       if (error instanceof Error) {
@@ -331,14 +334,23 @@ export default function StudentTaskDetail() {
             )}
           </div>
           
-          <div className="flex justify-end">
-            <Button 
-              onClick={handleRequestTask}
-              disabled={requesting}
-            >
-              {requesting ? "Requesting..." : "Request Task"}
-            </Button>
-          </div>
+          {/* Request status or button */}
+          {alreadyRequested ? (
+            <div className="flex justify-end">
+              <div className="p-3 rounded-lg bg-blue-50 text-blue-700 border border-blue-200 text-sm">
+                Your request is pending. The professor will review it.
+              </div>
+            </div>
+          ) : (
+            <div className="flex justify-end">
+              <Button 
+                onClick={handleRequestTask}
+                disabled={requesting}
+              >
+                {requesting ? "Requesting..." : "Request Task"}
+              </Button>
+            </div>
+          )}
         </SharedCard>
       </div>
     </AppLayout>

@@ -13,6 +13,7 @@ import { SingleStudentRatingForm } from "@/components/tasks/single-student-ratin
 type Submission = Tables<'submissions'> & {
   profiles: {
     username: string;
+    real_name: string | null;
   } | null;
 };
 
@@ -52,7 +53,7 @@ export default function RateSingleStudent() {
           .from('submissions')
           .select(`
             *,
-            profiles!submissions_submitter_fkey(username)
+            profiles!submissions_submitter_fkey(username, real_name)
           `)
           .eq('id', submissionId)
           .eq('task', taskId)
@@ -195,7 +196,7 @@ export default function RateSingleStudent() {
           <div>
             <h2 className="text-2xl font-semibold">Rate Task: {task.title}</h2>
             <p className="text-xs uppercase text-muted-foreground">
-              Rating submission from @{submission.profiles?.username || submission.submitter}
+              Rating submission from {submission.profiles?.real_name || `@${submission.profiles?.username || submission.submitter}`}
             </p>
           </div>
           

@@ -23,10 +23,9 @@ type SubmissionFile = {
 type Submission = Tables<'submissions'> & {
   profiles: {
     username: string;
+    real_name: string | null;
   } | null;
 };
-
-// No pagination - show all submissions
 
 // Define sort options
 const SORT_OPTIONS = [
@@ -60,7 +59,7 @@ export default function ViewSubmissions() {
           .from('submissions')
           .select(`
             *,
-            profiles!submissions_submitter_fkey(username)
+            profiles!submissions_submitter_fkey(username, real_name)
           `)
           .eq('task', taskId);
 
@@ -117,9 +116,11 @@ export default function ViewSubmissions() {
     // Apply search filter
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
-      result = result.filter(submission => 
-        (submission.profiles?.username || '').toLowerCase().includes(term)
-      );
+      result = result.filter(submission => {
+        const name = submission.profiles?.real_name || '';
+        const username = submission.profiles?.username || '';
+        return name.toLowerCase().includes(term) || username.toLowerCase().includes(term);
+      });
     }
     
     // Apply sorting
@@ -241,11 +242,13 @@ export default function ViewSubmissions() {
                       <TableCell className="py-4">
                         <div>
                           <div className="font-medium">
-                            {submission.profiles?.username ? 
-                             submission.profiles.username : 
+                            {submission.profiles?.real_name || submission.profiles?.username || 
                              `User ${submission.submitter?.substring(0, 8) || submission.id.substring(0, 8)}...`}
                           </div>
-                          <div className="text-xs text-muted-foreground mt-1">
+                          <div className="text-xs text-muted-foreground mt-0.5">
+                            {submission.profiles?.username ? `@${submission.profiles.username}` : ''}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
                             Submitted: {submission.created_at ? new Date(submission.created_at).toLocaleDateString() : '-'}
                           </div>
                         </div>

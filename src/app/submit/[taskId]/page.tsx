@@ -33,7 +33,6 @@ export default function SubmitTask() {
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState("");
   const router = useRouter();
   const params = useParams();
@@ -142,43 +141,54 @@ export default function SubmitTask() {
     setPendingFiles(prev => prev.filter((_, i) => i !== index));
   };
 
-  const handleUploadFiles = async () => {
-    if (pendingFiles.length === 0) return;
-    if (!submissionId) {
-      setMessage("Please save your submission first before uploading files.");
-      return;
+  const ensureSubmission = async (supabase: ReturnType<typeof createClient>, userId: string): Promise<string> => {
+    // If we already have a submission ID, return it
+    if (submissionId) return submissionId;
+
+    // Try to find existing submission first
+    const { data: existingSub } = await supabase
+      .from('submissions')
+      .select('id')
+      .eq('task', taskId)
+      .eq('submitter', userId)
+      .maybeSingle();
+
+    if (existingSub) {
+      setSubmissionId(existingSub.id);
+      return existingSub.id;
     }
 
-    setUploading(true);
-    setMessage("");
+    // Create new submission
+    const { data: subData, error: subError } = await supabase
+      .from('submissions')
+      .insert({
+        task: taskId,
+        submitter: userId,
+        link: link || null,
+        note: note || null,
+      })
+      .select()
+      .single();
 
-    try {
-      const formData = new FormData();
-      formData.append('submission_id', submissionId);
-      pendingFiles.forEach(file => {
-        formData.append('files', file);
-      });
-
-      const response = await fetch('/api/files/upload', {
-        method: 'POST',
-        body: formData,
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        setMessage(result.error || "Failed to upload files.");
-        return;
+    if (subError) {
+      // If duplicate (race condition), try to find it again
+      if (subError.code === '23505') {
+        const { data: existingSub2 } = await supabase
+          .from('submissions')
+          .select('id')
+          .eq('task', taskId)
+          .eq('submitter', userId)
+          .single();
+        if (existingSub2) {
+          setSubmissionId(existingSub2.id);
+          return existingSub2.id;
+        }
       }
-
-      setUploadedFiles(prev => [...prev, ...result.files]);
-      setPendingFiles([]);
-      setMessage("Files uploaded successfully!");
-    } catch (err) {
-      setMessage(err instanceof Error ? err.message : "Failed to upload files.");
-    } finally {
-      setUploading(false);
+      throw subError;
     }
+
+    setSubmissionId(subData.id);
+    return subData.id;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -186,31 +196,18 @@ export default function SubmitTask() {
     setSubmitting(true);
     setMessage("");
 
-    // Upload any pending files first
-    if (pendingFiles.length > 0) {
-      if (!submissionId) {
-        // Need to create submission first to get ID
-        const supabase = createClient();
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) throw new Error("User not found");
+    try {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("User not found");
 
-        const { data: subData, error: subError } = await supabase
-          .from('submissions')
-          .insert({
-            task: taskId,
-            submitter: user.id,
-            link: link || null,
-            note: note || null,
-          })
-          .select()
-          .single();
+      // Ensure we have a submission record
+      const currentSubmissionId = await ensureSubmission(supabase, user.id);
 
-        if (subError) throw subError;
-        setSubmissionId(subData.id);
-
-        // Now upload files
+      // Upload any pending files
+      if (pendingFiles.length > 0) {
         const formData = new FormData();
-        formData.append('submission_id', subData.id);
+        formData.append('submission_id', currentSubmissionId);
         pendingFiles.forEach(file => {
           formData.append('files', file);
         });
@@ -221,6 +218,7 @@ export default function SubmitTask() {
         });
 
         const result = await response.json();
+
         if (!response.ok) {
           setMessage(result.error || "Failed to upload files.");
           setSubmitting(false);
@@ -229,41 +227,18 @@ export default function SubmitTask() {
 
         setUploadedFiles(prev => [...prev, ...result.files]);
         setPendingFiles([]);
-      } else {
-        // Upload pending files to existing submission
-        await handleUploadFiles();
       }
-    }
 
-    try {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("User not found");
+      // Update submission with link and note
+      const { error: updateError } = await supabase
+        .from('submissions')
+        .update({
+          link: link || null,
+          note: note || null,
+        })
+        .eq('id', currentSubmissionId);
 
-      if (submissionId) {
-        // Update existing submission
-        const { error: updateError } = await supabase
-          .from('submissions')
-          .update({
-            link: link || null,
-            note: note || null,
-          })
-          .eq('id', submissionId);
-
-        if (updateError) throw updateError;
-      } else {
-        // Create new submission
-        const { error: submitError } = await supabase
-          .from('submissions')
-          .insert({
-            task: taskId,
-            submitter: user.id,
-            link: link || null,
-            note: note || null,
-          });
-
-        if (submitError) throw submitError;
-      }
+      if (updateError) throw updateError;
 
       setMessage("Task submitted successfully!");
 
@@ -368,6 +343,9 @@ export default function SubmitTask() {
                 <p className="text-sm text-muted-foreground">
                   Accepted formats: PDF, Word (.doc/.docx), Excel (.xls/.xlsx/.csv), PowerPoint (.ppt/.pptx). Max 100MB per file.
                 </p>
+                <p className="text-xs text-muted-foreground">
+                  Select your files, then click &ldquo;Submit Task&rdquo; below. All files will be uploaded automatically.
+                </p>
               </div>
 
               <Input
@@ -379,10 +357,10 @@ export default function SubmitTask() {
                 disabled={uploadedFiles.length + pendingFiles.length >= MAX_FILES}
               />
 
-              {/* Pending files (not yet uploaded) */}
+              {/* Pending files (to be uploaded on submit) */}
               {pendingFiles.length > 0 && (
                 <div className="space-y-2">
-                  <p className="text-sm font-medium text-muted-foreground">Files to upload:</p>
+                  <p className="text-sm font-medium text-muted-foreground">Files to submit:</p>
                   {pendingFiles.map((file, index) => (
                     <div key={`pending-${index}`} className="flex items-center justify-between p-2 border rounded-lg">
                       <div>
@@ -398,19 +376,6 @@ export default function SubmitTask() {
                       </Button>
                     </div>
                   ))}
-                  <Button
-                    onClick={handleUploadFiles}
-                    disabled={uploading || !submissionId}
-                    className="w-full"
-                    variant="outline"
-                  >
-                    {uploading ? "Uploading..." : "Upload Files"}
-                  </Button>
-                  {!submissionId && (
-                    <p className="text-sm text-yellow-600">
-                      Save your submission first, then upload files.
-                    </p>
-                  )}
                 </div>
               )}
 
@@ -443,11 +408,11 @@ export default function SubmitTask() {
               </div>
             )}
 
-            <div className="flex justify-between">
+            <div className="flex justify-between pt-4 border-t">
               <Button type="button" variant="outline" onClick={() => router.back()}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={submitting}>
+              <Button type="submit" disabled={submitting} size="lg">
                 {submitting ? "Submitting..." : "Submit Task"}
               </Button>
             </div>

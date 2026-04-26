@@ -66,10 +66,15 @@ export function ProfilePage({ userRole }: ProfilePageProps) {
   const [publicSlug, setPublicSlug] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
-  // Skills, ratings, proofs
+  // Skills, ratings, proofs (for students: ratings they received)
   const { skillsMap, loading: skillsLoading } = useSkills();
   const { topSkills, loading: skillRatingsLoading } = useSkillRatings(userId, skillsMap);
   const { proofs, trustMetrics, loading: proofsLoading } = useTaskRatings(userId, skillsMap);
+
+  // Educator-specific: evaluations they gave
+  const [educatorEvaluations, setEducatorEvaluations] = useState<Proof[]>([]);
+  const [educatorEvalLoading, setEducatorEvalLoading] = useState(false);
+  const [educatorEvalCount, setEducatorEvalCount] = useState(0);
 
   // Task assignments for students / tasks created for educators
   const [taskStats, setTaskStats] = useState<{ total: number; completed: number; pending: number }>({
@@ -164,6 +169,85 @@ export function ProfilePage({ userRole }: ProfilePageProps) {
 
     fetchProfile();
   }, [router, userRole]);
+
+  // Fetch educator evaluations separately (ratings where this user is the rater)
+  useEffect(() => {
+    if (!userId || userRole !== "educator") return;
+
+    const fetchEducatorEvals = async () => {
+      setEducatorEvalLoading(true);
+      try {
+        const supabase = createClient();
+
+        // Get ratings given by this educator
+        const { data: ratingsData, error: ratingsError } = await supabase
+          .from('task_ratings')
+          .select(`
+            id,
+            task_id,
+            stars_avg,
+            created_at,
+            on_chain,
+            tx_hash,
+            tasks!task_ratings_task_id_fkey(title, description, skill_level)
+          `)
+          .eq('rater_id', userId)
+          .order('created_at', { ascending: false });
+
+        if (ratingsError) {
+          console.error('Error fetching educator evaluations:', ratingsError);
+          setEducatorEvalLoading(false);
+          return;
+        }
+
+        const ratings = ratingsData || [];
+        setEducatorEvalCount(ratings.length);
+
+        // Get skill IDs for these ratings
+        if (ratings.length > 0) {
+          const ratingIds = ratings.map(r => r.id);
+          const { data: skillRatingsData } = await supabase
+            .from('task_rating_skills')
+            .select('rating_id, skill_id')
+            .in('rating_id', ratingIds);
+
+          const skillMap = new Map<string, number[]>();
+          skillRatingsData?.forEach(sr => {
+            if (!skillMap.has(sr.rating_id)) skillMap.set(sr.rating_id, []);
+            skillMap.get(sr.rating_id)!.push(sr.skill_id);
+          });
+
+          const evalProofs: Proof[] = ratings.slice(0, 5).map(rating => {
+            const rawTaskData = rating.tasks as unknown;
+            const taskObj = Array.isArray(rawTaskData) ? rawTaskData[0] : rawTaskData;
+            const taskData = taskObj as { title: string; description: string | null; skill_level: string | null } | null;
+            const skillIds = skillMap.get(rating.id) || [];
+            const skills = skillIds.map(id => skillsMap.get(id) || `Skill #${id}`);
+
+            return {
+              proof_id: rating.id,
+              title: taskData?.title || 'Unknown Task',
+              description: taskData?.description || null,
+              evaluation_score: rating.stars_avg,
+              skills: skills.slice(0, 3),
+              timestamp: rating.created_at,
+              task_difficulty: taskData?.skill_level || null,
+              on_chain: rating.on_chain,
+              tx_hash: rating.tx_hash,
+            };
+          });
+
+          setEducatorEvaluations(evalProofs);
+        }
+      } catch (err) {
+        console.error('Error fetching educator evaluations:', err);
+      } finally {
+        setEducatorEvalLoading(false);
+      }
+    };
+
+    fetchEducatorEvals();
+  }, [userId, userRole, skillsMap]);
 
   const getInitials = (name: string) => {
     if (!name) return "U";
@@ -466,7 +550,7 @@ export function ProfilePage({ userRole }: ProfilePageProps) {
                   <div className="text-xs text-emerald-600/70">Completed</div>
                 </div>
                 <div className="text-center p-3 rounded-lg bg-amber-50 border border-amber-100">
-                  <div className="text-2xl font-bold text-amber-600">{trustMetrics.total_evaluations}</div>
+                  <div className="text-2xl font-bold text-amber-600">{userRole === "student" ? trustMetrics.total_evaluations : educatorEvalCount}</div>
                   <div className="text-xs text-amber-600/70">Evaluations</div>
                 </div>
                 <div className="text-center p-3 rounded-lg bg-purple-50 border border-purple-100">
@@ -658,64 +742,119 @@ export function ProfilePage({ userRole }: ProfilePageProps) {
                   {userRole === "student" ? "Proofs & Evaluations" : "Student Evaluations"}
                 </h3>
               </div>
-              {proofsLoading ? (
-                <div className="space-y-3">
-                  {[1, 2].map(i => <Skeleton key={i} className="h-16 w-full" />)}
-                </div>
-              ) : proofs.length > 0 ? (
-                <div className="space-y-3">
-                  {proofs.slice(0, 5).map((proof: Proof) => (
-                    <div
-                      key={proof.proof_id}
-                      className="flex items-start gap-3 p-3 rounded-lg border bg-white hover:shadow-sm transition-shadow"
-                    >
-                      <div className="flex-shrink-0 mt-0.5">
-                        {proof.on_chain ? (
-                          <Shield className="h-5 w-5 text-emerald-500" />
-                        ) : (
-                          <ClipboardList className="h-5 w-5 text-muted-foreground" />
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <p className="text-sm font-medium text-foreground truncate">{proof.title}</p>
-                          {proof.task_difficulty && (
-                            <Badge variant="outline" className="text-xs">{proof.task_difficulty}</Badge>
+              {userRole === "student" ? (
+                proofsLoading ? (
+                  <div className="space-y-3">
+                    {[1, 2].map(i => <Skeleton key={i} className="h-16 w-full" />)}
+                  </div>
+                ) : proofs.length > 0 ? (
+                  <div className="space-y-3">
+                    {proofs.slice(0, 5).map((proof: Proof) => (
+                      <div
+                        key={proof.proof_id}
+                        className="flex items-start gap-3 p-3 rounded-lg border bg-white hover:shadow-sm transition-shadow"
+                      >
+                        <div className="flex-shrink-0 mt-0.5">
+                          {proof.on_chain ? (
+                            <Shield className="h-5 w-5 text-emerald-500" />
+                          ) : (
+                            <ClipboardList className="h-5 w-5 text-muted-foreground" />
                           )}
                         </div>
-                        <div className="flex items-center gap-3 mt-1">
-                          {renderStars(proof.evaluation_score)}
-                          <span className="text-xs text-muted-foreground">{proof.evaluation_score.toFixed(1)}/5</span>
-                          {proof.on_chain && (
-                            <span className="text-xs text-emerald-600 flex items-center gap-1">
-                              <Shield className="h-3 w-3" /> On-chain
-                            </span>
-                          )}
-                        </div>
-                        {proof.skills.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mt-2">
-                            {proof.skills.slice(0, 3).map((skill, i) => (
-                              <Badge key={i} variant="secondary" className="text-xs">{skill}</Badge>
-                            ))}
-                            {proof.skills.length > 3 && (
-                              <Badge variant="secondary" className="text-xs">+{proof.skills.length - 3}</Badge>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p className="text-sm font-medium text-foreground truncate">{proof.title}</p>
+                            {proof.task_difficulty && (
+                              <Badge variant="outline" className="text-xs">{proof.task_difficulty}</Badge>
                             )}
                           </div>
-                        )}
+                          <div className="flex items-center gap-3 mt-1">
+                            {renderStars(proof.evaluation_score)}
+                            <span className="text-xs text-muted-foreground">{proof.evaluation_score.toFixed(1)}/5</span>
+                            {proof.on_chain && (
+                              <span className="text-xs text-emerald-600 flex items-center gap-1">
+                                <Shield className="h-3 w-3" /> On-chain
+                              </span>
+                            )}
+                          </div>
+                          {proof.skills.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-2">
+                              {proof.skills.slice(0, 3).map((skill, i) => (
+                                <Badge key={i} variant="secondary" className="text-xs">{skill}</Badge>
+                              ))}
+                              {proof.skills.length > 3 && (
+                                <Badge variant="secondary" className="text-xs">+{proof.skills.length - 3}</Badge>
+                              )}
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-6 text-muted-foreground">
+                    <FileCheck className="h-10 w-10 mx-auto mb-2 opacity-30" />
+                    <p className="text-sm">No evaluations yet</p>
+                    <p className="text-xs">Submit tasks and get rated to see your proofs here</p>
+                  </div>
+                )
               ) : (
-                <div className="text-center py-6 text-muted-foreground">
-                  <FileCheck className="h-10 w-10 mx-auto mb-2 opacity-30" />
-                  <p className="text-sm">No evaluations yet</p>
-                  <p className="text-xs">
-                    {userRole === "student"
-                      ? "Submit tasks and get rated to see your proofs here"
-                      : "Rate student submissions to see evaluations here"}
-                  </p>
-                </div>
+                /* Educator view */
+                educatorEvalLoading ? (
+                  <div className="space-y-3">
+                    {[1, 2].map(i => <Skeleton key={i} className="h-16 w-full" />)}
+                  </div>
+                ) : educatorEvaluations.length > 0 ? (
+                  <div className="space-y-3">
+                    {educatorEvaluations.map((proof: Proof) => (
+                      <div
+                        key={proof.proof_id}
+                        className="flex items-start gap-3 p-3 rounded-lg border bg-white hover:shadow-sm transition-shadow"
+                      >
+                        <div className="flex-shrink-0 mt-0.5">
+                          {proof.on_chain ? (
+                            <Shield className="h-5 w-5 text-emerald-500" />
+                          ) : (
+                            <ClipboardList className="h-5 w-5 text-muted-foreground" />
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p className="text-sm font-medium text-foreground truncate">{proof.title}</p>
+                            {proof.task_difficulty && (
+                              <Badge variant="outline" className="text-xs">{proof.task_difficulty}</Badge>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-3 mt-1">
+                            {renderStars(proof.evaluation_score)}
+                            <span className="text-xs text-muted-foreground">{proof.evaluation_score.toFixed(1)}/5</span>
+                            {proof.on_chain && (
+                              <span className="text-xs text-emerald-600 flex items-center gap-1">
+                                <Shield className="h-3 w-3" /> On-chain
+                              </span>
+                            )}
+                          </div>
+                          {proof.skills.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-2">
+                              {proof.skills.slice(0, 3).map((skill, i) => (
+                                <Badge key={i} variant="secondary" className="text-xs">{skill}</Badge>
+                              ))}
+                              {proof.skills.length > 3 && (
+                                <Badge variant="secondary" className="text-xs">+{proof.skills.length - 3}</Badge>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-6 text-muted-foreground">
+                    <FileCheck className="h-10 w-10 mx-auto mb-2 opacity-30" />
+                    <p className="text-sm">No evaluations yet</p>
+                    <p className="text-xs">Rate student submissions to see evaluations here</p>
+                  </div>
+                )
               )}
             </SharedCard>
 

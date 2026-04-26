@@ -13,6 +13,7 @@ type RequestInfo = {
   id: string;
   applicant: string;
   applicant_username: string;
+  applicant_real_name?: string | null;
   status: "pending" | "accepted" | "declined";
   created_at: string;
 };
@@ -21,6 +22,7 @@ type AssignmentInfo = {
   id: string;
   assignee: string;
   assignee_username: string;
+  assignee_real_name?: string | null;
   status: string;
   assigned_at: string;
 };
@@ -53,19 +55,27 @@ export default function ManageRequestsPage() {
       // Get requests
       const { data: reqs } = await supabase
         .from("task_requests")
-        .select("id, applicant, applicant_username, status, created_at")
+        .select("id, applicant, applicant_username, status, created_at, profiles!task_requests_applicant_fkey(real_name)")
         .eq("task", taskId)
         .order("created_at", { ascending: true });
 
-      setRequests(reqs || []);
+      const formattedReqs = (reqs || []).map((r: Record<string, unknown>) => ({
+        ...r,
+        applicant_real_name: (r.profiles as { real_name: string | null } | null)?.real_name || null,
+      }));
+      setRequests(formattedReqs as RequestInfo[]);
 
       // Get assignments
       const { data: assigns } = await supabase
         .from("task_assignments")
-        .select("id, assignee, assignee_username, status, assigned_at")
+        .select("id, assignee, assignee_username, status, assigned_at, profiles!task_assignments_assignee_fkey(real_name)")
         .eq("task", taskId);
 
-      setAssignments(assigns || []);
+      const formattedAssigns = (assigns || []).map((a: Record<string, unknown>) => ({
+        ...a,
+        assignee_real_name: (a.profiles as { real_name: string | null } | null)?.real_name || null,
+      }));
+      setAssignments(formattedAssigns as AssignmentInfo[]);
       setLoading(false);
     };
     fetchData();
@@ -230,7 +240,7 @@ export default function ManageRequestsPage() {
                 {pendingRequests.map(req => (
                   <div key={req.id} className="flex items-center justify-between p-3 border rounded-lg">
                     <div>
-                      <span className="font-medium">@{req.applicant_username}</span>
+                      <span className="font-medium">{req.applicant_real_name || `@${req.applicant_username}`}</span>
                       <span className="text-muted-foreground ml-2 text-sm">
                         Requested {new Date(req.created_at).toLocaleDateString()}
                       </span>
@@ -275,7 +285,7 @@ export default function ManageRequestsPage() {
                 {assignments.map(assign => (
                   <div key={assign.id} className="flex items-center justify-between p-3 border rounded-lg">
                     <div>
-                      <span className="font-medium">@{assign.assignee_username}</span>
+                      <span className="font-medium">{assign.assignee_real_name || `@${assign.assignee_username}`}</span>
                       <span className="text-muted-foreground ml-2 text-sm capitalize">
                         {assign.status}
                       </span>
@@ -305,7 +315,7 @@ export default function ManageRequestsPage() {
               <div className="space-y-2">
                 {acceptedRequests.map(req => (
                   <div key={req.id} className="flex items-center p-2 text-sm">
-                    <span className="font-medium">@{req.applicant_username}</span>
+                    <span className="font-medium">{req.applicant_real_name || `@${req.applicant_username}`}</span>
                     <span className="text-green-600 ml-2">Accepted</span>
                   </div>
                 ))}
@@ -324,7 +334,7 @@ export default function ManageRequestsPage() {
               <div className="space-y-2">
                 {declinedRequests.map(req => (
                   <div key={req.id} className="flex items-center p-2 text-sm">
-                    <span className="font-medium">@{req.applicant_username}</span>
+                    <span className="font-medium">{req.applicant_real_name || `@${req.applicant_username}`}</span>
                     <span className="text-red-600 ml-2">Declined</span>
                   </div>
                 ))}

@@ -121,7 +121,6 @@ export default function TaskRequestPage() {
     }
 
     setRequestStatus("pending");
-    setMessage("Your request has been submitted! The professor will review it.");
     setRequesting(false);
   };
 

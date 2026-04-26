@@ -23,6 +23,7 @@ type Request = Tables<'task_requests'> & {
   profiles: {
     username: string;
     did: string;
+    real_name: string | null;
     matriculation_number?: string | null;
   } | null;
 };
@@ -30,6 +31,7 @@ type Assignment = Tables<'task_assignments'> & {
   profiles: {
     username: string;
     did: string;
+    real_name: string | null;
     matriculation_number?: string | null;
   } | null;
   ratings?: {
@@ -148,7 +150,7 @@ export default function EducatorTaskDetail() {
           .from('task_requests')
           .select(`
             *,
-            profiles!task_requests_applicant_fkey(username, did, matriculation_number)
+            profiles!task_requests_applicant_fkey(username, did, real_name, matriculation_number)
           `)
           .eq('task', taskId)
           .eq('status', 'pending');
@@ -162,7 +164,7 @@ export default function EducatorTaskDetail() {
             .from('task_requests')
             .select(`
               *,
-              profiles!task_requests_applicant_fkey(username, did)
+              profiles!task_requests_applicant_fkey(username, did, real_name)
             `)
             .eq('task', taskId);
           
@@ -184,7 +186,7 @@ export default function EducatorTaskDetail() {
           .from('task_assignments')
           .select(`
             *,
-            profiles!task_assignments_assignee_fkey(username, did, matriculation_number),
+            profiles!task_assignments_assignee_fkey(username, did, real_name, matriculation_number),
             ratings(task, rated_user, stars_avg, xp)
           `)
           .eq('task', taskId);
@@ -257,7 +259,7 @@ export default function EducatorTaskDetail() {
           .from('task_requests')
           .select(`
             *,
-            profiles!task_requests_applicant_fkey(username, did, matriculation_number)
+            profiles!task_requests_applicant_fkey(username, did, real_name, matriculation_number)
           `)
           .eq('task', taskId);
         
@@ -756,20 +758,13 @@ export default function EducatorTaskDetail() {
                     <div className="flex items-center space-x-3">
                       <div className="flex flex-col">
                         <span className="font-medium text-foreground">
-                          Username: {request.profiles?.username ? request.profiles.username : 
-                           request.applicant_username ? request.applicant_username :
+                          {request.profiles?.real_name || request.profiles?.username || 
+                           request.applicant_username ||
                            `User ${request.applicant?.substring(0, 8) || request.id.substring(0, 8)}...`}
                         </span>
                         <span className="text-sm text-muted-foreground">
-                          Student Number: {request.profiles?.matriculation_number || 'Not available'}
+                          {request.profiles?.username ? `@${request.profiles.username}` : 'Not available'}
                         </span>
-                        {request.profiles === null && (
-                          <span className="text-sm text-muted-foreground">Profile loading failed</span>
-                        )}
-                        {!request.profiles && !request.applicant_username && (
-                          <span className="text-sm text-muted-foreground">Loading profile...</span>
-                        )}
-
                       </div>
                     </div>
                     <div className="space-x-2">
@@ -813,12 +808,11 @@ export default function EducatorTaskDetail() {
                   <div key={assignment.id} className="flex items-center justify-between p-4 border rounded-lg border-border">
                     <div className="flex flex-col">
                       <span className="font-medium text-foreground">
-                        Username: {assignment.profiles?.username ? assignment.profiles.username : 
-                         assignment.profiles?.did ? assignment.profiles.did : 
+                        {assignment.profiles?.real_name || assignment.profiles?.username || 
                          `User ${assignment.assignee.substring(0, 8)}...`}
                       </span>
                       <span className="text-sm text-muted-foreground">
-                        Student Number: {assignment.profiles?.matriculation_number || 'Not available'}
+                        {assignment.profiles?.username ? `@${assignment.profiles.username}` : 'Not available'}
                       </span>
 
                       {/* Show rating information if available */}
@@ -829,12 +823,6 @@ export default function EducatorTaskDetail() {
                             XP: {assignment.ratings[0].xp || 0}
                           </span>
                         </div>
-                      )}
-                      {assignment.profiles === null && (
-                        <span className="text-sm text-muted-foreground">Profile loading failed</span>
-                      )}
-                      {!assignment.profiles && (
-                        <span className="text-sm text-muted-foreground">Loading profile...</span>
                       )}
                     </div>
                     <span className="text-sm text-muted-foreground">
