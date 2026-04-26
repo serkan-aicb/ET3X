@@ -12,7 +12,7 @@ type UserWithProfile = {
   id: string;
   email: string | undefined;
   username: string;
-  did: string;
+  real_name?: string | null;
 };
 
 export default function EducatorDashboard() {
@@ -34,20 +34,20 @@ export default function EducatorDashboard() {
       // Get user data
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        router.push("/edu");
+        router.push("/auth");
         return;
       }
       
       // Get profile
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
-        .select('username, did')
+        .select('username, real_name')
         .eq('id', user.id)
         .single();
       
       if (profileError) {
         console.error("Error fetching profile:", profileError);
-        router.push("/edu");
+        router.push("/auth");
         return;
       }
       
@@ -55,7 +55,7 @@ export default function EducatorDashboard() {
         id: user.id,
         email: user.email,
         username: profile.username,
-        did: profile.did
+        real_name: profile.real_name
       });
       
       // Get task statistics
@@ -152,9 +152,10 @@ export default function EducatorDashboard() {
         </div>
         
         <div className="grid gap-6 md:grid-cols-2">
-          <SharedCard title="Your DID" description="Decentralized Identifier">
-            <div className="font-mono text-sm break-all p-4 bg-muted rounded-lg border">
-              {user?.did}
+          <SharedCard title="Your Profile" description="Account information">
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground">Email: <span className="text-foreground font-medium">{user?.email}</span></p>
+              <p className="text-sm text-muted-foreground">Name: <span className="text-foreground font-medium">{user?.real_name || user?.username}</span></p>
             </div>
           </SharedCard>
           

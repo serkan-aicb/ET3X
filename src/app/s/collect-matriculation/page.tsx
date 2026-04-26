@@ -26,7 +26,7 @@ export default function CollectMatriculationPage() {
       
       if (!user) {
         // Redirect to login if not authenticated
-        router.push("/stud");
+        router.push("/auth");
         return;
       }
       

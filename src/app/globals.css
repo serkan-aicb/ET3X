@@ -45,111 +45,102 @@
 
 :root {
   --radius: 0.625rem;
-  /* Background: pure black to very dark */
-  --background: #000000;
-  --foreground: #FFFFFF;
+  /* Background: clean white */
+  --background: #FFFFFF;
+  --foreground: #111827;
   
-  /* Cards/Container: #111111–#161616 */
-  --card: #111111;
-  --card-foreground: #FFFFFF;
-  --popover: #111111;
-  --popover-foreground: #FFFFFF;
+  /* Cards/Container: white with subtle border */
+  --card: #FFFFFF;
+  --card-foreground: #111827;
+  --popover: #FFFFFF;
+  --popover-foreground: #111827;
   
-  /* Primary = light blue #38BDF8 */
-  --primary: #38BDF8;
-  --primary-foreground: #000000;
+  /* Primary = professional blue */
+  --primary: #2563EB;
+  --primary-foreground: #FFFFFF;
   
-  /* Secondary = dark gray */
-  --secondary: #161616;
-  --secondary-foreground: #FFFFFF;
+  /* Secondary = light slate */
+  --secondary: #F1F5F9;
+  --secondary-foreground: #111827;
   
   /* Muted colors */
-  --muted: #161616;
-  --muted-foreground: #C7C7C7;
+  --muted: #F1F5F9;
+  --muted-foreground: #64748B;
   
   /* Accent colors */
-  --accent: #161616;
-  --accent-foreground: #FFFFFF;
+  --accent: #F1F5F9;
+  --accent-foreground: #111827;
   
-  /* Destructive = orange #F97316 */
-  --destructive: #F97316;
+  /* Destructive = red */
+  --destructive: #EF4444;
   --destructive-foreground: #FFFFFF;
   
-  /* Borders: #1F1F1F–#222222 */
-  --border: #1F1F1F;
-  --input: #1F1F1F;
-  --ring: #38BDF8;
+  /* Borders: light gray */
+  --border: #E2E8F0;
+  --input: #E2E8F0;
+  --ring: #2563EB;
   
   /* Chart colors */
-  --chart-1: #38BDF8;
+  --chart-1: #2563EB;
   --chart-2: #F97316;
-  --chart-3: #161616;
-  --chart-4: #1F1F1F;
-  --chart-5: #C7C7C7;
+  --chart-3: #8B5CF6;
+  --chart-4: #10B981;
+  --chart-5: #64748B;
   
   /* Sidebar colors */
-  --sidebar: #111111;
-  --sidebar-foreground: #FFFFFF;
-  --sidebar-primary: #38BDF8;
-  --sidebar-primary-foreground: #000000;
-  --sidebar-accent: #161616;
-  --sidebar-accent-foreground: #FFFFFF;
-  --sidebar-border: #1F1F1F;
-  --sidebar-ring: #38BDF8;
+  --sidebar: #F8FAFC;
+  --sidebar-foreground: #111827;
+  --sidebar-primary: #2563EB;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #F1F5F9;
+  --sidebar-accent-foreground: #111827;
+  --sidebar-border: #E2E8F0;
+  --sidebar-ring: #2563EB;
 }
 
 .dark {
-  /* Ensure dark theme uses the same values */
-  --background: #000000;
-  --foreground: #FFFFFF;
+  /* Light theme overrides - we keep dark class for compatibility but use light values */
+  --background: #FFFFFF;
+  --foreground: #111827;
   
-  /* Cards/Container: #111111–#161616 */
-  --card: #111111;
-  --card-foreground: #FFFFFF;
-  --popover: #111111;
-  --popover-foreground: #FFFFFF;
+  --card: #FFFFFF;
+  --card-foreground: #111827;
+  --popover: #FFFFFF;
+  --popover-foreground: #111827;
   
-  /* Primary = light blue #38BDF8 */
-  --primary: #38BDF8;
-  --primary-foreground: #000000;
+  --primary: #2563EB;
+  --primary-foreground: #FFFFFF;
   
-  /* Secondary = dark gray */
-  --secondary: #161616;
-  --secondary-foreground: #FFFFFF;
+  --secondary: #F1F5F9;
+  --secondary-foreground: #111827;
   
-  /* Muted colors */
-  --muted: #161616;
-  --muted-foreground: #C7C7C7;
+  --muted: #F1F5F9;
+  --muted-foreground: #64748B;
   
-  /* Accent colors */
-  --accent: #161616;
-  --accent-foreground: #FFFFFF;
+  --accent: #F1F5F9;
+  --accent-foreground: #111827;
   
-  /* Destructive = orange #F97316 */
-  --destructive: #F97316;
+  --destructive: #EF4444;
   --destructive-foreground: #FFFFFF;
   
-  /* Borders: #1F1F1F–#222222 */
-  --border: #1F1F1F;
-  --input: #1F1F1F;
-  --ring: #38BDF8;
+  --border: #E2E8F0;
+  --input: #E2E8F0;
+  --ring: #2563EB;
   
-  /* Chart colors */
-  --chart-1: #38BDF8;
+  --chart-1: #2563EB;
   --chart-2: #F97316;
-  --chart-3: #161616;
-  --chart-4: #1F1F1F;
-  --chart-5: #C7C7C7;
+  --chart-3: #8B5CF6;
+  --chart-4: #10B981;
+  --chart-5: #64748B;
   
-  /* Sidebar colors */
-  --sidebar: #111111;
-  --sidebar-foreground: #FFFFFF;
-  --sidebar-primary: #38BDF8;
-  --sidebar-primary-foreground: #000000;
-  --sidebar-accent: #161616;
-  --sidebar-accent-foreground: #FFFFFF;
-  --sidebar-border: #1F1F1F;
-  --sidebar-ring: #38BDF8;
+  --sidebar: #F8FAFC;
+  --sidebar-foreground: #111827;
+  --sidebar-primary: #2563EB;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #F1F5F9;
+  --sidebar-accent-foreground: #111827;
+  --sidebar-border: #E2E8F0;
+  --sidebar-ring: #2563EB;
 }
 
 /* Skill checkbox styling */
@@ -157,14 +148,14 @@
   width: 18px;
   height: 18px;
   appearance: none;
-  border: 2px solid white;
+  border: 2px solid var(--border);
   border-radius: 4px;
   background-color: transparent;
 }
 
 .skill-checkbox input[type='checkbox']:checked {
-  background-color: #8254ff; /* purple */
-  border-color: #8254ff;
+  background-color: #2563EB;
+  border-color: #2563EB;
 }
 
 @layer base {

@@ -40,7 +40,8 @@ export type Database = {
           email_digest: string
           created_at: string
           updated_at: string
-          matriculation_number: string | null // Add matriculation_number field
+          matriculation_number: string | null
+          real_name: string | null
         }
         Insert: {
           id: string
@@ -51,7 +52,8 @@ export type Database = {
           email_digest: string
           created_at?: string
           updated_at?: string
-          matriculation_number?: string | null // Add matriculation_number field
+          matriculation_number?: string | null
+          real_name?: string | null
         }
         Update: {
           id?: string
@@ -62,7 +64,8 @@ export type Database = {
           email_digest?: string
           created_at?: string
           updated_at?: string
-          matriculation_number?: string | null // Add matriculation_number field
+          matriculation_number?: string | null
+          real_name?: string | null
         }
         Relationships: []
       }
@@ -308,7 +311,10 @@ export type Database = {
           skills: number[] | null
           due_date: string | null
           status: Database["public"]["Enums"]["task_status"]
-          task_mode: string // New column for task mode ('single' or 'multi')
+          share_code: string | null
+          is_active: boolean | null
+          is_requestable: boolean | null
+          task_mode: string
           created_at: string
           updated_at: string
         }
@@ -324,7 +330,10 @@ export type Database = {
           skills?: number[] | null
           due_date?: string | null
           status?: Database["public"]["Enums"]["task_status"]
-          task_mode?: string // New column for task mode ('single' or 'multi')
+          share_code?: string | null
+          is_active?: boolean | null
+          is_requestable?: boolean | null
+          task_mode?: string
           created_at?: string
           updated_at?: string
         }
@@ -340,7 +349,10 @@ export type Database = {
           skills?: number[] | null
           due_date?: string | null
           status?: Database["public"]["Enums"]["task_status"]
-          task_mode?: string // New column for task mode ('single' or 'multi')
+          share_code?: string | null
+          is_active?: boolean | null
+          is_requestable?: boolean | null
+          task_mode?: string
           created_at?: string
           updated_at?: string
         }
@@ -459,6 +471,44 @@ export type Database = {
             columns: ["skill_id"]
             isOneToOne: false
             referencedRelation: "skills"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      submission_files: {
+        Row: {
+          id: string
+          submission: string
+          file_name: string
+          file_size: number
+          file_type: string
+          storage_path: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          submission: string
+          file_name: string
+          file_size: number
+          file_type: string
+          storage_path: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          submission?: string
+          file_name?: string
+          file_size?: number
+          file_type?: string
+          storage_path?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "submission_files_submission_fkey"
+            columns: ["submission"]
+            isOneToOne: false
+            referencedRelation: "submissions"
             referencedColumns: ["id"]
           }
         ]

@@ -8,7 +8,7 @@ import { SidebarProfileStudio } from './sidebar';
 interface ProfileStudioLayoutProps {
   children: ReactNode;
   userName: string;
-  userDid: string;
+  realName?: string | null;
   onPreview?: () => void;
   onSave?: () => void;
   isSaving?: boolean;
@@ -17,18 +17,18 @@ interface ProfileStudioLayoutProps {
 export function ProfileStudioLayout({
   children,
   userName,
-  userDid,
+  realName,
   onPreview,
   onSave,
   isSaving = false
 }: ProfileStudioLayoutProps) {
   return (
-    <div className="min-h-screen bg-[#000000] flex">
+    <div className="min-h-screen bg-background flex">
       {/* Left Sidebar */}
       <div className="hidden lg:block h-screen sticky top-0">
         <SidebarProfileStudio 
-          userName={userName} 
-          userDid={userDid}
+          userName={userName}
+          realName={realName}
           profileStrength={75}
         />
       </div>
@@ -36,7 +36,7 @@ export function ProfileStudioLayout({
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top Bar */}
-        <div className="border-b border-[#1f1f1f] bg-[#0a0a0a]/80 backdrop-blur sticky top-0 z-10">
+        <div className="border-b border-border bg-muted/80 backdrop-blur sticky top-0 z-10">
           <div className="max-w-7xl mx-auto px-6 py-4">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               {/* Info Banner */}
@@ -45,9 +45,9 @@ export function ProfileStudioLayout({
                   <Shield className="h-4 w-4 text-blue-400" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-white">You&apos;re in control</p>
-                  <p className="text-xs text-gray-500">
-                    Your data is private and belongs to you. <span className="text-blue-400 cursor-pointer hover:underline">Learn more</span>
+                  <p className="text-sm font-medium text-foreground">You&apos;re in control</p>
+                  <p className="text-xs text-muted-foreground">
+                    Your data is private and belongs to you. <span className="text-primary cursor-pointer hover:underline">Learn more</span>
                   </p>
                 </div>
               </div>
@@ -58,7 +58,7 @@ export function ProfileStudioLayout({
                   variant="outline" 
                   size="sm" 
                   onClick={onPreview}
-                  className="border-[#1f1f1f] bg-[#111111] text-gray-300 hover:bg-[#161616] hover:text-white"
+                  className="border-border bg-muted text-muted-foreground hover:bg-accent hover:text-foreground"
                 >
                   <Eye className="h-4 w-4 mr-2" />
                   Preview Public Profile
@@ -67,7 +67,7 @@ export function ProfileStudioLayout({
                   size="sm" 
                   onClick={onSave}
                   disabled={isSaving}
-                  className="bg-blue-500 hover:bg-blue-600 text-white"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground"
                 >
                   <Save className="h-4 w-4 mr-2" />
                   {isSaving ? 'Saving...' : 'Save Changes'}
@@ -78,7 +78,7 @@ export function ProfileStudioLayout({
         </div>
 
         {/* Content Area */}
-        <main className="flex-1 p-6 bg-[#000000]">
+        <main className="flex-1 p-6 bg-background">
           <div className="max-w-7xl mx-auto">
             {children}
           </div>

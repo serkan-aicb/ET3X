@@ -176,27 +176,17 @@ export default function AdminOverview() {
             <span className="text-2xl font-bold text-foreground">Talent3X</span>
           </Link>
           <div className="flex space-x-2">
-            <div className="flex space-x-2">
-              <Button 
-                variant="outline" 
-                onClick={() => {
-                  router.push("/admin-public");
-                }}
-              >
-                Public Dashboard
-              </Button>
               <Button 
                 variant="outline" 
                 onClick={() => {
                   localStorage.removeItem('admin_code');
-                  router.push("/");
+                  router.push("/auth");
                 }}
                 className="border border-primary text-primary hover:bg-primary/20"
               >
                 Logout
               </Button>
             </div>
-          </div>
         </div>
       </header>
 

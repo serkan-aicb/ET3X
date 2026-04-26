@@ -20,7 +20,7 @@ import Image from 'next/image';
 
 interface SidebarProfileStudioProps {
   userName: string;
-  userDid: string;
+  realName?: string | null;
   avatarUrl?: string;
   profileStrength?: number;
   activeSection?: string;
@@ -38,7 +38,7 @@ const navigationItems = [
 
 export function SidebarProfileStudio({
   userName,
-  userDid,
+  realName,
   avatarUrl,
   profileStrength = 75,
   activeSection = 'profile',
@@ -56,20 +56,20 @@ export function SidebarProfileStudio({
   };
 
   return (
-    <div className="w-64 h-full bg-[#0a0a0a] border-r border-[#1f1f1f] flex flex-col">
+    <div className="w-64 h-full bg-muted border-r border-border flex flex-col">
       {/* Logo */}
       <div className="p-6 pb-4">
         <div className="flex items-center space-x-2">
           <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-cyan-400 rounded-lg flex items-center justify-center">
             <Sparkles className="h-5 w-5 text-white" />
           </div>
-          <span className="text-xl font-bold text-white">Talent3X</span>
+          <span className="text-xl font-bold text-foreground">Talent3X</span>
         </div>
       </div>
 
       {/* Section Label */}
       <div className="px-6 pb-2">
-        <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
           Profile Studio
         </span>
       </div>
@@ -87,8 +87,8 @@ export function SidebarProfileStudio({
               className={cn(
                 "w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium transition-all",
                 isActive
-                  ? "bg-blue-500/10 text-blue-400 border border-blue-500/20"
-                  : "text-gray-400 hover:bg-[#161616] hover:text-gray-200"
+                  ? "bg-primary/10 text-primary border border-primary/20"
+                  : "text-muted-foreground hover:bg-accent hover:text-foreground"
               )}
             >
               <Icon className="h-4 w-4" />
@@ -99,37 +99,37 @@ export function SidebarProfileStudio({
       </nav>
 
       {/* Profile Strength Card */}
-      <div className="p-4 mx-3 mb-3 bg-[#111111] rounded-xl border border-[#1f1f1f]">
+      <div className="p-4 mx-3 mb-3 bg-card rounded-xl border border-border">
         <div className="space-y-3">
           <div className="flex justify-between items-center">
-            <span className="text-sm font-medium text-gray-300">Profile strength</span>
-            <span className="text-lg font-bold text-blue-400">{profileStrength}%</span>
+            <span className="text-sm font-medium text-foreground">Profile strength</span>
+            <span className="text-lg font-bold text-primary">{profileStrength}%</span>
           </div>
-          <div className="h-2 bg-[#1f1f1f] rounded-full overflow-hidden">
+          <div className="h-2 bg-muted rounded-full overflow-hidden">
             <div 
               className="h-full bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full transition-all"
               style={{ width: `${profileStrength}%` }}
             />
           </div>
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-muted-foreground">
             Keep going! Add more proofs and get evaluated.
           </p>
         </div>
       </div>
 
       {/* Upgrade Card */}
-      <div className="p-4 mx-3 mb-3 bg-gradient-to-br from-[#111111] to-[#0d1117] rounded-xl border border-[#1f1f1f]">
+      <div className="p-4 mx-3 mb-3 bg-card rounded-xl border border-border">
         <div className="space-y-3">
           <div className="flex items-center space-x-2">
             <div className="w-6 h-6 bg-gradient-to-br from-amber-500 to-orange-500 rounded flex items-center justify-center">
               <Sparkles className="h-3.5 w-3.5 text-white" />
             </div>
-            <span className="font-semibold text-sm text-white">Unlock more with</span>
+            <span className="font-semibold text-sm text-foreground">Unlock more with</span>
           </div>
-          <p className="text-lg font-bold text-white">Talent3X Pro</p>
+          <p className="text-lg font-bold text-foreground">Talent3X Pro</p>
           <ul className="space-y-1.5">
             {['Advanced analytics', 'Private AI feedback', 'Priority assessment', 'Custom integrations'].map((feature, i) => (
-              <li key={i} className="flex items-center space-x-2 text-xs text-gray-400">
+              <li key={i} className="flex items-center space-x-2 text-xs text-muted-foreground">
                 <Check className="h-3 w-3 text-green-500" />
                 <span>{feature}</span>
               </li>
@@ -137,7 +137,7 @@ export function SidebarProfileStudio({
           </ul>
           <Button 
             size="sm" 
-            className="w-full bg-blue-500 hover:bg-blue-600 text-white text-xs"
+            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground text-xs"
             disabled
           >
             Upgrade (Coming Soon)
@@ -146,17 +146,17 @@ export function SidebarProfileStudio({
       </div>
 
       {/* User Card */}
-      <div className="p-4 mx-3 mb-4 bg-[#111111] rounded-xl border border-[#1f1f1f]">
+      <div className="p-4 mx-3 mb-4 bg-card rounded-xl border border-border">
         <div className="flex items-center space-x-3">
-          <Avatar className="h-10 w-10 border-2 border-[#1f1f1f]">
+          <Avatar className="h-10 w-10 border-2 border-border">
             <AvatarImage src={avatarUrl} alt={userName} />
             <AvatarFallback className="bg-blue-500/20 text-blue-400 text-sm font-semibold">
               {getInitials(userName)}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
-            <p className="font-semibold text-sm text-white truncate">{userName}</p>
-            <p className="text-xs text-gray-500">Free Plan</p>
+            <p className="font-semibold text-sm text-foreground truncate">{userName}</p>
+            <p className="text-xs text-muted-foreground">Free Plan</p>
           </div>
         </div>
       </div>

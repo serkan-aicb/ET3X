@@ -22,7 +22,7 @@ export function generateUsernameAndDID(role: 'student' | 'educator'): { username
   
   const prefix = role === 'student' ? 'stud' : 'edu';
   const username = `${prefix}${randomNumber}`;
-  const did = `did:web:talent3x.io:${prefix}:${randomNumber}`;
+  const did = `did:web:talent3x.com:${prefix}:${randomNumber}`;
   
   return { username, did };
 }

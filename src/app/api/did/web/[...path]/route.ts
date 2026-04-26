@@ -27,7 +27,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const { data: profile, error } = await supabase
       .from('profiles')
       .select('did, username')
-      .eq('did', `did:web:talent3x.io:${role}:${id}`)
+      .eq('did', `did:web:talent3x.com:${role}:${id}`)
       .single()
     
     if (error || !profile) {

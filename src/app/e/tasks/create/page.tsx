@@ -6,12 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { createClient } from "@/lib/supabase/client";
@@ -21,26 +21,28 @@ import { SharedCard } from "@/components/shared-card";
 
 type Skill = Tables<'skills'>;
 
+function generateShareCode(): string {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code = '';
+  for (let i = 0; i < 8; i++) {
+    code += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return code;
+}
+
 export default function CreateTask() {
   const [title, setTitle] = useState("");
   const [module, setModule] = useState("");
   const [description, setDescription] = useState("");
-  // Removed seats state as it's no longer needed in the new flow
   const [skillLevel, setSkillLevel] = useState<"Novice" | "Skilled" | "Expert" | "Master">("Novice");
   const [license, setLicense] = useState<"CC BY 4.0" | "CC0 1.0">("CC BY 4.0");
-  // Removed taskMode state as it's no longer needed in the new flow
   const [skills, setSkills] = useState<number[]>([]);
   const [dueDate, setDueDate] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [availableSkills, setAvailableSkills] = useState<Skill[]>([]);
-  
-  // New state for assigned usernames (part of the new bulk assignment flow)
-  const [assignedUsernames, setAssignedUsernames] = useState("");
-  
   const router = useRouter();
 
-  // Fetch skills on component mount
   useEffect(() => {
     const fetchSkills = async () => {
       const supabase = createClient();
@@ -48,7 +50,7 @@ export default function CreateTask() {
         .from('skills')
         .select('*')
         .order('label');
-      
+
       if (error) {
         console.error('Error fetching skills:', error);
         setMessage("Error loading skills");
@@ -56,7 +58,6 @@ export default function CreateTask() {
         setAvailableSkills(data || []);
       }
     };
-    
     fetchSkills();
   }, []);
 
@@ -65,7 +66,6 @@ export default function CreateTask() {
       if (prev.includes(skillId)) {
         return prev.filter(id => id !== skillId);
       } else {
-        // Limit to 12 skills
         if (prev.length >= 12) {
           setMessage("You can select up to 12 skills only");
           return prev;
@@ -75,98 +75,72 @@ export default function CreateTask() {
     });
   };
 
-  // Process assigned usernames: trim, remove duplicates, filter empty
-  // This is part of the new bulk assignment flow
-  const processAssignedUsernames = (): string[] => {
-    if (!assignedUsernames.trim()) {
-      return [];
-    }
-    
-    // Split by newlines, trim each line, filter out empty lines, remove duplicates
-    const usernames = assignedUsernames
-      .split('\n')
-      .map(username => username.trim())
-      .filter(username => username.length > 0);
-    
-    // Remove duplicates while preserving order
-    return Array.from(new Set(usernames));
-  };
-
-  // Main submission handler for the new flow
-  // This replaces the old request/submission flow with direct assignment
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setMessage("");
-    
+
     try {
       const supabase = createClient();
-      
-      // Get current user
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("User not found");
-      
-      console.log("Creating task for user:", user.id);
-      
-      // Process assigned usernames
-      const processedUsernames = processAssignedUsernames();
-      
-      // Check for extremely large lists
-      if (processedUsernames.length > 5000) {
-        setMessage("Warning: You are trying to assign a very large number of students. This may take a while to process.");
-      }
-      
-      // Determine if the task should be requestable
-      const isRequestable = processedUsernames.length === 0;
-      
-      // Create task - remove seats and task_mode since they're no longer needed
+
+      // Generate a unique share code
+      const shareCode = generateShareCode();
+
+      // Create task with share_code and is_requestable=true (students request via public link)
       const { data: taskData, error: taskError } = await supabase
         .from('tasks')
         .insert({
           creator: user.id,
           title,
           module,
-          description, // Use description instead of goal, context, deliverables
-          // Removed seats
+          description,
           skill_level: skillLevel,
           license,
           skills,
           due_date: dueDate || null,
           status: 'open',
-          // Removed task_mode
-          is_requestable: isRequestable // Add is_requestable field
+          is_requestable: true,
+          is_active: true,
+          share_code: shareCode,
         })
         .select()
         .single();
-      
-      console.log("Task creation result:", taskError);
-      
-      if (taskError) throw taskError;
-      
-      // If we have assigned usernames, call the auto-submit RPC
-      // This is the core of the new bulk assignment flow using submissions as single source of truth
-      if (processedUsernames.length > 0) {
-        console.log("Calling auto-submit RPC with usernames:", processedUsernames);
-        
-        const { error: autoSubmitError } = await supabase
-          .rpc('auto_submit_task_for_students', {
-            p_task_id: taskData.id,
-            p_usernames: processedUsernames
-          });
 
-        if (autoSubmitError) {
-          console.warn('Auto-submit failed (non-critical):', autoSubmitError.message);
+      if (taskError) {
+        // If share_code collision, retry with a new code
+        if (taskError.code === '23505' && taskError.message.includes('share_code')) {
+          const newShareCode = generateShareCode();
+          const { data: retryData, error: retryError } = await supabase
+            .from('tasks')
+            .insert({
+              creator: user.id,
+              title,
+              module,
+              description,
+              skill_level: skillLevel,
+              license,
+              skills,
+              due_date: dueDate || null,
+              status: 'open',
+              is_requestable: true,
+              is_active: true,
+              share_code: newShareCode,
+            })
+            .select()
+            .single();
+
+          if (retryError) throw retryError;
+          // Redirect to share page
+          router.push(`/e/tasks/share/${retryData.id}`);
+          return;
         }
-
-        setMessage(`Task created and auto-submitted for ${processedUsernames.length} students. You can rate immediately.`);
-      } else {
-        setMessage('Task created successfully!');
+        throw taskError;
       }
-      
-      // Redirect to tasks page after a short delay
-      setTimeout(() => {
-        router.push("/e/tasks");
-      }, 2000);
+
+      // Redirect to the share page
+      router.push(`/e/tasks/share/${taskData.id}`);
     } catch (error: unknown) {
       if (error instanceof Error) {
         setMessage(error.message || "An error occurred while creating the task.");
@@ -184,21 +158,10 @@ export default function CreateTask() {
         <div>
           <h1 className="text-2xl font-semibold">Create New Task</h1>
           <p className="text-xs uppercase text-muted-foreground">
-            Define a new task for students to complete
+            Define a new task. After creation, you&apos;ll get a shareable link and QR code.
           </p>
         </div>
-        
-        {/* 
-          NEW TALENT3X UNIVERSITY FLOW:
-          This form implements the new direct assignment flow where educators
-          assign tasks directly to students by pasting usernames during task creation.
-          
-          DEPRECATED FEATURES (can be removed later):
-          - Number of Participants field (was seats)
-          - Task Mode field (was single/multi assignment)
-          - Student request system
-          - Student submission system
-        */}
+
         <SharedCard>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
@@ -211,7 +174,7 @@ export default function CreateTask() {
                 required
               />
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="module">Module (Optional)</Label>
               <Input
@@ -221,7 +184,7 @@ export default function CreateTask() {
                 placeholder="Enter module name"
               />
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="description">Description</Label>
               <Textarea
@@ -232,10 +195,8 @@ export default function CreateTask() {
                 rows={6}
               />
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Removed Number of Participants field - deprecated in new flow */}
-              
               <div className="space-y-2">
                 <Label htmlFor="dueDate">Due Date (Optional)</Label>
                 <Input
@@ -245,9 +206,7 @@ export default function CreateTask() {
                   onChange={(e) => setDueDate(e.target.value)}
                 />
               </div>
-              
-              {/* Removed Task Mode field - deprecated in new flow */}
-              
+
               <div className="space-y-2">
                 <Label>Skill Level</Label>
                 <Select value={skillLevel} onValueChange={(value: "Novice" | "Skilled" | "Expert" | "Master") => setSkillLevel(value)}>
@@ -262,7 +221,7 @@ export default function CreateTask() {
                   </SelectContent>
                 </Select>
               </div>
-              
+
               <div className="space-y-2">
                 <Label>License</Label>
                 <Select value={license} onValueChange={(value: "CC BY 4.0" | "CC0 1.0") => setLicense(value)}>
@@ -276,22 +235,7 @@ export default function CreateTask() {
                 </Select>
               </div>
             </div>
-            
-            {/* New Assigned Usernames field for direct assignment */}
-            <div className="space-y-2">
-              <Label htmlFor="assignedUsernames">Assigned Usernames (optional)</Label>
-              <Textarea
-                id="assignedUsernames"
-                value={assignedUsernames}
-                onChange={(e) => setAssignedUsernames(e.target.value)}
-                placeholder="Paste one username per line (e.g. stud12345)&#10;stud12345&#10;stud67890&#10;stud99999"
-                rows={6}
-              />
-              <p className="text-sm text-muted-foreground">
-                You can paste a full column from Google Sheets. Each line will be treated as one username.
-              </p>
-            </div>
-            
+
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label>Skills (Select up to 12)</Label>
@@ -299,7 +243,7 @@ export default function CreateTask() {
                   Selected: {skills.length}/12
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-60 overflow-y-auto p-4 border rounded-lg border-border bg-muted">
                 {availableSkills.map((skill) => (
                   <div key={skill.id} className="flex items-start space-x-2 skill-checkbox">
@@ -310,8 +254,8 @@ export default function CreateTask() {
                       className="mt-1"
                     />
                     <div className="flex flex-col">
-                      <Label 
-                        htmlFor={`skill-${skill.id}`} 
+                      <Label
+                        htmlFor={`skill-${skill.id}`}
                         className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                       >
                         {skill.label}
@@ -325,7 +269,7 @@ export default function CreateTask() {
                   </div>
                 ))}
               </div>
-              
+
               {skills.length >= 12 && (
                 <div className="text-sm text-yellow-600">
                   You have reached the maximum of 12 skills.
@@ -334,25 +278,17 @@ export default function CreateTask() {
             </div>
 
             {message && (
-              <div className={`p-3 rounded-lg ${message.includes("successfully") || message.includes("assigned to") ? "bg-green-900/30 text-green-400 border border-green-800/50" : "bg-red-900/30 text-red-400 border border-red-800/50"}`}>
+              <div className={`p-3 rounded-lg ${message.includes("successfully") || message.includes("assigned to") ? "bg-green-50 text-green-700 border border-green-200" : "bg-red-50 text-red-700 border border-red-200"}`}>
                 {message}
               </div>
             )}
-            
+
             <div className="flex justify-between pt-6">
               <Button type="button" variant="outline" onClick={() => router.back()}>
                 Cancel
               </Button>
               <Button type="submit" disabled={loading}>
-                {loading ? (
-                  <span className="flex items-center">
-                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Creating...
-                  </span>
-                ) : "Create Task"}
+                {loading ? "Creating..." : "Create Task"}
               </Button>
             </div>
           </form>
@@ -361,76 +297,3 @@ export default function CreateTask() {
     </AppLayout>
   );
 }
-
-// Export the username processing function for testing
-export const processAssignedUsernames = (assignedUsernames: string): string[] => {
-  if (!assignedUsernames.trim()) {
-    return [];
-  }
-  
-  // Split by newlines, trim each line, filter out empty lines, remove duplicates
-  const usernames = assignedUsernames
-    .split('\n')
-    .map(username => username.trim())
-    .filter(username => username.length > 0);
-  
-  // Remove duplicates while preserving order
-  return Array.from(new Set(usernames));
-};
-
-// Simple test function for the username processing logic
-export const testProcessAssignedUsernames = () => {
-  const testCases = [
-    {
-      input: "user1\nuser2\nuser3",
-      expected: ["user1", "user2", "user3"],
-      description: "Basic case with multiple usernames"
-    },
-    {
-      input: " user1 \n user2 \n user3 ",
-      expected: ["user1", "user2", "user3"],
-      description: "Usernames with extra whitespace"
-    },
-    {
-      input: "user1\n\nuser2\n\n\nuser3",
-      expected: ["user1", "user2", "user3"],
-      description: "Empty lines between usernames"
-    },
-    {
-      input: "user1\nuser1\nuser2",
-      expected: ["user1", "user2"],
-      description: "Duplicate usernames"
-    },
-    {
-      input: "",
-      expected: [],
-      description: "Empty input"
-    },
-    {
-      input: "   \n  \n  ",
-      expected: [],
-      description: "Only whitespace"
-    }
-  ];
-  
-  let passed = 0;
-  let failed = 0;
-  
-  testCases.forEach(({ input, expected, description }) => {
-    const result = processAssignedUsernames(input);
-    const success = JSON.stringify(result) === JSON.stringify(expected);
-    
-    if (success) {
-      console.log(`✓ ${description}`);
-      passed++;
-    } else {
-      console.log(`✗ ${description}`);
-      console.log(`  Expected: ${JSON.stringify(expected)}`);
-      console.log(`  Got:      ${JSON.stringify(result)}`);
-      failed++;
-    }
-  });
-  
-  console.log(`\nTests: ${passed} passed, ${failed} failed`);
-  return failed === 0;
-};

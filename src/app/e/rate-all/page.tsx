@@ -17,7 +17,7 @@ export default function ProfessorRateAllPage() {
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
-        router.push("/");
+        router.push("/auth");
         return;
       }
       
@@ -29,7 +29,7 @@ export default function ProfessorRateAllPage() {
         .single();
       
       if (error || !profile || profile.role !== 'educator') {
-        router.push("/");
+        router.push("/auth");
         return;
       }
       

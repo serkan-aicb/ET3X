@@ -19,6 +19,7 @@ import { toast } from 'sonner';
 export default function StudentProfile() {
   const router = useRouter();
   const [userId, setUserId] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState<string | undefined>(undefined);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -29,11 +30,12 @@ export default function StudentProfile() {
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
-        router.push('/stud');
+        router.push('/auth');
         return;
       }
       
       setUserId(user.id);
+      setUserEmail(user.email);
       setIsAuthenticated(true);
     };
     
@@ -59,6 +61,7 @@ export default function StudentProfile() {
 
   const handleSave = async (profileData: { 
     fullName?: string;
+    realName?: string;
     headline?: string;
     institution?: string;
     location?: string;
@@ -73,6 +76,7 @@ export default function StudentProfile() {
       
       const updates: Record<string, string | null> = {};
       if (profileData.fullName !== undefined) updates.full_name = profileData.fullName;
+      if (profileData.realName !== undefined) updates.real_name = profileData.realName;
       if (profileData.headline !== undefined) updates.headline = profileData.headline;
       if (profileData.institution !== undefined) updates.institution = profileData.institution;
       if (profileData.location !== undefined) updates.location = profileData.location;
@@ -103,20 +107,20 @@ export default function StudentProfile() {
   // Loading state
   if (isLoading || !profile) {
     return (
-      <div className="min-h-screen bg-[#000000] flex">
-        <div className="hidden lg:block w-64 h-screen bg-[#0a0a0a] border-r border-[#1f1f1f]" />
+      <div className="min-h-screen bg-background flex">
+        <div className="hidden lg:block w-64 h-screen bg-muted border-r border-border" />
         <div className="flex-1 p-6">
           <div className="max-w-7xl mx-auto space-y-6">
-            <Skeleton className="h-40 w-full bg-[#111111]" />
+            <Skeleton className="h-40 w-full" />
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-2 space-y-6">
-                <Skeleton className="h-80 w-full bg-[#111111]" />
-                <Skeleton className="h-80 w-full bg-[#111111]" />
+                <Skeleton className="h-80 w-full" />
+                <Skeleton className="h-80 w-full" />
               </div>
               <div className="space-y-6">
-                <Skeleton className="h-48 w-full bg-[#111111]" />
-                <Skeleton className="h-64 w-full bg-[#111111]" />
-                <Skeleton className="h-48 w-full bg-[#111111]" />
+                <Skeleton className="h-48 w-full" />
+                <Skeleton className="h-64 w-full" />
+                <Skeleton className="h-48 w-full" />
               </div>
             </div>
           </div>
@@ -130,7 +134,7 @@ export default function StudentProfile() {
   return (
     <ProfileStudioLayout
       userName={profile.username}
-      userDid={profile.did}
+      realName={profile.real_name}
       onPreview={handlePreview}
       onSave={() => {}}
       isSaving={isSaving}
@@ -143,7 +147,8 @@ export default function StudentProfile() {
             <ProfileIdentityCard
               userId={userId!}
               userName={profile.username}
-              did={profile.did}
+              email={userEmail}
+              realName={profile.real_name || undefined}
               avatarUrl={profile.avatar_url || undefined}
               headline={profile.headline || undefined}
               institution={profile.institution || undefined}

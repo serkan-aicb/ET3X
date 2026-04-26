@@ -33,7 +33,7 @@ export default function StudentMyTasks() {
       if (userError || !user) {
         console.error("Error getting user:", userError);
         if (isMounted) {
-          router.push("/stud");
+          router.push("/auth");
         }
         return;
       }

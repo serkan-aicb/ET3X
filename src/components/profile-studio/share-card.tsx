@@ -13,7 +13,7 @@ interface ShareProfileCardProps {
 export function ShareProfileCard({ profileUrl, userName }: ShareProfileCardProps) {
   const [copied, setCopied] = useState(false);
   
-  const publicUrl = profileUrl || `https://talent3x.io/p/${userName}`;
+  const publicUrl = profileUrl || `https://talent3x.com/p/${userName}`;
 
   const handleCopy = async () => {
     try {
@@ -47,24 +47,24 @@ export function ShareProfileCard({ profileUrl, userName }: ShareProfileCardProps
   };
 
   return (
-    <div className="bg-[#111111] rounded-xl border border-[#1f1f1f] p-5 space-y-4">
+    <div className="bg-card rounded-xl border border-border p-5 space-y-4">
       {/* Header */}
       <div className="flex items-center space-x-2">
-        <Share2 className="h-4 w-4 text-blue-400" />
-        <h3 className="font-semibold text-white">Share Your Profile</h3>
+        <Share2 className="h-4 w-4 text-primary" />
+        <h3 className="font-semibold text-foreground">Share Your Profile</h3>
       </div>
 
-      <p className="text-sm text-gray-500">
+      <p className="text-sm text-muted-foreground">
         Share your verified profile with one link or QR code
       </p>
 
       {/* URL Display */}
-      <div className="flex items-center space-x-2 p-3 bg-[#0a0a0a] rounded-lg border border-[#1f1f1f]">
-        <ExternalLink className="h-4 w-4 text-gray-500 shrink-0" />
-        <span className="text-sm text-gray-400 truncate flex-1">{publicUrl}</span>
+      <div className="flex items-center space-x-2 p-3 bg-muted rounded-lg border border-border">
+        <ExternalLink className="h-4 w-4 text-muted-foreground shrink-0" />
+        <span className="text-sm text-muted-foreground truncate flex-1">{publicUrl}</span>
         <button
           onClick={handleCopy}
-          className="text-blue-400 hover:text-blue-300 transition-colors"
+          className="text-primary hover:text-primary/80 transition-colors"
         >
           {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
         </button>
@@ -83,7 +83,7 @@ export function ShareProfileCard({ profileUrl, userName }: ShareProfileCardProps
           variant="outline"
           size="sm"
           onClick={handleDownloadQR}
-          className="w-full border-[#1f1f1f] bg-[#0a0a0a] text-gray-300 hover:bg-[#161616]"
+          className="w-full border-border bg-muted text-muted-foreground hover:bg-accent hover:text-foreground"
         >
           <Download className="h-4 w-4 mr-2" />
           Download QR Code
@@ -91,7 +91,7 @@ export function ShareProfileCard({ profileUrl, userName }: ShareProfileCardProps
         <Button
           size="sm"
           onClick={handleShare}
-          className="w-full bg-blue-500 hover:bg-blue-600 text-white"
+          className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
         >
           <Share2 className="h-4 w-4 mr-2" />
           Share Profile

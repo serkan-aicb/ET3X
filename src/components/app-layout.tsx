@@ -12,6 +12,7 @@ import Image from "next/image";
 type ProfileData = {
   username: string;
   did: string;
+  real_name?: string | null;
   matriculation_number?: string | null;
 };
 
@@ -20,6 +21,7 @@ type UserWithProfile = {
   email: string | undefined;
   username: string;
   did: string;
+  real_name?: string | null;
   matriculation_number?: string | null;
 };
 export function AppLayout({
@@ -38,31 +40,29 @@ export function AppLayout({
       
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       if (userError || !user) {
-        router.push("/");
+        router.push("/auth");
         return;
       }
       
       // Get user profile
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
-        .select('username, did, matriculation_number')
+        .select('username, did, real_name, matriculation_number')
         .eq('id', user.id)
         .single();
       
       if (profileError) {
         console.error("Error fetching profile:", profileError);
-        router.push("/");
+        router.push("/auth");
         return;
       }
-      
-      // NOTE: Removed forced redirect to /s/collect-matriculation for students
-      // Student number is now optional and users can proceed without it
       
       setUser({
         id: user.id,
         email: user.email,
         username: profile.username,
         did: profile.did,
+        real_name: profile.real_name,
         ...(userRole === "student" ? { matriculation_number: profile.matriculation_number } : {})
       });
     };
@@ -73,7 +73,7 @@ export function AppLayout({
   const handleLogout = async () => {
     const supabase = createClient();
     await supabase.auth.signOut();
-    router.push("/");
+    router.push("/auth");
   };
 
   const getDashboardLink = () => {
@@ -124,9 +124,11 @@ export function AppLayout({
             )}
             
             <div className="flex space-x-2">
-              <Button variant="outline" onClick={() => router.push("/admin-public")}>
-                Public Dashboard
-              </Button>
+              {userRole === "educator" && (
+                <Button variant="outline" onClick={() => router.push("/e/tasks/create")}>
+                  Create Task
+                </Button>
+              )}
               
               {userRole !== "admin" && (
                 <Button variant="outline" onClick={() => router.push(getMyTasksLink())}>

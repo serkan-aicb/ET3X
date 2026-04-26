@@ -79,33 +79,9 @@ export default function Home() {
               whileTap={{ scale: 0.95 }}
               transition={{ type: "spring", stiffness: 400, damping: 17 }}
             >
-              <Link href="/stud">
+              <Link href="/auth">
                 <Button size="lg" className="w-64">
-                  Student Login
-                </Button>
-              </Link>
-            </motion.div>
-            
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              transition={{ type: "spring", stiffness: 400, damping: 17 }}
-            >
-              <Link href="/edu">
-                <Button variant="outline" size="lg" className="w-64">
-                  Educator Login
-                </Button>
-              </Link>
-            </motion.div>
-            
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              transition={{ type: "spring", stiffness: 400, damping: 17 }}
-            >
-              <Link href="/admin-public">
-                <Button variant="secondary" size="lg" className="w-64">
-                  Public Dashboard
+                  Login / Register
                 </Button>
               </Link>
             </motion.div>
@@ -191,7 +167,7 @@ export default function Home() {
           
           
           
-          <p className="text-white/70 leading-relaxed mb-4">
+          <p className="text-muted-foreground leading-relaxed mb-4">
             We believe skills should be visible, proof should be portable, and contribution should speak for itself. Talent3X is our step toward a fairer ecosystem where students gain recognition, educators get better insights, and institutions can measure impact more transparently.
           </p>
         </motion.div>

@@ -13,14 +13,16 @@ import {
   GraduationCap,
   Plus,
   X,
-  Check
+  Check,
+  Mail
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
 interface ProfileIdentityCardProps {
   userId: string;
   userName: string;
-  did: string;
+  email?: string;
+  realName?: string;
   avatarUrl?: string;
   headline?: string;
   institution?: string;
@@ -38,12 +40,14 @@ interface ProfileData {
   location: string;
   classYear: string;
   avatarUrl?: string;
+  realName?: string;
 }
 
 export function ProfileIdentityCard({
   userId,
   userName,
-  did,
+  email,
+  realName,
   avatarUrl,
   headline: initialHeadline = '',
   institution: initialInstitution = '',
@@ -58,11 +62,12 @@ export function ProfileIdentityCard({
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [profileData, setProfileData] = useState<ProfileData>({
-    fullName: userName,
+    fullName: realName || userName,
     headline: initialHeadline,
     institution: initialInstitution,
     location: initialLocation,
-    classYear: initialClassYear
+    classYear: initialClassYear,
+    realName: realName || '',
   });
 
   const [editData, setEditData] = useState<ProfileData>(profileData);
@@ -130,11 +135,11 @@ export function ProfileIdentityCard({
 
   if (isEditing) {
     return (
-      <div className="bg-gradient-to-br from-[#111111] to-[#0d1117] rounded-2xl border border-[#1f1f1f] p-6">
+      <div className="bg-card rounded-2xl border border-border p-6">
         <div className="flex items-start space-x-6">
           {/* Avatar with upload */}
           <div className="relative shrink-0">
-            <Avatar className="h-28 w-28 border-4 border-[#1f1f1f]">
+            <Avatar className="h-28 w-28 border-4 border-border">
               <AvatarImage src={avatarUrl} alt={userName} />
               <AvatarFallback className="bg-blue-500/20 text-blue-400 text-2xl font-bold">
                 {getInitials(userName)}
@@ -145,7 +150,7 @@ export function ProfileIdentityCard({
               disabled={isUploading}
               className="absolute -bottom-2 -right-2 w-10 h-10 bg-blue-500 hover:bg-blue-600 rounded-full flex items-center justify-center shadow-lg transition-colors disabled:opacity-50"
             >
-              <Camera className="h-5 w-5 text-white" />
+              <Camera className="h-5 w-5 text-primary-foreground" />
             </button>
             <input
               ref={fileInputRef}
@@ -163,7 +168,7 @@ export function ProfileIdentityCard({
               <Input
                 value={editData.fullName}
                 onChange={(e) => setEditData({ ...editData, fullName: e.target.value })}
-                className="bg-[#0a0a0a] border-[#1f1f1f] text-white placeholder:text-gray-600"
+                className="bg-muted border-border text-foreground placeholder:text-muted-foreground"
                 placeholder="Your full name"
               />
             </div>
@@ -173,7 +178,7 @@ export function ProfileIdentityCard({
               <Input
                 value={editData.headline}
                 onChange={(e) => setEditData({ ...editData, headline: e.target.value })}
-                className="bg-[#0a0a0a] border-[#1f1f1f] text-white placeholder:text-gray-600"
+                className="bg-muted border-border text-foreground placeholder:text-muted-foreground"
                 placeholder="e.g., Data Analyst | Turning Data into Decisions"
               />
             </div>
@@ -184,7 +189,7 @@ export function ProfileIdentityCard({
                 <Input
                   value={editData.institution}
                   onChange={(e) => setEditData({ ...editData, institution: e.target.value })}
-                  className="bg-[#0a0a0a] border-[#1f1f1f] text-white placeholder:text-gray-600"
+                  className="bg-muted border-border text-foreground placeholder:text-muted-foreground"
                   placeholder="University or Company"
                 />
               </div>
@@ -193,7 +198,7 @@ export function ProfileIdentityCard({
                 <Input
                   value={editData.classYear}
                   onChange={(e) => setEditData({ ...editData, classYear: e.target.value })}
-                  className="bg-[#0a0a0a] border-[#1f1f1f] text-white placeholder:text-gray-600"
+                  className="bg-muted border-border text-foreground placeholder:text-muted-foreground"
                   placeholder="e.g., Class of 2026"
                 />
               </div>
@@ -204,7 +209,7 @@ export function ProfileIdentityCard({
               <Input
                 value={editData.location}
                 onChange={(e) => setEditData({ ...editData, location: e.target.value })}
-                className="bg-[#0a0a0a] border-[#1f1f1f] text-white placeholder:text-gray-600"
+                className="bg-muted border-border text-foreground placeholder:text-muted-foreground"
                 placeholder="City, State/Country"
               />
             </div>
@@ -213,7 +218,7 @@ export function ProfileIdentityCard({
               <Button
                 size="sm"
                 onClick={handleSave}
-                className="bg-blue-500 hover:bg-blue-600 text-white"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground"
               >
                 <Check className="h-4 w-4 mr-2" />
                 Save
@@ -222,7 +227,7 @@ export function ProfileIdentityCard({
                 size="sm"
                 variant="outline"
                 onClick={handleCancel}
-                className="border-[#1f1f1f] text-gray-400 hover:bg-[#161616]"
+                className="border-border text-muted-foreground hover:bg-accent"
               >
                 <X className="h-4 w-4 mr-2" />
                 Cancel
@@ -235,11 +240,11 @@ export function ProfileIdentityCard({
   }
 
   return (
-    <div className="bg-gradient-to-br from-[#111111] to-[#0d1117] rounded-2xl border border-[#1f1f1f] p-6">
+    <div className="bg-card rounded-2xl border border-border p-6">
       <div className="flex items-start space-x-6">
         {/* Avatar */}
         <div className="relative shrink-0 group">
-          <Avatar className="h-28 w-28 border-4 border-[#1f1f1f]">
+          <Avatar className="h-28 w-28 border-4 border-border">
             <AvatarImage src={avatarUrl} alt={userName} />
             <AvatarFallback className="bg-blue-500/20 text-blue-400 text-2xl font-bold">
               {getInitials(userName)}
@@ -247,9 +252,9 @@ export function ProfileIdentityCard({
           </Avatar>
           <button
             onClick={handleImageClick}
-            className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+            className="absolute inset-0 bg-muted/80 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
           >
-            <Camera className="h-6 w-6 text-white" />
+            <Camera className="h-6 w-6 text-foreground" />
           </button>
           <input
             ref={fileInputRef}
@@ -263,7 +268,7 @@ export function ProfileIdentityCard({
         {/* Identity Info */}
         <div className="flex-1 space-y-3">
           <div className="flex items-center space-x-3">
-            <h1 className="text-2xl font-bold text-white">{profileData.fullName || userName}</h1>
+            <h1 className="text-2xl font-bold text-foreground">{profileData.fullName || userName}</h1>
             {isVerified && (
               <CheckCircle2 className="h-5 w-5 text-blue-400 fill-blue-400/20" />
             )}
@@ -271,18 +276,18 @@ export function ProfileIdentityCard({
               size="sm"
               variant="ghost"
               onClick={handleEdit}
-              className="text-gray-500 hover:text-white"
+              className="text-muted-foreground hover:text-foreground"
             >
               Edit
             </Button>
           </div>
 
           {profileData.headline ? (
-            <p className="text-gray-300 font-medium">{profileData.headline}</p>
+            <p className="text-foreground font-medium">{profileData.headline}</p>
           ) : (
             <button
               onClick={handleEdit}
-              className="text-blue-400 text-sm hover:underline flex items-center space-x-1"
+              className="text-primary text-sm hover:underline flex items-center space-x-1"
             >
               <Plus className="h-4 w-4" />
               <span>Add headline</span>
@@ -290,7 +295,13 @@ export function ProfileIdentityCard({
           )}
 
           {/* Meta Info */}
-          <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
+          <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+            {email && (
+              <div className="flex items-center space-x-1.5">
+                <Mail className="h-4 w-4" />
+                <span>{email}</span>
+              </div>
+            )}
             {profileData.institution && (
               <div className="flex items-center space-x-1.5">
                 <Building2 className="h-4 w-4" />
@@ -318,7 +329,7 @@ export function ProfileIdentityCard({
                 <Badge 
                   key={index} 
                   variant="secondary" 
-                  className="bg-blue-500/10 text-blue-400 border border-blue-500/20 font-normal"
+                  className="bg-primary/10 text-primary border border-primary/20 font-normal"
                 >
                   {skill}
                 </Badge>

@@ -25,28 +25,28 @@ export function VaultCard({ onOpenVault }: VaultCardProps) {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'Private':
-        return 'text-gray-500';
+        return 'text-muted-foreground';
       case 'You control':
-        return 'text-blue-400';
+        return 'text-blue-600';
       case 'Shared':
-        return 'text-green-400';
+        return 'text-green-600';
       default:
-        return 'text-gray-500';
+        return 'text-muted-foreground';
     }
   };
 
   return (
-    <div className="bg-[#111111] rounded-xl border border-[#1f1f1f] p-5 space-y-4">
+    <div className="bg-card rounded-xl border border-border p-5 space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
-          <Shield className="h-4 w-4 text-blue-400" />
-          <h3 className="font-semibold text-white">Your Vault</h3>
+          <Shield className="h-4 w-4 text-primary" />
+          <h3 className="font-semibold text-foreground">Your Vault</h3>
         </div>
-        <Lock className="h-4 w-4 text-gray-600" />
+        <Lock className="h-4 w-4 text-muted-foreground" />
       </div>
 
-      <p className="text-sm text-gray-500">
+      <p className="text-sm text-muted-foreground">
         You own your data. Choose what to share and with whom.
       </p>
 
@@ -55,11 +55,11 @@ export function VaultCard({ onOpenVault }: VaultCardProps) {
         {vaultItems.map((item) => (
           <div 
             key={item.id}
-            className="flex items-center justify-between py-2 px-3 bg-[#0a0a0a] rounded-lg border border-[#1f1f1f]"
+            className="flex items-center justify-between py-2 px-3 bg-muted rounded-lg border border-border"
           >
             <div className="flex items-center space-x-3">
-              <div className="text-gray-500">{item.icon}</div>
-              <span className="text-sm text-gray-300">{item.label}</span>
+              <div className="text-muted-foreground">{item.icon}</div>
+              <span className="text-sm text-foreground">{item.label}</span>
             </div>
             <span className={`text-xs ${getStatusColor(item.status)}`}>
               {item.status}
@@ -73,7 +73,7 @@ export function VaultCard({ onOpenVault }: VaultCardProps) {
         variant="outline"
         size="sm"
         onClick={onOpenVault}
-        className="w-full border-[#1f1f1f] bg-[#0a0a0a] text-gray-300 hover:bg-[#161616] hover:text-white"
+        className="w-full border-border bg-muted text-muted-foreground hover:bg-accent hover:text-foreground"
       >
         Open Vault
       </Button>

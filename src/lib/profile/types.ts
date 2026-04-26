@@ -9,6 +9,7 @@ export type Task = Tables<'tasks'>;
 // Extended profile type with additional fields for profile studio
 export type ProfileWithMatriculation = Profile & {
   matriculation_number?: string | null;
+  real_name?: string | null;
   // Extended fields for profile editing
   full_name?: string | null;
   headline?: string | null;

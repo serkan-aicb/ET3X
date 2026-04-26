@@ -66,19 +66,10 @@ export async function GET(request: Request) {
         // Create profile for new user
         let role: 'student' | 'educator' = 'student'
         
-        // Check if user came from educator login page by checking the redirect URL
-        if (redirectTo && redirectTo.includes('/edu')) {
+        // Check user metadata for role (set during email/password signup)
+        if (data.user.user_metadata?.role === 'educator') {
           role = 'educator'
-        } 
-        // Also check email domain as fallback
-        else if (data.user.email?.endsWith('@edu.university.edu')) {
-          role = 'educator'
-        }
-        // Check if email suggests educator role
-        else if (data.user.email?.includes('edu') || 
-                 data.user.email?.includes('prof') ||
-                 data.user.email?.includes('faculty') ||
-                 data.user.email?.includes('lecturer')) {
+        } else if (redirectTo && redirectTo.includes('/edu')) {
           role = 'educator'
         }
         
