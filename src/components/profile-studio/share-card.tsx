@@ -13,7 +13,7 @@ interface ShareProfileCardProps {
 export function ShareProfileCard({ profileUrl, userName }: ShareProfileCardProps) {
   const [copied, setCopied] = useState(false);
   
-  const publicUrl = profileUrl || `https://talent3x.com/p/${userName}`;
+  const publicUrl = profileUrl || `https://www.talent3x.com/p/${userName}`;
 
   const handleCopy = async () => {
     try {

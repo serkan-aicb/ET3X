@@ -415,7 +415,7 @@ export function ProfilePage({ userRole }: ProfilePageProps) {
 
   const handleCopyLink = async () => {
     const slug = publicSlug || (await ensurePublicSlug(createClient()));
-    const url = `https://talent3x.com/p/${slug}`;
+    const url = `https://www.talent3x.com/p/${slug}`;
     try {
       await navigator.clipboard.writeText(url);
       setCopied(true);
@@ -429,7 +429,7 @@ export function ProfilePage({ userRole }: ProfilePageProps) {
   const displayName = realName || userEmail.split("@")[0] || profile?.username || "User";
 
   const publicProfileUrl = publicSlug
-    ? `https://talent3x.com/p/${publicSlug}`
+    ? `https://www.talent3x.com/p/${publicSlug}`
     : null;
 
   // Skill level color
