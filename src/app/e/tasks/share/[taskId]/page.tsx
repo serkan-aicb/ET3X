@@ -49,9 +49,8 @@ export default function TaskSharePage() {
     fetchTask();
   }, [taskId]);
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
   const publicUrl = task?.share_code
-    ? `${siteUrl}/t/${task.share_code}`
+    ? `https://www.talent3x.com/t/${task.share_code}`
     : "";
 
   const handleCopyLink = async () => {
