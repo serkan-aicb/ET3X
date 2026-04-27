@@ -70,7 +70,7 @@ export default function PublicProfilePage() {
         <header className="bg-background border-b py-4 px-6">
           <div className="max-w-4xl mx-auto flex items-center space-x-2">
             <Image
-              src="/pics/LOGO-blank.png"
+              src="/pics/logo-transparent.png"
               alt="Talent3X Logo"
               width={120}
               height={120}
@@ -97,7 +97,7 @@ export default function PublicProfilePage() {
           <div className="max-w-4xl mx-auto flex items-center space-x-2">
             <Link href="/" className="flex items-center space-x-2">
               <Image
-                src="/pics/LOGO-blank.png"
+                src="/pics/logo-transparent.png"
                 alt="Talent3X Logo"
                 width={120}
                 height={120}
@@ -131,7 +131,7 @@ export default function PublicProfilePage() {
         <div className="max-w-4xl mx-auto flex items-center space-x-2">
           <Link href="/" className="flex items-center space-x-2">
             <Image
-              src="/pics/LOGO-blank.png"
+              src="/pics/logo-transparent.png"
               alt="Talent3X Logo"
               width={120}
               height={120}

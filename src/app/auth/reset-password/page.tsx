@@ -32,7 +32,7 @@ export default function ResetPasswordPage() {
     try {
       const supabase = createClient();
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/update-password`,
+        redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/auth/update-password`,
       });
 
       if (resetError) {
@@ -57,7 +57,7 @@ export default function ResetPasswordPage() {
       <header className="w-full px-6 py-3 flex items-center bg-card border-b">
         <Link href="/">
           <Image
-            src="/pics/LOGO-blank.png"
+            src="/pics/logo-transparent.png"
             alt="Talent3X"
             width={120}
             height={120}

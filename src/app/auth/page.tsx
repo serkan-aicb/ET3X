@@ -140,13 +140,15 @@ function AuthContent() {
           data: {
             role: role,
           },
-          emailRedirectTo: `${window.location.origin}/auth/callback?redirect_to=${redirectTo}`,
+          emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/auth/callback?redirect_to=${redirectTo}`,
         },
       });
 
       if (authError) {
         if (authError.message.includes("already registered")) {
           setError("This email is already registered. Please log in instead.");
+        } else if (authError.message.includes("password")) {
+          setError("Password is too weak. Please use at least 8 characters.");
         } else {
           setError(authError.message);
         }
@@ -174,14 +176,15 @@ function AuthContent() {
           console.error("Profile creation failed:", profileErr);
         }
 
-        // Check if email confirmation is needed
         if (data.session) {
-          // Auto-confirmed, redirect immediately
+          // Auto-confirmed (email confirmation disabled) — redirect immediately
+          setMessage("Account created successfully. Redirecting...");
           const dest = redirectTo || (role === "student" ? "/s/dashboard" : "/e/dashboard");
           router.push(dest);
         } else {
-          // Email confirmation required
-          setMessage("Registration successful! Please check your email to confirm your account, then log in.");
+          // Fallback: session not returned (email confirmation enabled)
+          setMessage("Account created! Please log in with your credentials.");
+          setMode("login");
         }
       }
     } catch (err) {
@@ -360,7 +363,7 @@ export default function AuthPage() {
       <header className="w-full px-6 py-3 flex items-center bg-card border-b">
         <Link href="/">
           <Image
-            src="/pics/LOGO-blank.png"
+            src="/pics/logo-transparent.png"
             alt="Talent3X"
             width={120}
             height={120}

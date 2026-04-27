@@ -112,7 +112,7 @@ export default function CollectMatriculationPage() {
         <header className="w-full px-6 py-3 flex items-center bg-card border-b">
           <Link href="/">
             <Image
-              src="/pics/LOGO-blank.png"
+              src="/pics/logo-transparent.png"
               alt="Talent3X"
               width={120}
               height={120}
@@ -173,7 +173,7 @@ export default function CollectMatriculationPage() {
       <header className="w-full px-6 py-3 flex items-center bg-card border-b">
         <Link href="/">
           <Image
-            src="/pics/LOGO-blank.png"
+            src="/pics/logo-transparent.png"
             alt="Talent3X"
             width={120}
             height={120}

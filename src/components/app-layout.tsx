@@ -108,7 +108,7 @@ export function AppLayout({
         <div className="max-w-6xl mx-auto flex justify-between items-center">
           <Link href={getDashboardLink()} className="flex items-center space-x-2">
             <Image 
-              src="/pics/LOGO-blank.png" 
+              src="/pics/logo-transparent.png"
               alt="Talent3X Logo" 
               width={120} 
               height={120} 

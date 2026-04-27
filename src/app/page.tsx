@@ -60,7 +60,7 @@ export default function Home() {
           <div className="flex flex-col items-center mb-8">
             <div className="mb-6">
               <Image 
-                src="/pics/LOGO-blank.png" 
+                src="/pics/logo-transparent.png"
                 alt="Talent3X Logo" 
                 width={240} 
                 height={240} 
