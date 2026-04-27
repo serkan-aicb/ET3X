@@ -186,7 +186,7 @@ export default function PublicProfilePage() {
       <footer className="py-6 px-4 bg-card border-t mt-auto">
         <div className="max-w-4xl mx-auto text-center">
           <p className="text-muted-foreground text-sm">
-            &copy; {new Date().getFullYear()} Talent3X. Oulu Pilot.
+            &copy; {new Date().getFullYear()} Talent3X.
           </p>
         </div>
       </footer>

@@ -144,7 +144,7 @@ export default function AdminOverview() {
           <div className="container mx-auto">
             <div className="flex flex-col md:flex-row justify-between items-center">
               <div className="text-center md:text-left mb-4 md:mb-0">
-                <p className="text-muted-foreground">© {new Date().getFullYear()} Talent3X. Oulu Pilot.</p>
+                <p className="text-muted-foreground">© {new Date().getFullYear()} Talent3X.</p>
               </div>
               <div className="flex space-x-6">
                 <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
@@ -279,7 +279,7 @@ export default function AdminOverview() {
         <div className="container mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="text-center md:text-left mb-4 md:mb-0">
-              <p className="text-muted-foreground">© {new Date().getFullYear()} Talent3X. Oulu Pilot.</p>
+              <p className="text-muted-foreground">© {new Date().getFullYear()} Talent3X.</p>
             </div>
             <div className="flex space-x-6">
               <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
