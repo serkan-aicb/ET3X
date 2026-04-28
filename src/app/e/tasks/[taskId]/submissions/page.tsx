@@ -175,8 +175,8 @@ export default function ViewSubmissions() {
         
         <SharedCard>
           <div className="mb-6">
-            <h2 className="text-2xl font-semibold">Task Submissions</h2>
-            <p className="text-xs uppercase text-muted-foreground">
+            <h2 className="text-3xl font-bold text-foreground">Task Submissions</h2>
+            <p className="text-muted-foreground">
               View all submissions for this task
             </p>
           </div>

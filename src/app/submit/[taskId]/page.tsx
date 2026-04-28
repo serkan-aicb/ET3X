@@ -303,8 +303,8 @@ export default function SubmitTask() {
       <div className="space-y-8">
         <SharedCard>
           <div>
-            <h2 className="text-2xl font-semibold">Submit Task: {task.title}</h2>
-            <p className="text-xs uppercase text-muted-foreground">
+            <h2 className="text-3xl font-bold text-foreground">Submit Task: {task.title}</h2>
+            <p className="text-muted-foreground">
               Complete and submit your work for this task
             </p>
           </div>

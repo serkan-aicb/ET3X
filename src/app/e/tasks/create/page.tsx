@@ -156,8 +156,8 @@ export default function CreateTask() {
     <AppLayout userRole="educator">
       <div className="space-y-8">
         <div>
-          <h1 className="text-2xl font-semibold">Create New Task</h1>
-          <p className="text-xs uppercase text-muted-foreground">
+          <h1 className="text-3xl font-bold text-foreground">Create New Task</h1>
+          <p className="text-muted-foreground">
             Define a new task. After creation, you&apos;ll get a shareable link and QR code.
           </p>
         </div>
@@ -244,7 +244,7 @@ export default function CreateTask() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-60 overflow-y-auto p-4 border rounded-lg border-border bg-muted">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-48 overflow-y-auto p-3 border rounded-lg border-border bg-muted">
                 {availableSkills.map((skill) => (
                   <div key={skill.id} className="flex items-start space-x-2 skill-checkbox">
                     <Checkbox

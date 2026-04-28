@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { PublicLayout } from "@/components/public-layout";
 
 type TaskInfo = {
   id: string;
@@ -126,74 +127,81 @@ export default function TaskRequestPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <Card className="w-full max-w-lg">
-          <CardHeader>
-            <Skeleton className="h-8 w-3/4" />
-            <Skeleton className="h-4 w-full" />
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-3/4" />
-            <Skeleton className="h-10 w-full" />
-          </CardContent>
-        </Card>
-      </div>
+      <PublicLayout>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <Card className="w-full max-w-lg">
+            <CardHeader>
+              <Skeleton className="h-8 w-3/4" />
+              <Skeleton className="h-4 w-full" />
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-3/4" />
+              <Skeleton className="h-10 w-full" />
+            </CardContent>
+          </Card>
+        </div>
+      </PublicLayout>
     );
   }
 
   if (!task) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <Card className="w-full max-w-lg">
-          <CardContent className="py-8 text-center">
-            <p className="text-muted-foreground">Task not found or the link is invalid.</p>
-            <Link href="/">
-              <Button className="mt-4" variant="outline">Go to Home</Button>
-            </Link>
-          </CardContent>
-        </Card>
-      </div>
+      <PublicLayout>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <Card className="w-full max-w-lg">
+            <CardContent className="py-8 text-center">
+              <p className="text-muted-foreground">Task not found or the link is invalid.</p>
+              <Link href="/">
+                <Button className="mt-4" variant="outline">Go to Home</Button>
+              </Link>
+            </CardContent>
+          </Card>
+        </div>
+      </PublicLayout>
     );
   }
 
   // Task is deactivated
   if (!task.is_active) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <Card className="w-full max-w-lg">
-          <CardHeader>
-            <CardTitle>{task.title}</CardTitle>
-            <CardDescription>This task is no longer accepting new requests</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="p-3 rounded-lg bg-yellow-50 text-yellow-700 border border-yellow-200">
-              The professor has deactivated this task&apos;s request link. No new participation requests can be submitted.
-            </div>
-            {requestStatus !== "none" && (
-              <p className="text-sm text-muted-foreground">
-                Your existing request status: <span className="font-semibold capitalize">{requestStatus}</span>
-              </p>
-            )}
-            <Link href="/">
-              <Button variant="outline" className="w-full">Go to Home</Button>
-            </Link>
-          </CardContent>
-        </Card>
-      </div>
+      <PublicLayout>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <Card className="w-full max-w-lg">
+            <CardHeader>
+              <CardTitle>{task.title}</CardTitle>
+              <CardDescription>This task is no longer accepting new requests</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="p-3 rounded-lg bg-yellow-50 text-yellow-700 border border-yellow-200">
+                The professor has deactivated this task&apos;s request link. No new participation requests can be submitted.
+              </div>
+              {requestStatus !== "none" && (
+                <p className="text-sm text-muted-foreground">
+                  Your existing request status: <span className="font-semibold capitalize">{requestStatus}</span>
+                </p>
+              )}
+              <Link href="/">
+                <Button variant="outline" className="w-full">Go to Home</Button>
+              </Link>
+            </CardContent>
+          </Card>
+        </div>
+      </PublicLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <Card className="w-full max-w-lg">
-        <CardHeader>
-          <CardTitle className="text-xl">{task.title}</CardTitle>
-          {task.module && (
-            <CardDescription>Module: {task.module}</CardDescription>
-          )}
-        </CardHeader>
-        <CardContent className="space-y-4">
+    <PublicLayout>
+      <div className="flex items-start justify-center pt-10">
+        <Card className="w-full max-w-lg">
+          <CardHeader>
+            <CardTitle className="text-xl">{task.title}</CardTitle>
+            {task.module && (
+              <CardDescription>Module: {task.module}</CardDescription>
+            )}
+          </CardHeader>
+          <CardContent className="space-y-4">
           {task.description && (
             <p className="text-muted-foreground">{task.description}</p>
           )}
@@ -265,5 +273,6 @@ export default function TaskRequestPage() {
         </CardContent>
       </Card>
     </div>
+  </PublicLayout>
   );
 }

@@ -156,8 +156,8 @@ export default function ViewRating() {
       <div className="space-y-8">
         <SharedCard>
           <div>
-            <h2 className="text-2xl font-semibold">Task Rating</h2>
-            <p className="text-xs uppercase text-muted-foreground">
+            <h2 className="text-3xl font-bold text-foreground">Task Rating</h2>
+            <p className="text-muted-foreground">
               Rating for: {rating.tasks?.title || "Task"}
             </p>
           </div>

@@ -162,8 +162,8 @@ export default function EditTask() {
     <AppLayout userRole="educator">
       <div className="space-y-8">
         <div>
-          <h1 className="text-2xl font-semibold">Edit Task</h1>
-          <p className="text-xs uppercase text-muted-foreground">
+          <h1 className="text-3xl font-bold text-foreground">Edit Task</h1>
+          <p className="text-muted-foreground">
             Modify the task details below
           </p>
         </div>

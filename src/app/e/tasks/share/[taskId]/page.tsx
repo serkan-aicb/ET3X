@@ -163,8 +163,8 @@ export default function TaskSharePage() {
     <AppLayout userRole="educator">
       <div className="space-y-8">
         <div>
-          <h1 className="text-2xl font-semibold">Share Task: {task.title}</h1>
-          <p className="text-xs uppercase text-muted-foreground">
+          <h1 className="text-3xl font-bold text-foreground">Share Task: {task.title}</h1>
+          <p className="text-muted-foreground">
             Share this link or QR code with students
           </p>
         </div>

@@ -194,8 +194,8 @@ export default function RateSingleStudent() {
         
         <SharedCard>
           <div>
-            <h2 className="text-2xl font-semibold">Rate Task: {task.title}</h2>
-            <p className="text-xs uppercase text-muted-foreground">
+            <h2 className="text-3xl font-bold text-foreground">Rate Task: {task.title}</h2>
+            <p className="text-muted-foreground">
               Rating submission from {submission.profiles?.real_name || `@${submission.profiles?.username || submission.submitter}`}
             </p>
           </div>

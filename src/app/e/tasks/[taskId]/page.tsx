@@ -640,7 +640,7 @@ export default function EducatorTaskDetail() {
         <SharedCard>
           <div className="flex justify-between items-start">
             <div>
-              <h2 className="text-2xl font-semibold text-foreground">{task.title}</h2>
+              <h2 className="text-3xl font-bold text-foreground">{task.title}</h2>
               {task.module && (
                 <p className="text-sm text-muted-foreground">{task.module}</p>
               )}
