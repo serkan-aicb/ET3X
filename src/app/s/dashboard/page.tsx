@@ -230,10 +230,7 @@ export default function StudentDashboard() {
           
           <SharedCard title="Quick Actions" description="Navigate to key sections">
             <div className="flex flex-col gap-4">
-              <Button onClick={() => router.push("/s/tasks")} className="w-full">
-                Browse Tasks
-              </Button>
-              <Button onClick={() => router.push("/s/my-tasks")} variant="outline" className="w-full">
+              <Button onClick={() => router.push("/s/my-tasks")} className="w-full">
                 My Tasks
               </Button>
               <Button onClick={() => router.push("/s/profile")} variant="outline" className="w-full">

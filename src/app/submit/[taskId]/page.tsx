@@ -21,7 +21,7 @@ type SubmissionFile = {
 };
 
 const ALLOWED_EXTENSIONS = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'csv', 'ppt', 'pptx'];
-const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
+const MAX_FILE_SIZE = 3 * 1024 * 1024; // 3MB
 const MAX_FILES = 10;
 
 export default function SubmitTask() {
@@ -115,7 +115,7 @@ export default function SubmitTask() {
         continue;
       }
       if (file.size > MAX_FILE_SIZE) {
-        setMessage(`File too large: ${file.name} (${(file.size / (1024 * 1024)).toFixed(1)}MB). Maximum size is 100MB.`);
+        setMessage(`File too large: ${file.name} (${(file.size / (1024 * 1024)).toFixed(1)}MB). Maximum size is 3MB.`);
         continue;
       }
       validFiles.push(file);
@@ -341,7 +341,7 @@ export default function SubmitTask() {
               <div className="space-y-2">
                 <Label>Upload Files (max {MAX_FILES} files, {MAX_FILES - uploadedFiles.length - pendingFiles.length} remaining)</Label>
                 <p className="text-sm text-muted-foreground">
-                  Accepted formats: PDF, Word (.doc/.docx), Excel (.xls/.xlsx/.csv), PowerPoint (.ppt/.pptx). Max 100MB per file.
+                  Accepted formats: PDF, Word (.doc/.docx), Excel (.xls/.xlsx/.csv), PowerPoint (.ppt/.pptx). Max 3MB per file.
                 </p>
                 <p className="text-xs text-muted-foreground">
                   Select your files, then click &ldquo;Submit Task&rdquo; below. All files will be uploaded automatically.

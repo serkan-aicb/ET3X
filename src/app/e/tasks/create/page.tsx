@@ -103,6 +103,7 @@ export default function CreateTask() {
           status: 'open',
           is_requestable: true,
           is_active: true,
+          task_mode: 'multi',
           share_code: shareCode,
         })
         .select()
@@ -126,6 +127,7 @@ export default function CreateTask() {
               status: 'open',
               is_requestable: true,
               is_active: true,
+              task_mode: 'multi',
               share_code: newShareCode,
             })
             .select()

@@ -28,6 +28,7 @@ export default function EditTask() {
   const [description, setDescription] = useState("");
   // Removed goal, context, and deliverables states
   const [seats, setSeats] = useState(1);
+  const [taskMode, setTaskMode] = useState<"single" | "multi">("multi");
   const [skillLevel, setSkillLevel] = useState<"Novice" | "Skilled" | "Expert" | "Master">("Novice");
   const [license, setLicense] = useState<"CC BY 4.0" | "CC0 1.0">("CC BY 4.0");
   const [skills, setSkills] = useState<number[]>([]);
@@ -76,6 +77,7 @@ export default function EditTask() {
           setDescription(taskData.description || "");
           // Removed goal, context, and deliverables
           setSeats(taskData.seats || 1);
+          setTaskMode((taskData.task_mode as "single" | "multi") || "multi");
           setSkillLevel(taskData.skill_level as "Novice" | "Skilled" | "Expert" | "Master" || "Novice");
           setLicense(taskData.license as "CC BY 4.0" | "CC0 1.0" || "CC BY 4.0");
           setSkills(taskData.skills || []);
@@ -118,6 +120,7 @@ export default function EditTask() {
           module,
           description, // Use description instead of goal, context, deliverables
           seats,
+          task_mode: taskMode,
           skill_level: skillLevel,
           license,
           skills,
@@ -215,6 +218,22 @@ export default function EditTask() {
                 />
                 <p className="text-sm text-muted-foreground">
                   Enter 1 for individual tasks, or more for group tasks
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Assignment Mode</Label>
+                <Select value={taskMode} onValueChange={(value: "single" | "multi") => setTaskMode(value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select assignment mode" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="single">Single Assignment (1 student only)</SelectItem>
+                    <SelectItem value="multi">Multi-Assignment (multiple students)</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-sm text-muted-foreground">
+                  Single mode closes the task after the first assignment
                 </p>
               </div>
               

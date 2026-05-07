@@ -13,7 +13,7 @@ const ALLOWED_FILE_TYPES = [
   'application/vnd.openxmlformats-officedocument.presentationml.presentation',
 ];
 
-const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
+const MAX_FILE_SIZE = 3 * 1024 * 1024; // 3MB
 const MAX_FILES = 10;
 
 export async function POST(request: Request) {
@@ -71,7 +71,7 @@ export async function POST(request: Request) {
       // Validate file size
       if (file.size > MAX_FILE_SIZE) {
         return NextResponse.json({ 
-          error: `File too large: ${file.name} (${(file.size / (1024 * 1024)).toFixed(1)}MB). Maximum size is 100MB.` 
+          error: `File too large: ${file.name} (${(file.size / (1024 * 1024)).toFixed(1)}MB). Maximum size is 3MB.`
         }, { status: 400 });
       }
 

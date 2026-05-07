@@ -10,8 +10,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Talent3X",
-  description: "Decentralized talent development platform",
+  title: "Talent3X — Capability Infrastructure for Higher Education",
+  description: "Making student capability visible, portable, and defensible across university courses, projects, and real-world work.",
 };
 
 export default function RootLayout({

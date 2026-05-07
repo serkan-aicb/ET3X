@@ -69,7 +69,7 @@ CREATE TABLE IF NOT EXISTS tasks (
   skills INTEGER[], -- Array of skill IDs
   due_date TIMESTAMP WITH TIME ZONE,
   status task_status DEFAULT 'draft',
-  task_mode TEXT DEFAULT 'single', -- New column for task mode ('single' or 'multi')
+  task_mode TEXT DEFAULT 'multi', -- New column for task mode ('single' or 'multi')
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

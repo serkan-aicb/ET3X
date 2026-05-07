@@ -2,7 +2,7 @@
 -- This script updates existing tasks and assignments to work with the new system
 
 -- Add task_mode column to tasks table if it doesn't exist
-ALTER TABLE tasks ADD COLUMN IF NOT EXISTS task_mode TEXT DEFAULT 'single';
+ALTER TABLE tasks ADD COLUMN IF NOT EXISTS task_mode TEXT DEFAULT 'multi';
 
 -- Add status column to task_assignments table if it doesn't exist
 ALTER TABLE task_assignments ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'in_progress';
