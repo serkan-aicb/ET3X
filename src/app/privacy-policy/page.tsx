@@ -26,7 +26,7 @@ export default function PrivacyPolicyPage() {
             <div>
               <h2 className="text-xl font-bold text-slate-900 mb-3">1. Controller</h2>
               <p className="text-slate-600 leading-relaxed">
-                The data controller responsible for personal data processed through the Talent3X platform (talent3x.com and app.talent3x.com) is:
+                The data controller responsible for personal data processed through the Talent3X platform (talent3x.com) is:
               </p>
               <div className="mt-3 p-4 bg-slate-50 rounded-lg border border-slate-200 text-slate-600 text-sm">
                 <p>Talent3X</p>

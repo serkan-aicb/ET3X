@@ -122,9 +122,7 @@ export default function Home() {
                 For Students
               </Link>
               <a
-                href="https://app.talent3x.com"
-                target="_blank"
-                rel="noopener noreferrer"
+                href="/auth"
                 className="inline-flex items-center justify-center px-5 py-2.5 rounded-lg border border-slate-300 text-slate-700 text-sm font-semibold hover:bg-slate-50 transition-colors"
               >
                 Open Talent3X →
@@ -298,14 +296,12 @@ export default function Home() {
                 ))}
               </ul>
               <div className="mt-8">
-                <a
-                  href="https://app.talent3x.com/signup?role=student"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <Link
+                  href="/auth?mode=register&role=student"
                   className="inline-flex items-center justify-center px-5 py-2.5 rounded-lg bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition-colors"
                 >
                   Start as Student
-                </a>
+                </Link>
               </div>
             </div>
 
@@ -362,9 +358,7 @@ export default function Home() {
                 Create a verified, portable profile of your work across courses, projects, and placements.
               </p>
               <a
-                href="https://app.talent3x.com/signup?role=student"
-                target="_blank"
-                rel="noopener noreferrer"
+                href="/auth?mode=register&role=student"
                 className="inline-flex items-center justify-center w-full px-4 py-2.5 rounded-lg bg-white text-blue-700 text-sm font-semibold hover:bg-blue-50 transition-colors"
               >
                 Start as Student
@@ -392,9 +386,7 @@ export default function Home() {
                 Already on Talent3X? Log in or open the platform directly.
               </p>
               <a
-                href="https://app.talent3x.com"
-                target="_blank"
-                rel="noopener noreferrer"
+                href="/auth"
                 className="inline-flex items-center justify-center w-full px-4 py-2.5 rounded-lg border border-white text-white text-sm font-semibold hover:bg-white hover:text-blue-700 transition-colors"
               >
                 Open Talent3X

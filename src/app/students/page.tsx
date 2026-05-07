@@ -107,9 +107,7 @@ export default function StudentsPage() {
               Build a verified record of your work across courses, projects, and real-world experience — and take it anywhere.
             </p>
             <a
-              href="https://app.talent3x.com/signup?role=student"
-              target="_blank"
-              rel="noopener noreferrer"
+              href="/auth?mode=register&role=student"
               className="inline-flex items-center justify-center px-6 py-3 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-colors"
             >
               Start as Student
@@ -193,9 +191,7 @@ export default function StudentsPage() {
             Join students who are making their work visible and their capability defensible.
           </p>
           <a
-            href="https://app.talent3x.com/signup?role=student"
-            target="_blank"
-            rel="noopener noreferrer"
+            href="/auth?mode=register&role=student"
             className="inline-flex items-center justify-center px-8 py-3 rounded-lg bg-white text-blue-700 font-semibold hover:bg-blue-50 transition-colors"
           >
             Start as Student

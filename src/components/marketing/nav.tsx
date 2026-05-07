@@ -47,12 +47,12 @@ export function MarketingNav() {
         </nav>
 
         <div className="hidden lg:flex items-center gap-3">
-          <a href="https://app.talent3x.com/login" target="_blank" rel="noopener noreferrer">
+          <Link href="/auth">
             <Button variant="ghost" size="sm" className="text-slate-600">Login</Button>
-          </a>
-          <a href="https://app.talent3x.com" target="_blank" rel="noopener noreferrer">
+          </Link>
+          <Link href="/auth?mode=register">
             <Button size="sm">Get Started</Button>
-          </a>
+          </Link>
         </div>
 
         <button
@@ -72,12 +72,12 @@ export function MarketingNav() {
           <Link href="/how-it-works" onClick={close} className="block hover:text-blue-600 transition-colors">How It Works</Link>
           <Link href="/partners" onClick={close} className="block hover:text-blue-600 transition-colors">Partners &amp; Investors</Link>
           <div className="flex gap-3 pt-3 border-t border-slate-100">
-            <a href="https://app.talent3x.com/login" target="_blank" rel="noopener noreferrer" className="flex-1">
+            <Link href="/auth" onClick={close} className="flex-1">
               <Button variant="outline" className="w-full" size="sm">Login</Button>
-            </a>
-            <a href="https://app.talent3x.com" target="_blank" rel="noopener noreferrer" className="flex-1">
+            </Link>
+            <Link href="/auth?mode=register" onClick={close} className="flex-1">
               <Button className="w-full" size="sm">Get Started</Button>
-            </a>
+            </Link>
           </div>
         </div>
       )}

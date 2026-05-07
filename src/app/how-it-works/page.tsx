@@ -165,9 +165,7 @@ export default function HowItWorksPage() {
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <a
-              href="https://app.talent3x.com/signup?role=student"
-              target="_blank"
-              rel="noopener noreferrer"
+              href="/auth?mode=register&role=student"
               className="inline-flex items-center justify-center px-6 py-3 rounded-lg bg-white text-blue-700 font-semibold hover:bg-blue-50 transition-colors"
             >
               Start as Student

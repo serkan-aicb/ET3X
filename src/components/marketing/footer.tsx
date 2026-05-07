@@ -33,14 +33,14 @@ export function MarketingFooter() {
             <p className="text-white text-xs font-semibold uppercase tracking-widest mb-4">Access</p>
             <ul className="space-y-2.5">
               <li>
-                <a href="https://app.talent3x.com/login" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
+                <Link href="/auth" className="hover:text-white transition-colors">
                   Login
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="https://app.talent3x.com/signup?role=student" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
+                <Link href="/auth?mode=register&role=student" className="hover:text-white transition-colors">
                   Student Signup
-                </a>
+                </Link>
               </li>
               <li>
                 <Link href="/universities#request" className="hover:text-white transition-colors">
@@ -48,9 +48,9 @@ export function MarketingFooter() {
                 </Link>
               </li>
               <li>
-                <a href="https://app.talent3x.com" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
+                <Link href="/auth" className="hover:text-white transition-colors">
                   Open Platform
-                </a>
+                </Link>
               </li>
             </ul>
           </div>

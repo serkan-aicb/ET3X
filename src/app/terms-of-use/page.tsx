@@ -25,7 +25,7 @@ export default function TermsOfUsePage() {
           <div>
             <h2 className="text-xl font-bold text-slate-900 mb-3">1. Acceptance of Terms</h2>
             <p className="leading-relaxed">
-              By accessing or using the Talent3X platform (available at talent3x.com and app.talent3x.com), you agree to be bound by these Terms of Use. If you do not agree to these terms, you may not use the platform.
+              By accessing or using the Talent3X platform (available at talent3x.com), you agree to be bound by these Terms of Use. If you do not agree to these terms, you may not use the platform.
             </p>
           </div>
 
