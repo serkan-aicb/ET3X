@@ -2,11 +2,30 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
+// Public marketing pages — no authentication required
+const PUBLIC_PATHS = new Set([
+  '/',
+  '/students',
+  '/universities',
+  '/how-it-works',
+  '/partners',
+  '/privacy-policy',
+  '/terms-of-use',
+  '/legal-notice',
+])
+
+const PUBLIC_PREFIXES = [
+  '/auth',
+  '/t/',
+  '/p/',
+  '/api',
+  '/_next',
+  '/edu',
+  '/stud',
+]
+
 export async function proxy(request: NextRequest) {
-  // Create a Supabase response that will handle auth cookie refresh
-  const supabaseResponse = NextResponse.next({
-    request,
-  })
+  const supabaseResponse = NextResponse.next({ request })
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -26,49 +45,44 @@ export async function proxy(request: NextRequest) {
     }
   )
 
-  // IMPORTANT: Avoid writing logic between createServerClient and
-  // supabase.auth.getUser(). A mistake could cause random logout issues.
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const { data: { user } } = await supabase.auth.getUser()
 
-  // Handle root path redirection
-  if (request.nextUrl.pathname === '/') {
-    if (user) {
-      // Check user role and redirect accordingly
-      const { data: profile, error } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single()
+  const { pathname } = request.nextUrl
 
-      if (!error && profile) {
-        if (profile.role === 'student') {
-          return NextResponse.redirect(new URL('/s/dashboard', request.url))
-        } else if (profile.role === 'educator') {
-          return NextResponse.redirect(new URL('/e/dashboard', request.url))
-        } else if (profile.role === 'admin') {
-          return NextResponse.redirect(new URL('/admin/overview', request.url))
-        }
+  // Logged-in users visiting marketing pages → redirect to their dashboard
+  if (user && PUBLIC_PATHS.has(pathname)) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+
+    if (profile) {
+      if (profile.role === 'student') {
+        return NextResponse.redirect(new URL('/s/dashboard', request.url))
+      } else if (profile.role === 'educator') {
+        return NextResponse.redirect(new URL('/e/dashboard', request.url))
+      } else if (profile.role === 'admin') {
+        return NextResponse.redirect(new URL('/admin/overview', request.url))
       }
     }
     return supabaseResponse
   }
 
-  // Protected routes: redirect unauthenticated users to auth page
-  if (
-    !user &&
-    !request.nextUrl.pathname.startsWith('/auth') &&
-    !request.nextUrl.pathname.startsWith('/t/') &&
-    !request.nextUrl.pathname.startsWith('/p/') &&
-    !request.nextUrl.pathname.startsWith('/api') &&
-    !request.nextUrl.pathname.startsWith('/_next') &&
-    request.nextUrl.pathname !== '/edu' &&
-    request.nextUrl.pathname !== '/stud'
-  ) {
+  // Allow public paths through without authentication
+  const isPublic =
+    PUBLIC_PATHS.has(pathname) ||
+    PUBLIC_PREFIXES.some((prefix) => pathname.startsWith(prefix))
+
+  if (isPublic) {
+    return supabaseResponse
+  }
+
+  // Protected routes: redirect unauthenticated users to login
+  if (!user) {
     const redirectUrl = request.nextUrl.clone()
     redirectUrl.pathname = '/auth'
-    redirectUrl.searchParams.set('redirect_to', request.nextUrl.pathname)
+    redirectUrl.searchParams.set('redirect_to', pathname)
     return NextResponse.redirect(redirectUrl)
   }
 
@@ -76,5 +90,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|pics|.*\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|pics|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'],
 }
