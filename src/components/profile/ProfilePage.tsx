@@ -373,101 +373,103 @@ export function ProfilePage({ userRole }: ProfilePageProps) {
         <div className="w-full overflow-hidden print:shadow-none">
 
           {/* ── Top action bar ─────────────────────────────────────────── */}
-          <div className="flex items-center justify-between px-8 py-3 border-b border-slate-100 bg-white/95 backdrop-blur sticky top-0 z-20 print:hidden">
-            <div className="flex items-center gap-2.5">
-              <div className="w-6 h-6 rounded-md bg-blue-600 flex items-center justify-center">
-                <span className="text-white font-bold text-[10px]">T</span>
-              </div>
-              <span className="text-slate-400 text-xs font-medium tracking-wide uppercase">Profile Studio</span>
-            </div>
+          <div className="flex items-center justify-between px-10 py-3 border-b border-slate-100 bg-white sticky top-0 z-20 print:hidden">
             <div className="flex items-center gap-2">
-              <Button variant="ghost" size="sm" onClick={() => setEditing(!editing)} className="gap-1.5 text-xs text-slate-500 hover:text-slate-800">
+              <div className="w-5 h-5 rounded bg-blue-600 flex items-center justify-center shrink-0">
+                <span className="text-white font-bold text-[9px] leading-none">T</span>
+              </div>
+              <span className="text-slate-400 text-[11px] font-medium tracking-widest uppercase">Profile Studio</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <button
+                onClick={() => setEditing(!editing)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-500 hover:text-slate-800 hover:bg-slate-50 rounded-lg transition-colors"
+              >
                 {editing ? <X className="h-3.5 w-3.5" /> : <Pencil className="h-3.5 w-3.5" />}
                 {editing ? "Cancel" : "Edit"}
-              </Button>
-              <Button variant="outline" size="sm" onClick={handleCopyLink} className="gap-1.5 text-xs">
-                {copied ? <Check className="h-3.5 w-3.5" /> : <Share2 className="h-3.5 w-3.5" />}
+              </button>
+              <button
+                onClick={handleCopyLink}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 border border-slate-200 hover:border-slate-300 rounded-lg bg-white transition-colors"
+              >
+                {copied ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Share2 className="h-3.5 w-3.5" />}
                 Share
-              </Button>
-              <Button size="sm" onClick={handleExportPDF} className="gap-1.5 text-xs bg-blue-600 hover:bg-blue-700 text-white">
+              </button>
+              <button
+                onClick={handleExportPDF}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
+              >
                 <Printer className="h-3.5 w-3.5" />
                 Export PDF
-              </Button>
+              </button>
             </div>
           </div>
 
-          {/* ── Hero / Cover ───────────────────────────────────────────── */}
-          <div className="relative">
-            {/* Cover gradient */}
-            <div className="h-44 bg-gradient-to-br from-blue-600 via-blue-500 to-indigo-600 print:h-24" />
+          {/* ── Profile Header ─────────────────────────────────────────── */}
+          <div className="px-10 pt-8 pb-7 border-b border-slate-100">
+            <div className="flex items-center gap-7">
 
-            {/* Avatar + identity overlapping cover */}
-            <div className="px-8 pb-0">
-              <div className="flex items-end justify-between -mt-14 mb-5">
-                <div className="flex items-end gap-5">
-                  {/* Avatar */}
-                  <div className="relative shrink-0">
-                    <div className="relative h-28 w-28 rounded-2xl border-4 border-white shadow-xl overflow-hidden bg-blue-600">
-                      {avatarUrl
-                        ? <Image src={avatarUrl} alt={displayName} fill sizes="112px" className="object-cover" unoptimized />
-                        : <div className="w-full h-full flex items-center justify-center text-white text-3xl font-bold">{getInitials(displayName)}</div>
-                      }
-                    </div>
-                    {avatarUploading ? (
-                      <div className="absolute inset-0 bg-white/80 rounded-2xl flex items-center justify-center">
-                        <Loader2 className="h-5 w-5 animate-spin text-blue-600" />
-                      </div>
-                    ) : (
-                      <button
-                        onClick={() => fileInputRef.current?.click()}
-                        className="absolute -bottom-1 -right-1 w-7 h-7 bg-white border border-slate-200 hover:bg-slate-50 rounded-full flex items-center justify-center shadow-md print:hidden"
-                      >
-                        <Camera className="h-3.5 w-3.5 text-slate-500" />
-                      </button>
-                    )}
-                    <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={handleAvatarUpload} className="hidden" />
+              {/* Avatar */}
+              <div className="relative shrink-0">
+                <div className="relative h-20 w-20 rounded-2xl overflow-hidden bg-blue-600 border border-slate-200">
+                  {avatarUrl
+                    ? <Image src={avatarUrl} alt={displayName} fill sizes="80px" className="object-cover" unoptimized />
+                    : <div className="w-full h-full flex items-center justify-center text-white text-xl font-bold tracking-tight">{getInitials(displayName)}</div>
+                  }
+                </div>
+                {avatarUploading ? (
+                  <div className="absolute inset-0 bg-white/80 rounded-2xl flex items-center justify-center">
+                    <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
                   </div>
+                ) : (
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="absolute -bottom-1.5 -right-1.5 w-6 h-6 bg-white border border-slate-200 hover:bg-slate-50 rounded-full flex items-center justify-center shadow-sm print:hidden transition-colors"
+                  >
+                    <Camera className="h-3 w-3 text-slate-400" />
+                  </button>
+                )}
+                <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={handleAvatarUpload} className="hidden" />
+              </div>
 
-                  {/* Name block */}
-                  <div className="pb-1 space-y-0.5">
-                    <h1 className="text-2xl font-bold text-slate-900 leading-tight">{displayName}</h1>
-                    {headline && <p className="text-blue-600 font-semibold text-sm">{headline}</p>}
-                    <div className="flex items-center gap-2 pt-0.5">
-                      <Badge variant="secondary" className="text-xs capitalize font-medium">{profile?.role}</Badge>
+              {/* Identity */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-start justify-between gap-6">
+                  <div>
+                    <h1 className="text-[1.75rem] font-bold text-slate-900 leading-none tracking-tight">{displayName}</h1>
+                    {headline && (
+                      <p className="text-base text-blue-600 font-medium mt-1.5 leading-none">{headline}</p>
+                    )}
+                    <div className="flex items-center gap-2 mt-2.5">
+                      <Badge variant="secondary" className="text-xs capitalize font-medium px-2.5 py-0.5">{profile?.role}</Badge>
                       {trustMetrics.verified && (
-                        <div className="flex items-center gap-1 text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
                           <Shield className="h-3 w-3" />
                           Verified
-                        </div>
+                        </span>
                       )}
                     </div>
+                    {bio && (
+                      <p className="mt-3 text-sm text-slate-500 leading-relaxed max-w-xl">&ldquo;{bio}&rdquo;</p>
+                    )}
                   </div>
-                </div>
 
-                {/* Stats inline */}
-                <div className="hidden lg:flex items-center gap-1 bg-slate-50 border border-slate-100 rounded-2xl px-4 py-3 mb-1">
-                  {[
-                    { value: taskStats.total, label: "Tasks" },
-                    { value: trustMetrics.total_evaluations, label: "Evaluations" },
-                    { value: topSkills.length, label: "Skills" },
-                  ].map((stat, i) => (
-                    <div key={stat.label} className="flex items-center gap-1">
-                      {i > 0 && <div className="w-px h-8 bg-slate-200 mx-3" />}
-                      <div className="text-center px-2">
-                        <p className="text-xl font-bold text-slate-900">{stat.value}</p>
-                        <p className="text-[10px] text-slate-500 uppercase tracking-wide">{stat.label}</p>
+                  {/* Stats */}
+                  <div className="hidden lg:flex items-center shrink-0 pr-2 divide-x divide-slate-100">
+                    {[
+                      { value: taskStats.total, label: "Tasks" },
+                      { value: trustMetrics.total_evaluations, label: "Evaluations" },
+                      { value: topSkills.length, label: "Skills" },
+                    ].map((stat) => (
+                      <div key={stat.label} className="text-center px-8 first:pl-0 last:pr-0">
+                        <p className="text-2xl font-bold text-slate-900 leading-none tabular-nums">{stat.value}</p>
+                        <p className="text-[11px] text-slate-400 font-medium mt-1.5 uppercase tracking-wider">{stat.label}</p>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               </div>
 
-              {/* Bio */}
-              {bio && (
-                <div className="mb-6 max-w-2xl">
-                  <p className="text-sm text-slate-500 italic leading-relaxed border-l-2 border-blue-200 pl-3">&ldquo;{bio}&rdquo;</p>
-                </div>
-              )}
             </div>
           </div>
 
@@ -518,7 +520,7 @@ export function ProfilePage({ userRole }: ProfilePageProps) {
 
               {/* Radar chart */}
               <div className="px-10 py-8">
-                <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
                   Capability based on evaluated work
                   <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-slate-100 text-slate-400 text-[9px] cursor-default font-bold">i</span>
                 </p>
@@ -540,8 +542,8 @@ export function ProfilePage({ userRole }: ProfilePageProps) {
               </div>
 
               {/* Top Evaluated Contributions */}
-              <div className="px-8 py-8 bg-slate-50/50">
-                <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-5">Top Evaluated Contributions</p>
+              <div className="px-10 py-8 bg-slate-50/30">
+                <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest mb-5">Top Evaluated Contributions</p>
                 {activeProofs.length > 0 ? (
                   <div className="space-y-3">
                     {activeProofs
@@ -605,8 +607,8 @@ export function ProfilePage({ userRole }: ProfilePageProps) {
             <div className="grid grid-cols-1 lg:grid-cols-3 divide-y lg:divide-y-0 lg:divide-x divide-slate-100">
 
               {/* Top Verified Capabilities */}
-              <div className="px-8 py-8">
-                <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-5">Top Verified Capabilities</p>
+              <div className="px-10 py-8">
+                <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest mb-5">Top Verified Capabilities</p>
                 {topSkills.length > 0 ? (
                   <div className="space-y-2.5">
                     {topSkills.slice(0, 5).map(s => (
@@ -638,8 +640,8 @@ export function ProfilePage({ userRole }: ProfilePageProps) {
               </div>
 
               {/* Evaluation Timeline */}
-              <div className="px-8 py-8">
-                <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-5">Evaluation Timeline</p>
+              <div className="px-10 py-8">
+                <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest mb-5">Evaluation Timeline</p>
                 {activeProofs.length > 0 ? (
                   <div className="space-y-1">
                     {activeProofs.slice(0, 7).map((p, idx) => (
@@ -671,8 +673,8 @@ export function ProfilePage({ userRole }: ProfilePageProps) {
               </div>
 
               {/* Key Skills */}
-              <div className="px-8 py-8">
-                <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-5">Key Skills (from evaluations)</p>
+              <div className="px-10 py-8">
+                <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest mb-5">Key Skills (from evaluations)</p>
                 {topSkills.length > 0 ? (
                   <div className="space-y-3.5">
                     {topSkills.slice(0, 7).map(s => (
