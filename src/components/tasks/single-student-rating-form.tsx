@@ -12,7 +12,6 @@ type Task = Tables<'tasks'>;
 
 export function SingleStudentRatingForm({ 
   taskId, 
-  submissionId,
   student, 
   skills,
   task,
@@ -83,15 +82,6 @@ export function SingleStudentRatingForm({
       // Get current user (educator)
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("User not found");
-      
-      // Get educator profile for DID
-      const { data: educatorProfile, error: educatorError } = await supabase
-        .from('profiles')
-        .select('did')
-        .eq('id', user.id)
-        .single();
-      
-      if (educatorError) throw educatorError;
       
       // Prepare skill scores for XP calculation
       const skillScores: SkillScore[] = Object.entries(ratings).map(([skillId, stars]) => ({

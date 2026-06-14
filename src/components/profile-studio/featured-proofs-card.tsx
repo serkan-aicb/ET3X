@@ -1,7 +1,6 @@
 "use client";
 
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { FileCheck, Star, ExternalLink, FileX, Plus, CheckCircle2 } from 'lucide-react';
 import { Proof } from '@/lib/profile/types';
 

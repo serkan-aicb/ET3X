@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Progress } from '@/components/ui/progress';
 import {
   User,
   FileCheck,
@@ -12,11 +11,9 @@ import {
   Shield,
   ClipboardList,
   Settings,
-  Crown,
   Check,
   Sparkles
 } from 'lucide-react';
-import Image from 'next/image';
 
 interface SidebarProfileStudioProps {
   userName: string;
@@ -45,6 +42,7 @@ export function SidebarProfileStudio({
   onNavigate
 }: SidebarProfileStudioProps) {
   const [active, setActive] = useState(activeSection);
+  const displayName = realName || userName;
 
   const handleNavigate = (sectionId: string) => {
     setActive(sectionId);
@@ -149,13 +147,13 @@ export function SidebarProfileStudio({
       <div className="p-4 mx-3 mb-4 bg-card rounded-xl border border-border">
         <div className="flex items-center space-x-3">
           <Avatar className="h-10 w-10 border-2 border-border">
-            <AvatarImage src={avatarUrl} alt={userName} />
+            <AvatarImage src={avatarUrl} alt={displayName} />
             <AvatarFallback className="bg-blue-500/20 text-blue-400 text-sm font-semibold">
-              {getInitials(userName)}
+              {getInitials(displayName)}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
-            <p className="font-semibold text-sm text-foreground truncate">{userName}</p>
+            <p className="font-semibold text-sm text-foreground truncate">{displayName}</p>
             <p className="text-xs text-muted-foreground">Free Plan</p>
           </div>
         </div>

@@ -1,6 +1,8 @@
 # Talent3X Skill Ratings Contract
 
-This document explains how to deploy and use the `Talent3XSkillRatings` smart contract for anchoring individual skill ratings to the Polygon MAINNET.
+This document explains how to deploy and use the `Talent3XSkillRatings` smart contract for anchoring individual skill ratings to Polygon PoS mainnet.
+
+The previous relayer has been taken offline. Before anchoring any new ratings, create a new relayer wallet, fund it with the minimum operational MATIC required, set it on the contract with the owner wallet, and only then enable `RELAYER_ENABLED=true` in the runtime environment.
 
 ## Contract Overview
 
@@ -14,13 +16,15 @@ Key features:
 
 ## Prerequisites
 
-1. Ensure you have the required environment variables in your `.env` file:
+1. Ensure you have the required environment variables in your local `.env` file:
    ```
    POLYGON_RPC_URL=your_polygon_mainnet_rpc_url
    RELAYER_DEPLOYER_PRIVATE_KEY=private_key_of_deployer_wallet
+   RELAYER_ADDRESS=address_of_new_relayer_wallet
    ```
 
-2. Make sure you have enough MATIC in your deployer wallet for gas fees
+2. Make sure the deployer wallet has enough MATIC for contract deployment and owner transactions.
+3. Make sure the relayer wallet is separate from the deployer/owner wallet.
 
 ## Deployment
 
@@ -33,7 +37,9 @@ Key features:
    - Compile the contract
    - Deploy it to Polygon MAINNET
    - Save the contract address to `.env` as `T3X_SKILL_RATINGS_CONTRACT_ADDRESS`
-   - Save the contract ABI to `contracts/Talent3XSkillRatings.json`
+   - Save the generated deployment artifact to `contracts/Talent3XSkillRatings.json`
+
+Generated deployment artifacts are intentionally ignored by Git. They describe a concrete deployment and should be recreated per environment.
 
 ## Post-Deployment Setup
 
@@ -51,7 +57,7 @@ Key features:
 - **Access**: Only owner (deployer)
 - **Purpose**: Sets the authorized relayer address
 
-### `anchorSingleSkillRating(bytes32 ratingSessionHash, bytes32 taskIdHash, bytes32 subjectIdHash, uint16 skillId, uint8 stars)`
+### `anchorSingleSkillRating(bytes32 ratingSessionHash, bytes32 taskIdHash, bytes32 subjectIdHash, string raterDid, string ratedDid, uint16 skillId, string skillName, uint8 stars)`
 - **Access**: Only relayer
 - **Purpose**: Anchors a single skill rating to the blockchain
 - **Validation**: Ensures stars are between 0-5
@@ -66,7 +72,10 @@ event SkillRatingAnchored(
     bytes32 ratingSessionHash,
     bytes32 taskIdHash,
     bytes32 subjectIdHash,
+    string raterDid,
+    string ratedDid,
     uint16 skillId,
+    string skillName,
     uint8 stars,
     uint40 timestamp
 );
@@ -74,7 +83,9 @@ event SkillRatingAnchored(
 
 ## Security Notes
 
-1. Only the designated relayer can call `anchorSingleSkillRating`
-2. Owner can change the relayer address at any time
-3. Stars are validated to be between 0-5
-4. No sensitive data is stored on-chain, only hashes
+1. Only the designated relayer can call `anchorSingleSkillRating`.
+2. The owner can change the relayer address at any time.
+3. Keep owner/deployer and relayer wallets separate.
+4. Rotate the relayer wallet whenever a key may have been exposed.
+5. Stars are validated to be between 0 and 5.
+6. Do not commit private keys, RPC secrets, `.env`, or generated deployment artifacts.

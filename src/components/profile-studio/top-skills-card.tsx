@@ -1,7 +1,7 @@
 "use client";
 
 import { Badge } from '@/components/ui/badge';
-import { Award, TrendingUp, BarChart3, PieChart, LineChart, Activity, Zap } from 'lucide-react';
+import { TrendingUp, BarChart3, PieChart, LineChart, Activity, Zap } from 'lucide-react';
 import { TopSkill } from '@/lib/profile/types';
 
 interface TopSkillsCardProps {

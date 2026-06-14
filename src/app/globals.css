@@ -166,3 +166,21 @@
     @apply bg-background text-foreground;
   }
 }
+
+@media print {
+  @page {
+    size: A4;
+    margin: 0;
+  }
+
+  html, body {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  /* Remove box shadows for cleaner print */
+  * {
+    box-shadow: none !important;
+  }
+}

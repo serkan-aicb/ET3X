@@ -1,5 +1,5 @@
 // Diagnose script for student number issues
-const { createClient } = require('@supabase/supabase-js');
+import { createClient } from '@supabase/supabase-js';
 
 // Supabase credentials (you'll need to provide these)
 const supabaseUrl = process.env.SUPABASE_URL || 'YOUR_SUPABASE_URL';

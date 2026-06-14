@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -28,12 +28,6 @@ export function RatingForm({
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState("");
   const router = useRouter();
-
-  // Load existing ratings when component mounts
-  useEffect(() => {
-    // This effect is no longer needed as we're using the new normalized schema
-    // The old code that loaded existing ratings from the 'ratings' table has been removed
-  }, [students, taskId]);
 
   const handleRatingChange = (studentId: string, skillId: number, value: number) => {
     // Only allow values 1-5
@@ -69,15 +63,6 @@ export function RatingForm({
       // Get current user (educator)
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("User not found");
-      
-      // Get educator profile for DID
-      const { data: educatorProfile, error: educatorError } = await supabase
-        .from('profiles')
-        .select('did')
-        .eq('id', user.id)
-        .single();
-      
-      if (educatorError) throw educatorError;
       
       // Create or update ratings for each student
       for (const student of students) {

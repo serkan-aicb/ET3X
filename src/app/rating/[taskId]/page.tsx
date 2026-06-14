@@ -5,7 +5,6 @@ import { useRouter, useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { createClient } from "@/lib/supabase/client";
-import { Tables } from '@/lib/supabase/types';
 import { AppLayout } from "@/components/app-layout";
 import { SharedCard } from "@/components/shared-card";
 
@@ -34,9 +33,6 @@ type TaskRating = {
     description: string;
   }>;
 };
-
-// Add a type for skills
-type Skill = Tables<'skills'>;
 
 export default function ViewRating() {
   const [rating, setRating] = useState<TaskRating | null>(null);

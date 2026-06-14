@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { createClient } from "@/lib/supabase/client";
-import Link from "next/link";
 import { AppLayout } from "@/components/app-layout";
 import { SharedCard } from "@/components/shared-card";
 
@@ -20,13 +19,6 @@ type UserWithProfile = {
 type Task = {
   id: string;
   status: string;
-};
-
-type AssignmentWithTask = {
-  id: string;
-  task: string;
-  status: string;
-  tasks: Task | Task[] | null;
 };
 
 export default function StudentDashboard() {

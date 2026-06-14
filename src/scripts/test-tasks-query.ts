@@ -24,7 +24,7 @@ async function testTasksQuery() {
       *,
       profiles!tasks_creator_fkey(username),
       task_assignments(*),
-      ratings(*)
+      task_ratings(id)
     `)
     .eq('creator', user.id)
     .order('created_at', { ascending: false });
@@ -36,7 +36,7 @@ async function testTasksQuery() {
       id: tasksWithDetails[0].id,
       title: tasksWithDetails[0].title,
       task_assignments: tasksWithDetails[0].task_assignments,
-      ratings: tasksWithDetails[0].ratings,
+      task_ratings: tasksWithDetails[0].task_ratings,
     } : null
   });
 }

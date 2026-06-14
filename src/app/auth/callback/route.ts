@@ -1,4 +1,3 @@
-import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
@@ -11,7 +10,7 @@ export async function GET(request: Request) {
   // Get redirect_to parameter to determine user role
   const redirectTo = searchParams.get('redirect_to')
   
-  console.log('Auth callback triggered with code:', code);
+  console.log('Auth callback triggered');
   console.log('Redirect to:', redirectTo);
 
   if (code) {
@@ -20,7 +19,7 @@ export async function GET(request: Request) {
     console.log('Created Supabase client, attempting to exchange code for session');
     const { data, error } = await supabase.auth.exchangeCodeForSession(code)
     
-    console.log('Exchange result - data:', data, 'error:', error);
+    console.log('Auth code exchange completed');
     
     if (error) {
       console.error('Error exchanging code for session:', error)
@@ -32,7 +31,7 @@ export async function GET(request: Request) {
       return NextResponse.redirect(new URL('/?error=no_user', request.url))
     }
     
-    console.log('User authenticated:', data.user.id, data.user.email);
+    console.log('User authenticated:', data.user.id);
     
     try {
       // Check if user profile exists
@@ -48,7 +47,6 @@ export async function GET(request: Request) {
       if (profileError) {
         console.error('Error checking for existing profile:', profileError)
         console.error('User ID:', data.user.id)
-        console.error('User email:', data.user.email)
         // Log more details about the error
         if (profileError instanceof Error) {
           console.error('Error name:', profileError.name)
@@ -62,7 +60,6 @@ export async function GET(request: Request) {
       // Try to create profile if it doesn't exist or if we couldn't determine existence
       if (!profile || profileError) {
         console.log('Attempting to create profile for user:', data.user.id)
-        console.log('User data:', data.user)
         // Create profile for new user
         let role: 'student' | 'educator' = 'student'
         
@@ -91,7 +88,6 @@ export async function GET(request: Request) {
         
         // Use service role client for profile creation to bypass RLS
         console.log('Creating service role client');
-        console.log('SUPABASE_URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
         console.log('SERVICE_ROLE_KEY exists:', !!process.env.SUPABASE_SERVICE_ROLE_KEY);
         
         const serviceSupabase = createServiceClient(
@@ -111,7 +107,7 @@ export async function GET(request: Request) {
           email_digest: digest
         };
         
-        console.log('Attempting to create profile with data:', profileData);
+        console.log('Attempting to create profile for user:', data.user.id);
         
         const { error: insertError } = await serviceSupabase
           .from('profiles')
@@ -122,7 +118,6 @@ export async function GET(request: Request) {
         if (insertError) {
           console.error('Error creating profile:', insertError)
           console.error('Full error details:', JSON.stringify(insertError, null, 2))
-          console.error('Profile data that failed to insert:', JSON.stringify(profileData, null, 2))
           
           // Check if it's a conflict error (duplicate key)
           if (insertError.code === '23505') { // PostgreSQL unique violation

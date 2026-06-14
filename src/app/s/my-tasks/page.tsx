@@ -10,10 +10,6 @@ import { AppLayout } from "@/components/app-layout";
 import { SharedCard } from "@/components/shared-card";
 import { SharedPill } from "@/components/shared-pill";
 
-type TaskAssignment = Tables<'task_assignments'> & {
-  tasks: Tables<'tasks'> | null;
-};
-
 type Task = Tables<'tasks'>;
 
 export default function StudentMyTasks() {

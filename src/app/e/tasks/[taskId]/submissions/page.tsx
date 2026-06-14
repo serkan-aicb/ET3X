@@ -11,14 +11,7 @@ import { SharedCard } from "@/components/shared-card";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ChevronLeftIcon, ChevronRightIcon, SearchIcon } from "lucide-react";
-
-type SubmissionFile = {
-  name: string;
-  size: number;
-  type: string;
-  url: string;
-};
+import { SearchIcon } from "lucide-react";
 
 type Submission = Tables<'submissions'> & {
   profiles: {

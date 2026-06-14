@@ -1,4 +1,5 @@
-// Test file for username processing logic
+import { describe, expect, test } from '@jest/globals';
+
 export const processAssignedUsernames = (assignedUsernames: string): string[] => {
   if (!assignedUsernames.trim()) {
     return [];
@@ -14,9 +15,8 @@ export const processAssignedUsernames = (assignedUsernames: string): string[] =>
   return Array.from(new Set(usernames));
 };
 
-// Simple test function for the username processing logic
-export const testProcessAssignedUsernames = () => {
-  const testCases = [
+describe('processAssignedUsernames', () => {
+  test.each([
     {
       input: "user1\nuser2\nuser3",
       expected: ["user1", "user2", "user3"],
@@ -47,31 +47,7 @@ export const testProcessAssignedUsernames = () => {
       expected: [],
       description: "Only whitespace"
     }
-  ];
-  
-  let passed = 0;
-  let failed = 0;
-  
-  testCases.forEach(({ input, expected, description }) => {
-    const result = processAssignedUsernames(input);
-    const success = JSON.stringify(result) === JSON.stringify(expected);
-    
-    if (success) {
-      console.log(`✓ ${description}`);
-      passed++;
-    } else {
-      console.log(`✗ ${description}`);
-      console.log(`  Expected: ${JSON.stringify(expected)}`);
-      console.log(`  Got:      ${JSON.stringify(result)}`);
-      failed++;
-    }
+  ])('$description', ({ input, expected }) => {
+    expect(processAssignedUsernames(input)).toEqual(expected);
   });
-  
-  console.log(`\nTests: ${passed} passed, ${failed} failed`);
-  return failed === 0;
-};
-
-// Run the tests if this file is executed directly
-if (require.main === module) {
-  testProcessAssignedUsernames();
-}
+});

@@ -197,10 +197,6 @@ async function getGovernanceLiveData(): Promise<GovernanceLiveData> {
   const allActivatedSkillIds = new Set<number>();
   const allDomainsInRatings = new Set<string>();
 
-  // Distinct sessions / rated students from filtered task_ratings (selected tasks only)
-  const allRatingSessionIds = new Set<string>(filteredRatingSessions.map((s) => s.id));
-  const allRatedUserIds = new Set<string>(filteredRatingSessions.map((s) => s.rated_user_id));
-
   // ── Single-pass aggregation — SKILL-LEVEL ─────────────────
   // Each iteration = 1 task_rating_skills row = 1 skill assessment.
   // Domain tile "assessments" and heatmap cells both count skill rows.

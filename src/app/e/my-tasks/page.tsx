@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { createClient } from "@/lib/supabase/client";
 import { Tables } from '@/lib/supabase/types';
-import Link from "next/link";
 import { AppLayout } from "@/components/app-layout";
 import { SharedCard } from "@/components/shared-card";
 

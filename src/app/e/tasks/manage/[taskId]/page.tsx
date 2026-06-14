@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -24,12 +24,11 @@ type AssignmentInfo = {
   assignee_username: string;
   assignee_real_name?: string | null;
   status: string;
-  assigned_at: string;
+  created_at: string;
 };
 
 export default function ManageRequestsPage() {
   const params = useParams();
-  const router = useRouter();
   const taskId = params.taskId as string;
 
   const [taskTitle, setTaskTitle] = useState("");
@@ -68,7 +67,7 @@ export default function ManageRequestsPage() {
       // Get assignments
       const { data: assigns } = await supabase
         .from("task_assignments")
-        .select("id, assignee, assignee_username, status, assigned_at, profiles!task_assignments_assignee_fkey(real_name)")
+        .select("id, assignee, assignee_username, status, created_at, profiles!task_assignments_assignee_fkey(real_name)")
         .eq("task", taskId);
 
       const formattedAssigns = (assigns || []).map((a: Record<string, unknown>) => ({
@@ -106,7 +105,6 @@ export default function ManageRequestsPage() {
         task: taskId,
         assignee: applicantId,
         assignee_username: applicantUsername,
-        assigned_by: (await supabase.auth.getUser()).data.user?.id,
         status: "in_progress",
       });
 
@@ -129,7 +127,7 @@ export default function ManageRequestsPage() {
 
     const { data: assigns } = await supabase
       .from("task_assignments")
-      .select("id, assignee, assignee_username, status, assigned_at")
+      .select("id, assignee, assignee_username, status, created_at")
       .eq("task", taskId);
 
     setRequests(reqs || []);
@@ -180,7 +178,7 @@ export default function ManageRequestsPage() {
       setMessage("Student unassigned successfully.");
       const { data: assigns } = await supabase
         .from("task_assignments")
-        .select("id, assignee, assignee_username, status, assigned_at")
+        .select("id, assignee, assignee_username, status, created_at")
         .eq("task", taskId);
       setAssignments(assigns || []);
     }

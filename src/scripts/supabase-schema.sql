@@ -42,11 +42,17 @@ END $$;
 -- Create tables
 CREATE TABLE IF NOT EXISTS profiles (
   id UUID REFERENCES auth.users ON DELETE CASCADE PRIMARY KEY,
-  email_digest TEXT UNIQUE,
-  username TEXT UNIQUE,
-  role user_role DEFAULT 'student',
-  did TEXT UNIQUE,
+  role user_role NOT NULL DEFAULT 'student',
+  username TEXT UNIQUE NOT NULL,
+  did TEXT UNIQUE NOT NULL,
+  email_ciphertext TEXT NOT NULL,
+  email_digest TEXT UNIQUE NOT NULL,
   matriculation_number TEXT UNIQUE,
+  real_name TEXT,
+  headline TEXT,
+  bio TEXT,
+  avatar_url TEXT,
+  public_slug TEXT UNIQUE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -54,7 +60,8 @@ CREATE TABLE IF NOT EXISTS profiles (
 CREATE TABLE IF NOT EXISTS skills (
   id SERIAL PRIMARY KEY,
   label TEXT UNIQUE NOT NULL,
-  description TEXT
+  description TEXT,
+  oulu_domain TEXT
 );
 
 CREATE TABLE IF NOT EXISTS tasks (
@@ -69,7 +76,10 @@ CREATE TABLE IF NOT EXISTS tasks (
   skills INTEGER[], -- Array of skill IDs
   due_date TIMESTAMP WITH TIME ZONE,
   status task_status DEFAULT 'draft',
-  task_mode TEXT DEFAULT 'multi', -- New column for task mode ('single' or 'multi')
+  task_mode TEXT DEFAULT 'single',
+  is_requestable BOOLEAN NOT NULL DEFAULT TRUE,
+  share_code TEXT UNIQUE,
+  is_active BOOLEAN DEFAULT TRUE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -89,13 +99,12 @@ CREATE TABLE IF NOT EXISTS task_assignments (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   task UUID REFERENCES tasks(id) ON DELETE CASCADE,
   assignee UUID REFERENCES profiles(id) ON DELETE CASCADE,
-  assignee_username TEXT, -- Store username for compatibility
-  assignee_matriculation_number TEXT, -- Add assignee_matriculation_number field
-  assigned_by UUID REFERENCES profiles(id),
-  assigned_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  status TEXT DEFAULT 'in_progress', -- New status field for assignments
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  assignee_username TEXT NOT NULL,
+  status TEXT DEFAULT 'in_progress',
   submitted_at TIMESTAMP WITH TIME ZONE,
   grade INTEGER,
+  assignee_matriculation_number TEXT,
   CONSTRAINT unique_task_assignee UNIQUE (task, assignee) -- Unique constraint to prevent duplicate assignments
 );
 
@@ -106,7 +115,17 @@ CREATE TABLE IF NOT EXISTS submissions (
   link TEXT,
   note TEXT,
   files JSONB,
-  submitted_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS submission_files (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  submission UUID REFERENCES submissions(id) ON DELETE CASCADE,
+  file_name TEXT NOT NULL,
+  file_size INTEGER NOT NULL,
+  file_type TEXT NOT NULL,
+  storage_path TEXT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 CREATE TABLE IF NOT EXISTS ratings (
@@ -122,6 +141,30 @@ CREATE TABLE IF NOT EXISTS ratings (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS task_ratings (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  task_id UUID NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
+  rater_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  rated_user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  stars_avg NUMERIC,
+  xp INTEGER,
+  rating_session_hash TEXT,
+  task_id_hash TEXT,
+  subject_id_hash TEXT,
+  on_chain BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS task_rating_skills (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  rating_id UUID NOT NULL REFERENCES task_ratings(id) ON DELETE CASCADE,
+  skill_id INTEGER NOT NULL REFERENCES skills(id) ON DELETE CASCADE,
+  stars SMALLINT NOT NULL CHECK (stars >= 1 AND stars <= 5),
+  tx_hash TEXT,
+  on_chain BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+);
+
 CREATE TABLE IF NOT EXISTS admin_codes (
   code TEXT PRIMARY KEY,
   purpose TEXT,
@@ -135,7 +178,10 @@ ALTER TABLE tasks ENABLE ROW LEVEL SECURITY;
 ALTER TABLE task_requests ENABLE ROW LEVEL SECURITY;
 ALTER TABLE task_assignments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE submissions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE submission_files ENABLE ROW LEVEL SECURITY;
 ALTER TABLE ratings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE task_ratings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE task_rating_skills ENABLE ROW LEVEL SECURITY;
 ALTER TABLE admin_codes ENABLE ROW LEVEL SECURITY;
 
 -- Drop existing policies if they exist, then create new ones
@@ -237,6 +283,35 @@ DROP POLICY IF EXISTS "Assignees can insert submissions for their assigned tasks
 CREATE POLICY "Assignees can insert submissions for their assigned tasks" ON submissions
   FOR INSERT WITH CHECK (auth.uid() = submitter AND task IN (SELECT task FROM task_assignments WHERE assignee = auth.uid()));
 
+-- Submission file policies
+DROP POLICY IF EXISTS "Submitters can view their own submission files" ON submission_files;
+CREATE POLICY "Submitters can view their own submission files" ON submission_files
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM submissions s
+      WHERE s.id = submission_files.submission AND s.submitter = auth.uid()
+    )
+  );
+
+DROP POLICY IF EXISTS "Task creators can view submission files for their tasks" ON submission_files;
+CREATE POLICY "Task creators can view submission files for their tasks" ON submission_files
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM submissions s
+      JOIN tasks t ON t.id = s.task
+      WHERE s.id = submission_files.submission AND t.creator = auth.uid()
+    )
+  );
+
+DROP POLICY IF EXISTS "Submitters can insert files for their own submissions" ON submission_files;
+CREATE POLICY "Submitters can insert files for their own submissions" ON submission_files
+  FOR INSERT WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM submissions s
+      WHERE s.id = submission_files.submission AND s.submitter = auth.uid()
+    )
+  );
+
 -- Ratings policies
 DROP POLICY IF EXISTS "Users can view their own ratings" ON ratings;
 CREATE POLICY "Users can view their own ratings" ON ratings
@@ -254,6 +329,47 @@ DROP POLICY IF EXISTS "Raters can insert ratings they create" ON ratings;
 CREATE POLICY "Raters can insert ratings they create" ON ratings
   FOR INSERT WITH CHECK (auth.uid() = rater);
 
+-- Normalized task rating policies
+DROP POLICY IF EXISTS "Users can view their own task ratings" ON task_ratings;
+CREATE POLICY "Users can view their own task ratings" ON task_ratings
+  FOR SELECT USING (auth.uid() = rated_user_id);
+
+DROP POLICY IF EXISTS "Raters can view task ratings they created" ON task_ratings;
+CREATE POLICY "Raters can view task ratings they created" ON task_ratings
+  FOR SELECT USING (auth.uid() = rater_id);
+
+DROP POLICY IF EXISTS "Task creators can view task ratings for their tasks" ON task_ratings;
+CREATE POLICY "Task creators can view task ratings for their tasks" ON task_ratings
+  FOR SELECT USING (task_id IN (SELECT id FROM tasks WHERE creator = auth.uid()));
+
+DROP POLICY IF EXISTS "Raters can insert task ratings they create" ON task_ratings;
+CREATE POLICY "Raters can insert task ratings they create" ON task_ratings
+  FOR INSERT WITH CHECK (auth.uid() = rater_id);
+
+DROP POLICY IF EXISTS "Raters can update their own task ratings" ON task_ratings;
+CREATE POLICY "Raters can update their own task ratings" ON task_ratings
+  FOR UPDATE USING (auth.uid() = rater_id);
+
+DROP POLICY IF EXISTS "Users can view skills for their own task ratings" ON task_rating_skills;
+CREATE POLICY "Users can view skills for their own task ratings" ON task_rating_skills
+  FOR SELECT USING (EXISTS (SELECT 1 FROM task_ratings WHERE task_ratings.id = task_rating_skills.rating_id AND task_ratings.rated_user_id = auth.uid()));
+
+DROP POLICY IF EXISTS "Raters can view skills for task ratings they created" ON task_rating_skills;
+CREATE POLICY "Raters can view skills for task ratings they created" ON task_rating_skills
+  FOR SELECT USING (EXISTS (SELECT 1 FROM task_ratings WHERE task_ratings.id = task_rating_skills.rating_id AND task_ratings.rater_id = auth.uid()));
+
+DROP POLICY IF EXISTS "Task creators can view skills for task ratings on their tasks" ON task_rating_skills;
+CREATE POLICY "Task creators can view skills for task ratings on their tasks" ON task_rating_skills
+  FOR SELECT USING (EXISTS (SELECT 1 FROM task_ratings tr JOIN tasks t ON tr.task_id = t.id WHERE tr.id = task_rating_skills.rating_id AND t.creator = auth.uid()));
+
+DROP POLICY IF EXISTS "Raters can insert skills for their own task ratings" ON task_rating_skills;
+CREATE POLICY "Raters can insert skills for their own task ratings" ON task_rating_skills
+  FOR INSERT WITH CHECK (EXISTS (SELECT 1 FROM task_ratings WHERE task_ratings.id = task_rating_skills.rating_id AND task_ratings.rater_id = auth.uid()));
+
+DROP POLICY IF EXISTS "Raters can update skills for their own task ratings" ON task_rating_skills;
+CREATE POLICY "Raters can update skills for their own task ratings" ON task_rating_skills
+  FOR UPDATE USING (EXISTS (SELECT 1 FROM task_ratings WHERE task_ratings.id = task_rating_skills.rating_id AND task_ratings.rater_id = auth.uid()));
+
 -- Admin codes policies
 DROP POLICY IF EXISTS "Admins can view admin codes" ON admin_codes;
 CREATE POLICY "Admins can view admin codes" ON admin_codes
@@ -263,17 +379,27 @@ CREATE POLICY "Admins can view admin codes" ON admin_codes
 CREATE INDEX IF NOT EXISTS idx_profiles_username ON profiles(username);
 CREATE INDEX IF NOT EXISTS idx_profiles_did ON profiles(did);
 CREATE INDEX IF NOT EXISTS idx_profiles_email_digest ON profiles(email_digest);
+CREATE INDEX IF NOT EXISTS idx_profiles_public_slug ON profiles(public_slug);
 CREATE INDEX IF NOT EXISTS idx_tasks_creator ON tasks(creator);
 CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(status);
+CREATE INDEX IF NOT EXISTS idx_tasks_share_code ON tasks(share_code);
 CREATE INDEX IF NOT EXISTS idx_task_requests_task ON task_requests(task);
 CREATE INDEX IF NOT EXISTS idx_task_requests_applicant ON task_requests(applicant);
 CREATE INDEX IF NOT EXISTS idx_task_assignments_task ON task_assignments(task);
 CREATE INDEX IF NOT EXISTS idx_task_assignments_assignee ON task_assignments(assignee);
 CREATE INDEX IF NOT EXISTS idx_submissions_task ON submissions(task);
 CREATE INDEX IF NOT EXISTS idx_submissions_submitter ON submissions(submitter);
+CREATE INDEX IF NOT EXISTS idx_submission_files_submission ON submission_files(submission);
 CREATE INDEX IF NOT EXISTS idx_ratings_task ON ratings(task);
 CREATE INDEX IF NOT EXISTS idx_ratings_rater ON ratings(rater);
 CREATE INDEX IF NOT EXISTS idx_ratings_rated_user ON ratings(rated_user);
+CREATE INDEX IF NOT EXISTS idx_task_ratings_task_id ON task_ratings(task_id);
+CREATE INDEX IF NOT EXISTS idx_task_ratings_rater_id ON task_ratings(rater_id);
+CREATE INDEX IF NOT EXISTS idx_task_ratings_rated_user_id ON task_ratings(rated_user_id);
+CREATE INDEX IF NOT EXISTS idx_task_ratings_on_chain ON task_ratings(on_chain);
+CREATE INDEX IF NOT EXISTS idx_task_rating_skills_rating_id ON task_rating_skills(rating_id);
+CREATE INDEX IF NOT EXISTS idx_task_rating_skills_skill_id ON task_rating_skills(skill_id);
+CREATE INDEX IF NOT EXISTS idx_task_rating_skills_on_chain ON task_rating_skills(on_chain);
 
 -- Create function to handle new user creation
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;

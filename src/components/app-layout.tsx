@@ -1,6 +1,5 @@
 "use client";
 
-import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { createClient } from "@/lib/supabase/client";
 import { useEffect, useState } from "react";
@@ -8,13 +7,6 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
-
-type ProfileData = {
-  username: string;
-  did: string;
-  real_name?: string | null;
-  matriculation_number?: string | null;
-};
 
 type UserWithProfile = {
   id: string;
@@ -27,9 +19,11 @@ type UserWithProfile = {
 export function AppLayout({
   children,
   userRole,
+  fullWidth = false,
 }: {
   children: React.ReactNode;
   userRole: "student" | "educator" | "admin";
+  fullWidth?: boolean;
 }) {
   const [user, setUser] = useState<UserWithProfile | null>(null);
   const router = useRouter();
@@ -104,7 +98,7 @@ export function AppLayout({
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Unified Header */}
-      <header className="bg-background border-b backdrop-blur py-4 px-6">
+      <header className="bg-background border-b backdrop-blur py-4 px-6 print:hidden">
         <div className="max-w-6xl mx-auto flex justify-between items-center">
           <Link href={getDashboardLink()} className="flex items-center space-x-2">
             <Image 
@@ -151,7 +145,7 @@ export function AppLayout({
       </header>
 
       {/* Main Content with Unified Wrapper */}
-      <main className="mx-auto max-w-6xl px-6 py-10 flex-grow">
+      <main className={fullWidth ? "grow" : "mx-auto max-w-6xl px-6 py-10 grow"}>
         {children}
       </main>
 

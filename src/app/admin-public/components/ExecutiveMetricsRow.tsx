@@ -54,12 +54,13 @@ export function ExecutiveMetricsRow({
     { title: "Participating Students", value: participatingStudents, icon: Users },
     { title: "Total Skill Ratings", value: totalSkillRatings.toLocaleString(), accent: true, icon: BarChart3 },
     { title: "Skills Total", value: skillsTotal, icon: Layers },
+    { title: "Activated Sub-Skills", value: activatedSubSkills, icon: Activity },
     { title: "Generic Domains Covered", value: genericDomainsCovered, accent: true, icon: Grid2X2 },
     { title: "Avg. Assessments / Student", value: avgAssessmentsPerStudent, icon: Activity },
   ];
 
   return (
-    <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+    <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
       {metrics.map((m) => (
         <MetricCard
           key={m.title}

@@ -3,11 +3,9 @@
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { createClient } from "@/lib/supabase/client";
 import { Tables } from '@/lib/supabase/types';
-import Link from "next/link";
 import { AppLayout } from "@/components/app-layout";
 import { SharedCard } from "@/components/shared-card";
 import { SharedPill } from "@/components/shared-pill";
@@ -34,20 +32,16 @@ type Assignment = Tables<'task_assignments'> & {
     real_name: string | null;
     matriculation_number?: string | null;
   } | null;
-  ratings?: {
-    task: string;
-    rated_user: string;
+  rating?: {
     stars_avg: number | null;
     xp: number | null;
-  }[];
+  };
 };
-type Submission = Tables<'submissions'>;
 
 export default function EducatorTaskDetail() {
   const [task, setTask] = useState<Task | null>(null);
   const [requests, setRequests] = useState<Request[]>([]);
   const [assignments, setAssignments] = useState<Assignment[]>([]);
-  const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
   const [message, setMessage] = useState("");
@@ -102,7 +96,7 @@ export default function EducatorTaskDetail() {
         }
 
         // Fetch task (prefer only educator's own tasks)
-        const { data: taskData, error: taskError } = await supabase
+        const { data: taskData } = await supabase
           .from('tasks')
           .select('*')
           .eq('id', taskId)
@@ -181,25 +175,37 @@ export default function EducatorTaskDetail() {
 
         if (isMounted) setRequests(requestsWithProfiles);
 
-        // Fetch assignments with ratings
+        // Fetch assignments and attach the latest normalized task rating per student.
         const { data: assignmentsData } = await supabase
           .from('task_assignments')
           .select(`
             *,
-            profiles!task_assignments_assignee_fkey(username, did, real_name, matriculation_number),
-            ratings(task, rated_user, stars_avg, xp)
+            profiles!task_assignments_assignee_fkey(username, did, real_name, matriculation_number)
           `)
           .eq('task', taskId);
 
-        if (isMounted) setAssignments(assignmentsData || []);
+        const { data: taskRatingsData } = await supabase
+          .from('task_ratings')
+          .select('rated_user_id, stars_avg, xp, created_at')
+          .eq('task_id', taskId)
+          .order('created_at', { ascending: false });
 
-        // Fetch submissions
-        const { data: submissionsData } = await supabase
-          .from('submissions')
-          .select('*')
-          .eq('task', taskId);
+        const ratingByUser = new Map<string, { stars_avg: number | null; xp: number | null }>();
+        (taskRatingsData || []).forEach((rating) => {
+          if (!ratingByUser.has(rating.rated_user_id)) {
+            ratingByUser.set(rating.rated_user_id, {
+              stars_avg: rating.stars_avg,
+              xp: rating.xp,
+            });
+          }
+        });
 
-        if (isMounted) setSubmissions(submissionsData || []);
+        const assignmentsWithRatings = (assignmentsData || []).map((assignment) => ({
+          ...assignment,
+          rating: ratingByUser.get(assignment.assignee),
+        }));
+
+        if (isMounted) setAssignments(assignmentsWithRatings);
       } catch (e: unknown) {
         if (isMounted) {
           // Properly format Supabase/postgREST errors which are objects with message, code, details, hint
@@ -234,12 +240,30 @@ export default function EducatorTaskDetail() {
         .from('task_assignments')
         .select(`
           *,
-          profiles!task_assignments_assignee_fkey(username, did, matriculation_number),
-          ratings(task, rated_user, stars_avg, xp)
+          profiles!task_assignments_assignee_fkey(username, did, matriculation_number)
         `)
         .eq('task', taskId);
 
-      setAssignments(currentAssignments || []);
+      const { data: taskRatingsData } = await supabase
+        .from('task_ratings')
+        .select('rated_user_id, stars_avg, xp, created_at')
+        .eq('task_id', taskId)
+        .order('created_at', { ascending: false });
+
+      const ratingByUser = new Map<string, { stars_avg: number | null; xp: number | null }>();
+      (taskRatingsData || []).forEach((rating) => {
+        if (!ratingByUser.has(rating.rated_user_id)) {
+          ratingByUser.set(rating.rated_user_id, {
+            stars_avg: rating.stars_avg,
+            xp: rating.xp,
+          });
+        }
+      });
+
+      setAssignments((currentAssignments || []).map((assignment) => ({
+        ...assignment,
+        rating: ratingByUser.get(assignment.assignee),
+      })));
 
       const { data: requestsData, error: requestsError } = await supabase
         .from('task_requests')
@@ -271,12 +295,6 @@ export default function EducatorTaskDetail() {
 
       setRequests(finalRequestsData || []);
 
-      const { data: submissionsData } = await supabase
-        .from('submissions')
-        .select('*')
-        .eq('task', taskId);
-
-      setSubmissions(submissionsData || []);
     } catch (e) {
       console.error("verifyAssignments error:", e);
     }
@@ -419,88 +437,6 @@ export default function EducatorTaskDetail() {
         errorMessage = String(e);
       }
       setMessage(`Error assigning task: ${errorMessage}`);
-      setTimeout(() => setMessage(""), 5000);
-    }
-  };
-
-  const handleUnassignTask = async (assigneeId: string) => {
-    const supabase = createClient();
-    try {
-      const { data: userData } = await supabase.auth.getUser();
-      const user = userData?.user;
-      if (!user) {
-        setMessage("You must be logged in to unassign tasks.");
-        setTimeout(() => setMessage(""), 5000);
-        return;
-      }
-
-      await supabase
-        .from('task_assignments')
-        .delete()
-        .eq('task', taskId)
-        .eq('assignee', assigneeId);
-
-      setMessage("Unassigned successfully.");
-      setTimeout(() => setMessage(""), 5000);
-      await verifyAssignments();
-      router.refresh();
-    } catch (e: unknown) {
-      console.error("Error unassigning:", e);
-      setMessage("Unexpected error.");
-      setTimeout(() => setMessage(""), 5000);
-    }
-  };
-
-  const handleApproveRequest = async (requestId: string) => {
-    const supabase = createClient();
-    try {
-      const { error } = await supabase
-        .from('task_requests')
-        .update({ status: 'accepted' })
-        .eq('task', taskId)
-        .eq('id', requestId);
-
-      if (error) {
-        setMessage(`Error approving request: ${error.message}`);
-        setTimeout(() => setMessage(""), 5000);
-        return;
-      }
-
-      setRequests(prev => prev.filter(req => req.id !== requestId));
-      setMessage("Request approved successfully");
-      setTimeout(() => setMessage(""), 5000);
-      await verifyAssignments();
-      router.refresh();
-    } catch (e: unknown) {
-      console.error("Unexpected error approving request:", e);
-      setMessage("Unexpected error.");
-      setTimeout(() => setMessage(""), 5000);
-    }
-  };
-
-  const handleRejectRequest = async (requestId: string) => {
-    const supabase = createClient();
-    try {
-      const { error } = await supabase
-        .from('task_requests')
-        .update({ status: 'declined' })
-        .eq('task', taskId)
-        .eq('id', requestId);
-
-      if (error) {
-        setMessage(`Error rejecting request: ${error.message}`);
-        setTimeout(() => setMessage(""), 5000);
-        return;
-      }
-
-      setRequests(prev => prev.filter(req => req.id !== requestId));
-      setMessage("Request rejected successfully");
-      setTimeout(() => setMessage(""), 5000);
-      await verifyAssignments();
-      router.refresh();
-    } catch (e: unknown) {
-      console.error("Unexpected error rejecting request:", e);
-      setMessage("Unexpected error.");
       setTimeout(() => setMessage(""), 5000);
     }
   };
@@ -816,11 +752,11 @@ export default function EducatorTaskDetail() {
                       </span>
 
                       {/* Show rating information if available */}
-                      {assignment.ratings && assignment.ratings.length > 0 && (
+                      {assignment.rating && (
                         <div className="mt-2">
                           <span className="text-sm text-green-600">
-                            Rated: {assignment.ratings[0].stars_avg?.toFixed(1) || 'N/A'} stars, 
-                            XP: {assignment.ratings[0].xp || 0}
+                            Rated: {assignment.rating.stars_avg?.toFixed(1) || 'N/A'} stars, 
+                            XP: {assignment.rating.xp || 0}
                           </span>
                         </div>
                       )}

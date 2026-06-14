@@ -1,5 +1,5 @@
-// Relayer service for anchoring skill ratings to Polygon MAINNET
-// This service reads unrated sessions from Supabase and calls the smart contract on Polygon MAINNET once per skill
+// Relayer service for anchoring skill ratings to Polygon MAINNET.
+// It is disabled by default and must be explicitly enabled with RELAYER_ENABLED=true.
 
 import { ethers } from 'ethers';
 import { createClient } from '@supabase/supabase-js';
@@ -237,6 +237,10 @@ function computeRatingSessionHash(rating: TaskRating, skills: TaskRatingSkill[])
  */
 async function processUnratedSessions() {
   console.log('Starting relayer service...');
+
+  if (process.env.RELAYER_ENABLED !== 'true') {
+    throw new Error('Relayer is disabled. Rotate/recreate the relayer wallet, configure it on-chain, then set RELAYER_ENABLED=true.');
+  }
   
   // Check if required environment variables are set
   if (!process.env.POLYGON_RPC_URL || !process.env.RELAYER_PRIVATE_KEY || !process.env.T3X_SKILL_RATINGS_CONTRACT_ADDRESS) {

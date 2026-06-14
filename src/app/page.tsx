@@ -16,7 +16,7 @@ function CapabilityMockup() {
         <span className="w-3 h-3 rounded-full bg-red-400 inline-block" />
         <span className="w-3 h-3 rounded-full bg-yellow-400 inline-block" />
         <span className="w-3 h-3 rounded-full bg-green-400 inline-block" />
-        <span className="ml-3 text-slate-500 text-xs font-mono truncate">app.talent3x.com/profile</span>
+        <span className="ml-3 text-slate-500 text-xs font-mono truncate">talent3x.com/profile</span>
       </div>
       <div className="p-5">
         <div className="flex items-center gap-3 mb-5 pb-4 border-b border-slate-100">

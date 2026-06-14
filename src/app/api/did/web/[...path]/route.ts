@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
+import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { type NextRequest } from 'next/server'
 
 // Updated to properly handle the route parameters according to Next.js App Router requirements
@@ -21,7 +21,10 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   }
   
   try {
-    const supabase = await createServerClient()
+    const supabase = createServiceClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
     
     // Find user by DID
     const { data: profile, error } = await supabase

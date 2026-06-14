@@ -58,7 +58,7 @@ export function Header({
         <Link href={getDashboardLink()} className="flex items-center space-x-2">
           <Image
             src="/pics/logo-transparent.png"
-            alt="Talent3X Logo"
+            alt={`${title} Logo`}
             width={300}
             height={60}
             className="h-10 w-auto"

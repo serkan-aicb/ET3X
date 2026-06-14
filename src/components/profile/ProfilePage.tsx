@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { AppLayout } from "@/components/app-layout";
 import { Button } from "@/components/ui/button";
@@ -9,12 +10,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { toast } from "sonner";
 import {
   Camera,
   Mail,
-  Copy,
   Check,
   Loader2,
   Star,
@@ -59,7 +58,7 @@ function RadarChart({ skills }: { skills: TopSkill[] }) {
     y: cy + r * Math.sin(angle(i)),
   });
 
-  const dataPoints = skills.map((s, i) => pt(i, (s.score / 5) * maxR));
+  const dataPoints = skills.map((s, i) => pt(i, (s.score / 100) * maxR));
   const dataPath =
     dataPoints.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ") + " Z";
 
@@ -141,23 +140,6 @@ function Stars({ score }: { score: number }) {
   );
 }
 
-// ─── Timeline year dot ────────────────────────────────────────────────────────
-function TimelineDot({ year, active }: { year: string; active?: boolean }) {
-  return (
-    <div className="flex items-center gap-2">
-      <div className={`w-2.5 h-2.5 rounded-full border-2 ${active ? "bg-blue-600 border-blue-600" : "bg-white border-slate-300"}`} />
-      <span className={`text-xs ${active ? "text-blue-700 font-semibold" : "text-slate-400"}`}>{year}</span>
-    </div>
-  );
-}
-
-// ─── Score level label ────────────────────────────────────────────────────────
-const LEVEL_COLORS: Record<string, string> = {
-  Exceptional: "bg-purple-100 text-purple-700",
-  Advanced: "bg-blue-100 text-blue-700",
-  Intermediate: "bg-emerald-100 text-emerald-700",
-  Foundation: "bg-slate-100 text-slate-600",
-};
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 export function ProfilePage({ userRole }: ProfilePageProps) {
@@ -352,16 +334,20 @@ export function ProfilePage({ userRole }: ProfilePageProps) {
     } catch { toast.error("Failed to copy"); }
   };
 
+  const handleExportPDF = useCallback(() => {
+    const name = (realName || userEmail.split("@")[0] || "profile")
+      .trim()
+      .replace(/\s+/g, "_")
+      .replace(/[^a-zA-Z0-9_-]/g, "");
+    const original = document.title;
+    document.title = `Talent3X_Profile_${name}`;
+    window.print();
+    setTimeout(() => { document.title = original; }, 500);
+  }, [realName, userEmail]);
+
   const displayName = realName || userEmail.split("@")[0] || profile?.username || "User";
   const activeProofs = userRole === "student" ? proofs : educatorEvaluations;
   const isLoading = loading || skillsLoading || skillRatingsLoading || proofsLoading;
-
-  // Derive active years from proofs
-  const activeYears = Array.from(
-    new Set(activeProofs.map(p => new Date(p.timestamp).getFullYear().toString()))
-  ).sort();
-  const currentYear = new Date().getFullYear().toString();
-  if (!activeYears.includes(currentYear)) activeYears.push(currentYear);
 
   // Top skills for radar (max 6)
   const radarSkills = topSkills.slice(0, 6);
@@ -382,31 +368,106 @@ export function ProfilePage({ userRole }: ProfilePageProps) {
   }
 
   return (
-    <AppLayout userRole={userRole}>
-      <div className="min-h-screen bg-slate-100 py-6 px-4 print:bg-white print:py-0 print:px-0">
-        <div className="max-w-7xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200 print:shadow-none print:rounded-none print:border-0">
+    <AppLayout userRole={userRole} fullWidth>
+      <div className="bg-white print:bg-white">
+        <div className="w-full overflow-hidden print:shadow-none">
 
-          {/* ── Header ─────────────────────────────────────────────────── */}
-          <div className="flex items-center justify-between px-8 py-4 border-b border-slate-100 bg-white">
-            <div className="flex items-center gap-3">
-              <div className="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center">
-                <span className="text-white font-bold text-xs">T</span>
+          {/* ── Top action bar ─────────────────────────────────────────── */}
+          <div className="flex items-center justify-between px-8 py-3 border-b border-slate-100 bg-white/95 backdrop-blur sticky top-0 z-20 print:hidden">
+            <div className="flex items-center gap-2.5">
+              <div className="w-6 h-6 rounded-md bg-blue-600 flex items-center justify-center">
+                <span className="text-white font-bold text-[10px]">T</span>
               </div>
-              <span className="text-slate-500 text-sm font-medium">Profile Studio</span>
+              <span className="text-slate-400 text-xs font-medium tracking-wide uppercase">Profile Studio</span>
             </div>
             <div className="flex items-center gap-2">
+              <Button variant="ghost" size="sm" onClick={() => setEditing(!editing)} className="gap-1.5 text-xs text-slate-500 hover:text-slate-800">
+                {editing ? <X className="h-3.5 w-3.5" /> : <Pencil className="h-3.5 w-3.5" />}
+                {editing ? "Cancel" : "Edit"}
+              </Button>
               <Button variant="outline" size="sm" onClick={handleCopyLink} className="gap-1.5 text-xs">
                 {copied ? <Check className="h-3.5 w-3.5" /> : <Share2 className="h-3.5 w-3.5" />}
                 Share
               </Button>
-              <Button size="sm" onClick={() => window.print()} className="gap-1.5 text-xs bg-blue-600 hover:bg-blue-700 text-white print:hidden">
+              <Button size="sm" onClick={handleExportPDF} className="gap-1.5 text-xs bg-blue-600 hover:bg-blue-700 text-white">
                 <Printer className="h-3.5 w-3.5" />
                 Export PDF
               </Button>
-              <Button variant="ghost" size="sm" onClick={() => setEditing(!editing)} className="gap-1.5 text-xs">
-                {editing ? <X className="h-3.5 w-3.5" /> : <Pencil className="h-3.5 w-3.5" />}
-                {editing ? "Cancel" : "Edit"}
-              </Button>
+            </div>
+          </div>
+
+          {/* ── Hero / Cover ───────────────────────────────────────────── */}
+          <div className="relative">
+            {/* Cover gradient */}
+            <div className="h-44 bg-gradient-to-br from-blue-600 via-blue-500 to-indigo-600 print:h-24" />
+
+            {/* Avatar + identity overlapping cover */}
+            <div className="px-8 pb-0">
+              <div className="flex items-end justify-between -mt-14 mb-5">
+                <div className="flex items-end gap-5">
+                  {/* Avatar */}
+                  <div className="relative shrink-0">
+                    <div className="relative h-28 w-28 rounded-2xl border-4 border-white shadow-xl overflow-hidden bg-blue-600">
+                      {avatarUrl
+                        ? <Image src={avatarUrl} alt={displayName} fill sizes="112px" className="object-cover" unoptimized />
+                        : <div className="w-full h-full flex items-center justify-center text-white text-3xl font-bold">{getInitials(displayName)}</div>
+                      }
+                    </div>
+                    {avatarUploading ? (
+                      <div className="absolute inset-0 bg-white/80 rounded-2xl flex items-center justify-center">
+                        <Loader2 className="h-5 w-5 animate-spin text-blue-600" />
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => fileInputRef.current?.click()}
+                        className="absolute -bottom-1 -right-1 w-7 h-7 bg-white border border-slate-200 hover:bg-slate-50 rounded-full flex items-center justify-center shadow-md print:hidden"
+                      >
+                        <Camera className="h-3.5 w-3.5 text-slate-500" />
+                      </button>
+                    )}
+                    <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={handleAvatarUpload} className="hidden" />
+                  </div>
+
+                  {/* Name block */}
+                  <div className="pb-1 space-y-0.5">
+                    <h1 className="text-2xl font-bold text-slate-900 leading-tight">{displayName}</h1>
+                    {headline && <p className="text-blue-600 font-semibold text-sm">{headline}</p>}
+                    <div className="flex items-center gap-2 pt-0.5">
+                      <Badge variant="secondary" className="text-xs capitalize font-medium">{profile?.role}</Badge>
+                      {trustMetrics.verified && (
+                        <div className="flex items-center gap-1 text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                          <Shield className="h-3 w-3" />
+                          Verified
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Stats inline */}
+                <div className="hidden lg:flex items-center gap-1 bg-slate-50 border border-slate-100 rounded-2xl px-4 py-3 mb-1">
+                  {[
+                    { value: taskStats.total, label: "Tasks" },
+                    { value: trustMetrics.total_evaluations, label: "Evaluations" },
+                    { value: topSkills.length, label: "Skills" },
+                  ].map((stat, i) => (
+                    <div key={stat.label} className="flex items-center gap-1">
+                      {i > 0 && <div className="w-px h-8 bg-slate-200 mx-3" />}
+                      <div className="text-center px-2">
+                        <p className="text-xl font-bold text-slate-900">{stat.value}</p>
+                        <p className="text-[10px] text-slate-500 uppercase tracking-wide">{stat.label}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Bio */}
+              {bio && (
+                <div className="mb-6 max-w-2xl">
+                  <p className="text-sm text-slate-500 italic leading-relaxed border-l-2 border-blue-200 pl-3">&ldquo;{bio}&rdquo;</p>
+                </div>
+              )}
             </div>
           </div>
 
@@ -449,282 +510,194 @@ export function ProfilePage({ userRole }: ProfilePageProps) {
             </div>
           )}
 
-          {/* ── Body: Left sidebar + Right content ─────────────────────── */}
-          <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] divide-y lg:divide-y-0 lg:divide-x divide-slate-100">
+          {/* ── Main content ─────────────────────────────────────────────── */}
+          <div className="border-t border-slate-100">
 
-            {/* ── LEFT: Identity ──────────────────────────────────────── */}
-            <div className="p-6 flex flex-col gap-6">
-              {/* Avatar + name */}
-              <div className="flex flex-col items-center gap-4">
-                <div className="relative">
-                  <Avatar className="h-24 w-24 border-2 border-slate-100 shadow-sm">
-                    {avatarUrl
-                      ? <img src={avatarUrl} alt={displayName} className="object-cover w-full h-full rounded-full" />
-                      : <AvatarFallback className="bg-blue-600 text-white text-2xl font-bold">{getInitials(displayName)}</AvatarFallback>
-                    }
-                  </Avatar>
-                  {avatarUploading ? (
-                    <div className="absolute inset-0 bg-white/80 rounded-full flex items-center justify-center">
-                      <Loader2 className="h-5 w-5 animate-spin text-blue-600" />
+            {/* Row 1: Radar + Contributions */}
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] divide-y lg:divide-y-0 lg:divide-x divide-slate-100">
+
+              {/* Radar chart */}
+              <div className="px-10 py-8">
+                <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                  Capability based on evaluated work
+                  <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-slate-100 text-slate-400 text-[9px] cursor-default font-bold">i</span>
+                </p>
+                <RadarChart skills={radarSkills} />
+                <div className="flex flex-wrap gap-x-4 gap-y-1.5 mt-4 justify-center">
+                  {[
+                    { label: "1 – Foundational", color: "bg-slate-300" },
+                    { label: "2 – Developing",   color: "bg-blue-200" },
+                    { label: "3 – Proficient",   color: "bg-blue-400" },
+                    { label: "4 – Advanced",     color: "bg-blue-600" },
+                    { label: "5 – Expert",       color: "bg-blue-800" },
+                  ].map(l => (
+                    <div key={l.label} className="flex items-center gap-1.5">
+                      <span className={`w-2 h-2 rounded-full ${l.color}`} />
+                      <span className="text-[10px] text-slate-500">{l.label}</span>
                     </div>
-                  ) : (
-                    <button
-                      onClick={() => fileInputRef.current?.click()}
-                      className="absolute bottom-0 right-0 w-7 h-7 bg-blue-600 hover:bg-blue-700 rounded-full flex items-center justify-center shadow-md border-2 border-white"
-                    >
-                      <Camera className="h-3.5 w-3.5 text-white" />
-                    </button>
-                  )}
-                  <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={handleAvatarUpload} className="hidden" />
-                </div>
-
-                <div className="text-center space-y-1">
-                  <h2 className="font-bold text-slate-900 text-lg leading-tight">{displayName}</h2>
-                  {headline && <p className="text-sm text-blue-600 font-semibold">{headline}</p>}
-                  <Badge variant="secondary" className="text-xs capitalize mt-1">{profile?.role}</Badge>
+                  ))}
                 </div>
               </div>
 
-              {/* Bio */}
-              {bio && (
-                <div className="bg-slate-50 rounded-xl p-3 border border-slate-100">
-                  <p className="text-xs text-slate-500 italic leading-relaxed">"{bio}"</p>
-                </div>
-              )}
-
-              {/* Stats row */}
-              <div className="grid grid-cols-3 gap-2 text-center">
-                {[
-                  { value: taskStats.total, label: "Tasks" },
-                  { value: trustMetrics.total_evaluations, label: "Evals" },
-                  { value: topSkills.length, label: "Skills" },
-                ].map(stat => (
-                  <div key={stat.label} className="bg-slate-50 rounded-xl py-3 border border-slate-100">
-                    <p className="text-xl font-bold text-slate-900">{stat.value}</p>
-                    <p className="text-[10px] text-slate-500 mt-0.5">{stat.label}</p>
-                  </div>
-                ))}
-              </div>
-
-              {/* Activity timeline */}
-              {activeYears.length > 0 && (
-                <div>
-                  <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-3">Activity</p>
-                  <div className="relative pl-3">
-                    <div className="absolute left-1 top-1.5 bottom-1.5 w-px bg-slate-200" />
-                    <div className="space-y-3">
-                      {activeYears.map(y => (
-                        <TimelineDot key={y} year={y} active={y === currentYear} />
+              {/* Top Evaluated Contributions */}
+              <div className="px-8 py-8 bg-slate-50/50">
+                <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-5">Top Evaluated Contributions</p>
+                {activeProofs.length > 0 ? (
+                  <div className="space-y-3">
+                    {activeProofs
+                      .slice()
+                      .sort((a, b) => b.evaluation_score - a.evaluation_score)
+                      .slice(0, 3)
+                      .map((p, idx) => (
+                        <div key={p.proof_id} className={`p-4 rounded-2xl border transition-all hover:shadow-md ${idx === 0 ? "bg-white border-blue-100 shadow-sm" : "bg-white border-slate-100"}`}>
+                          <div className="flex gap-3.5">
+                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-100 flex items-center justify-center shrink-0">
+                              <svg className="h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                              </svg>
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-sm font-semibold text-slate-800 leading-snug">{p.title}</p>
+                              <div className="flex items-center gap-2 mt-1.5">
+                                <Stars score={p.evaluation_score} />
+                                <span className="text-sm font-bold text-slate-800">{p.evaluation_score.toFixed(1)}</span>
+                                <span className="text-xs text-slate-400">/ 5</span>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center justify-between mt-3 pt-3 border-t border-slate-50">
+                            <span className="text-[10px] text-slate-400 font-medium">
+                              {new Date(p.timestamp).toLocaleDateString("en-GB", { month: "short", year: "numeric" })}
+                            </span>
+                            {p.on_chain && (
+                              <div className="flex items-center gap-1 text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full font-semibold">
+                                <Shield className="h-2.5 w-2.5" />
+                                On-Chain Verified
+                              </div>
+                            )}
+                          </div>
+                        </div>
                       ))}
+                    {activeProofs.length > 3 && (
+                      <button className="flex items-center gap-1.5 text-xs text-blue-600 hover:text-blue-700 font-medium pt-1 transition-colors">
+                        View all {activeProofs.length} contributions <ChevronRight className="h-3.5 w-3.5" />
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-12 text-center">
+                    <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center mb-3">
+                      <svg className="h-6 w-6 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
                     </div>
+                    <p className="text-sm text-slate-400 font-medium">No contributions yet</p>
+                    <p className="text-xs text-slate-300 mt-1">Complete tasks to build your profile</p>
                   </div>
-                </div>
-              )}
-
-              {/* Buttons */}
-              <div className="mt-auto pt-2 space-y-2">
-                <button
-                  onClick={handleCopyLink}
-                  className="w-full flex items-center justify-between px-4 py-3 rounded-xl border border-slate-200 hover:border-blue-200 hover:bg-blue-50 transition-colors text-sm text-slate-700 font-medium"
-                >
-                  <div className="flex items-center gap-2">
-                    {copied ? <Check className="h-4 w-4 text-blue-600" /> : <Share2 className="h-4 w-4 text-slate-400" />}
-                    Share Profile
-                  </div>
-                  <ChevronRight className="h-4 w-4 text-slate-400" />
-                </button>
-                <button
-                  onClick={() => window.print()}
-                  className="w-full flex items-center justify-between px-4 py-3 rounded-xl border border-slate-200 hover:border-blue-200 hover:bg-blue-50 transition-colors text-sm text-slate-700 font-medium print:hidden"
-                >
-                  <div className="flex items-center gap-2">
-                    <Printer className="h-4 w-4 text-slate-400" />
-                    Export as PDF
-                  </div>
-                  <ChevronRight className="h-4 w-4 text-slate-400" />
-                </button>
+                )}
               </div>
             </div>
 
-            {/* ── RIGHT: Content area ─────────────────────────────────── */}
-            <div className="flex flex-col divide-y divide-slate-100">
+            {/* Divider */}
+            <div className="h-px bg-slate-100" />
 
-              {/* Top row: Radar chart + Top Contributions */}
-              <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] divide-y lg:divide-y-0 lg:divide-x divide-slate-100">
+            {/* Row 2: Capabilities + Timeline + Key Skills */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 divide-y lg:divide-y-0 lg:divide-x divide-slate-100">
 
-                {/* Radar chart */}
-                <div className="p-6">
-                  <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1.5">
-                    Capability based on evaluated work
-                    <span className="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-slate-200 text-slate-500 text-[8px] cursor-default">i</span>
-                  </p>
-                  <RadarChart skills={radarSkills} />
-                  <div className="flex flex-wrap gap-x-3 gap-y-1 mt-3 justify-center">
-                    {[
-                      { label: "1 – Foundational", color: "bg-slate-300" },
-                      { label: "2 – Developing",   color: "bg-blue-200" },
-                      { label: "3 – Proficient",   color: "bg-blue-400" },
-                      { label: "4 – Advanced",     color: "bg-blue-600" },
-                      { label: "5 – Expert",       color: "bg-blue-800" },
-                    ].map(l => (
-                      <div key={l.label} className="flex items-center gap-1">
-                        <span className={`w-2 h-2 rounded-full ${l.color}`} />
-                        <span className="text-[10px] text-slate-500">{l.label}</span>
+              {/* Top Verified Capabilities */}
+              <div className="px-8 py-8">
+                <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-5">Top Verified Capabilities</p>
+                {topSkills.length > 0 ? (
+                  <div className="space-y-2.5">
+                    {topSkills.slice(0, 5).map(s => (
+                      <div key={s.skill_id} className="flex items-center gap-3 p-3.5 rounded-xl border border-slate-100 hover:border-blue-100 hover:bg-blue-50/30 transition-all group">
+                        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 flex items-center justify-center shrink-0 group-hover:border-blue-200 transition-colors">
+                          <svg className="h-4 w-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                          </svg>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-slate-800 truncate">{s.name}</p>
+                          <p className="text-[10px] text-slate-400 mt-0.5">based on {s.evidence_count} evaluation{s.evidence_count !== 1 ? "s" : ""}</p>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <p className="text-lg font-bold text-slate-800 leading-none">{s.score.toFixed(1)}</p>
+                          <p className="text-[9px] text-emerald-600 font-bold uppercase tracking-wide mt-0.5">Avg</p>
+                        </div>
                       </div>
                     ))}
+                    {topSkills.length > 5 && (
+                      <button className="flex items-center gap-1.5 text-xs text-blue-600 hover:text-blue-700 font-medium pt-1 transition-colors">
+                        View all capabilities <ChevronRight className="h-3.5 w-3.5" />
+                      </button>
+                    )}
                   </div>
-                </div>
-
-                {/* Top Evaluated Contributions */}
-                <div className="p-6">
-                  <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-4">Top Evaluated Contributions</p>
-                  {activeProofs.length > 0 ? (
-                    <div className="space-y-3">
-                      {activeProofs
-                        .slice()
-                        .sort((a, b) => b.evaluation_score - a.evaluation_score)
-                        .slice(0, 3)
-                        .map(p => (
-                          <div key={p.proof_id} className="p-3.5 rounded-xl border border-slate-100 bg-white hover:border-blue-100 hover:shadow-sm transition-all">
-                            <div className="flex gap-3 mb-2">
-                              <div className="w-9 h-9 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center shrink-0">
-                                <svg className="h-4 w-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                </svg>
-                              </div>
-                              <div className="min-w-0">
-                                <p className="text-xs font-semibold text-slate-800 leading-snug">{p.title}</p>
-                                <div className="flex items-center gap-1.5 mt-1">
-                                  <Stars score={p.evaluation_score} />
-                                  <span className="text-xs font-bold text-slate-700">{p.evaluation_score.toFixed(1)} / 5</span>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="flex items-center justify-between pt-2 border-t border-slate-50">
-                              <span className="text-[10px] text-slate-400">
-                                {new Date(p.timestamp).toLocaleDateString("en-GB", { month: "short", year: "numeric" })}
-                              </span>
-                              {p.on_chain && (
-                                <div className="flex items-center gap-1 text-[10px] text-emerald-600">
-                                  <Shield className="h-3 w-3" />
-                                  Verified
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        ))}
-                      {activeProofs.length > 3 && (
-                        <button className="flex items-center gap-1 text-xs text-blue-600 hover:underline pt-1">
-                          View all contributions ({activeProofs.length}) <ChevronRight className="h-3 w-3" />
-                        </button>
-                      )}
-                    </div>
-                  ) : (
-                    <p className="text-xs text-slate-400 text-center py-8">No contributions yet</p>
-                  )}
-                </div>
+                ) : (
+                  <p className="text-sm text-slate-300 text-center py-8">No verified capabilities yet</p>
+                )}
               </div>
 
-              {/* Bottom row: Capabilities + Timeline + Key Skills */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 divide-y lg:divide-y-0 lg:divide-x divide-slate-100">
-
-                {/* Top Verified Capabilities */}
-                <div className="p-6">
-                  <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-4">Top Verified Capabilities</p>
-                  {topSkills.length > 0 ? (
-                    <div className="space-y-2.5">
-                      {topSkills.slice(0, 4).map(s => (
-                        <div key={s.skill_id} className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 hover:border-blue-100 transition-colors bg-white">
-                          <div className="w-8 h-8 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center shrink-0">
-                            <svg className="h-4 w-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                            </svg>
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-xs font-semibold text-slate-800 truncate">{s.name}</p>
-                            <p className="text-[10px] text-slate-400 mt-0.5">→ based on {s.evidence_count} evaluation{s.evidence_count !== 1 ? "s" : ""}</p>
-                          </div>
-                          <div className="text-right shrink-0">
-                            <p className="text-base font-bold text-slate-800">{s.score.toFixed(1)}</p>
-                            <p className="text-[9px] text-emerald-600 font-semibold">Avg Score</p>
-                          </div>
+              {/* Evaluation Timeline */}
+              <div className="px-8 py-8">
+                <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-5">Evaluation Timeline</p>
+                {activeProofs.length > 0 ? (
+                  <div className="space-y-1">
+                    {activeProofs.slice(0, 7).map((p, idx) => (
+                      <div key={p.proof_id} className="flex items-center gap-4 py-2 group">
+                        <span className="text-[10px] text-slate-400 w-16 shrink-0 text-right font-medium tabular-nums">
+                          {new Date(p.timestamp).toLocaleDateString("en-GB", { month: "short", year: "numeric" })}
+                        </span>
+                        <div className="relative flex flex-col items-center shrink-0">
+                          <div className={`w-2.5 h-2.5 rounded-full z-10 ring-2 ring-white ${p.on_chain ? "bg-emerald-500" : "bg-blue-500"}`} />
+                          {idx < activeProofs.slice(0, 7).length - 1 && (
+                            <div className="absolute top-2.5 w-px h-8 bg-slate-100" />
+                          )}
                         </div>
-                      ))}
-                      {topSkills.length > 4 && (
-                        <button className="flex items-center gap-1 text-xs text-blue-600 hover:underline pt-1">
-                          View all capabilities <ChevronRight className="h-3 w-3" />
-                        </button>
-                      )}
-                    </div>
-                  ) : (
-                    <p className="text-xs text-slate-400 text-center py-6">No verified capabilities yet</p>
-                  )}
-                </div>
-
-                {/* Evaluation Timeline */}
-                <div className="p-6">
-                  <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-4">Evaluation Timeline</p>
-                  {activeProofs.length > 0 ? (
-                    <div className="relative">
-                      <div className="absolute left-22 top-2 bottom-2 w-px bg-slate-100" />
-                      <div className="space-y-3">
-                        {activeProofs.slice(0, 6).map(p => (
-                          <div key={p.proof_id} className="flex items-center gap-3">
-                            <span className="text-[10px] text-slate-400 w-20 shrink-0 text-right">
-                              {new Date(p.timestamp).toLocaleDateString("en-GB", { month: "short", year: "numeric" })}
-                            </span>
-                            <div className={`w-2.5 h-2.5 rounded-full shrink-0 z-10 border-2 ${p.on_chain ? "bg-emerald-500 border-emerald-300" : "bg-blue-500 border-blue-300"}`} />
-                            <div className="flex-1 flex items-center justify-between min-w-0">
-                              <p className="text-xs text-slate-700 truncate">{p.title}</p>
-                              <span className="text-xs font-bold text-slate-700 shrink-0 ml-2">{p.evaluation_score.toFixed(1)}</span>
-                            </div>
-                          </div>
-                        ))}
+                        <div className="flex-1 flex items-center justify-between min-w-0">
+                          <p className="text-xs text-slate-700 truncate group-hover:text-slate-900 transition-colors">{p.title}</p>
+                          <span className="text-xs font-bold text-slate-600 shrink-0 ml-3 tabular-nums">{p.evaluation_score.toFixed(1)}</span>
+                        </div>
                       </div>
-                      {activeProofs.length > 6 && (
-                        <button className="flex items-center gap-1 text-xs text-blue-600 hover:underline mt-3">
-                          View full history <ChevronRight className="h-3 w-3" />
-                        </button>
-                      )}
-                    </div>
-                  ) : (
-                    <p className="text-xs text-slate-400 text-center py-6">No evaluations recorded yet</p>
-                  )}
-                </div>
+                    ))}
+                    {activeProofs.length > 7 && (
+                      <button className="flex items-center gap-1.5 text-xs text-blue-600 hover:text-blue-700 font-medium pt-2 transition-colors">
+                        View full history <ChevronRight className="h-3.5 w-3.5" />
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-sm text-slate-300 text-center py-8">No evaluations recorded yet</p>
+                )}
+              </div>
 
-                {/* Key Skills */}
-                <div className="p-6">
-                  <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-4">Key Skills (from evaluations)</p>
-                  {topSkills.length > 0 ? (
-                    <div className="space-y-3">
-                      {topSkills.slice(0, 6).map(s => (
-                        <div key={s.skill_id} className="flex items-center justify-between gap-3">
-                          <span className="text-xs text-slate-700 font-medium truncate">{s.name}</span>
-                          <div className="flex items-end gap-0.5 shrink-0">
-                            {[1, 2, 3].map(i => (
-                              <div
-                                key={i}
-                                className={`w-1 rounded-sm ${
-                                  s.score >= i * 1.67
-                                    ? "bg-blue-600"
-                                    : "bg-slate-200"
-                                }`}
-                                style={{ height: `${i * 4 + 4}px` }}
-                              />
-                            ))}
-                          </div>
+              {/* Key Skills */}
+              <div className="px-8 py-8">
+                <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-5">Key Skills (from evaluations)</p>
+                {topSkills.length > 0 ? (
+                  <div className="space-y-3.5">
+                    {topSkills.slice(0, 7).map(s => (
+                      <div key={s.skill_id} className="group">
+                        <div className="flex items-center justify-between mb-1.5">
+                          <span className="text-xs text-slate-700 font-medium truncate group-hover:text-slate-900 transition-colors">{s.name}</span>
+                          <span className="text-[10px] text-slate-400 shrink-0 ml-2 tabular-nums font-semibold">{s.score.toFixed(1)}</span>
                         </div>
-                      ))}
-                      {topSkills.length > 6 && (
-                        <button className="flex items-center gap-1 text-xs text-blue-600 hover:underline mt-1">
-                          View all skills <ChevronRight className="h-3 w-3" />
-                        </button>
-                      )}
-                    </div>
-                  ) : (
-                    <p className="text-xs text-slate-400 text-center py-6">No skill data yet</p>
-                  )}
-                </div>
+                        <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                          <div
+                            className="h-full rounded-full bg-gradient-to-r from-blue-400 to-blue-600 transition-all duration-500"
+                            style={{ width: `${Math.min(s.score, 100)}%` }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                    {topSkills.length > 7 && (
+                      <button className="flex items-center gap-1.5 text-xs text-blue-600 hover:text-blue-700 font-medium pt-1 transition-colors">
+                        View all skills <ChevronRight className="h-3.5 w-3.5" />
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-sm text-slate-300 text-center py-8">No skill data yet</p>
+                )}
               </div>
             </div>
           </div>

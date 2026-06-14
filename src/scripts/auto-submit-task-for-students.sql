@@ -68,14 +68,12 @@ BEGIN
         task,
         assignee,
         assignee_username,
-        assigned_by,
         status,
         submitted_at
       ) VALUES (
         p_task_id,
         profile_ids[i],
         valid_usernames[i],
-        auth.uid(), -- The educator creating the task
         'submitted',
         NOW()
       );

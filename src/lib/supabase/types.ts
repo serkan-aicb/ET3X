@@ -215,8 +215,6 @@ export type Database = {
           assignee: string
           created_at: string
           assignee_username: string
-          assigned_by: string | null
-          assigned_at: string | null
           status: string // New status field for assignments
           submitted_at: string | null
           grade: number | null
@@ -228,8 +226,6 @@ export type Database = {
           assignee: string
           created_at?: string
           assignee_username: string
-          assigned_by?: string | null
-          assigned_at?: string | null
           status?: string // New status field for assignments
           submitted_at?: string | null
           grade?: number | null
@@ -241,8 +237,6 @@ export type Database = {
           assignee?: string
           created_at?: string
           assignee_username?: string
-          assigned_by?: string | null
-          assigned_at?: string | null
           status?: string // New status field for assignments
           submitted_at?: string | null
           grade?: number | null
