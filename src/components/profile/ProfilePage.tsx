@@ -383,12 +383,10 @@ export function ProfilePage({ userRole }: ProfilePageProps) {
 
   return (
     <AppLayout userRole={userRole}>
-      {/* Page wrapper — landscape document feel */}
       <div className="min-h-screen bg-slate-100 py-6 px-4 print:bg-white print:py-0 print:px-0">
-        {/* Document card */}
-        <div className="max-w-[1200px] mx-auto bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200 print:shadow-none print:rounded-none print:border-0">
+        <div className="max-w-7xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200 print:shadow-none print:rounded-none print:border-0">
 
-          {/* ── Document Header ─────────────────────────────────────── */}
+          {/* ── Header ─────────────────────────────────────────────────── */}
           <div className="flex items-center justify-between px-8 py-4 border-b border-slate-100 bg-white">
             <div className="flex items-center gap-3">
               <div className="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center">
@@ -401,7 +399,7 @@ export function ProfilePage({ userRole }: ProfilePageProps) {
                 {copied ? <Check className="h-3.5 w-3.5" /> : <Share2 className="h-3.5 w-3.5" />}
                 Share
               </Button>
-              <Button variant="outline" size="sm" onClick={() => window.print()} className="gap-1.5 text-xs print:hidden">
+              <Button size="sm" onClick={() => window.print()} className="gap-1.5 text-xs bg-blue-600 hover:bg-blue-700 text-white print:hidden">
                 <Printer className="h-3.5 w-3.5" />
                 Export PDF
               </Button>
@@ -412,7 +410,7 @@ export function ProfilePage({ userRole }: ProfilePageProps) {
             </div>
           </div>
 
-          {/* ── Edit Panel (collapsible) ─────────────────────────────── */}
+          {/* ── Edit Panel ──────────────────────────────────────────────── */}
           {editing && (
             <div className="px-8 py-5 bg-slate-50 border-b border-slate-200">
               <div className="grid gap-4 sm:grid-cols-3 max-w-2xl">
@@ -451,23 +449,19 @@ export function ProfilePage({ userRole }: ProfilePageProps) {
             </div>
           )}
 
-          {/* ── Main 3-Column Body ───────────────────────────────────── */}
-          <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr_280px] divide-y lg:divide-y-0 lg:divide-x divide-slate-100">
+          {/* ── Body: Left sidebar + Right content ─────────────────────── */}
+          <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] divide-y lg:divide-y-0 lg:divide-x divide-slate-100">
 
-            {/* ── LEFT: Identity Sidebar ──────────────────────────────── */}
-            <div className="p-6 flex flex-col gap-5">
-              {/* Avatar */}
-              <div className="flex flex-col items-center gap-3">
+            {/* ── LEFT: Identity ──────────────────────────────────────── */}
+            <div className="p-6 flex flex-col gap-6">
+              {/* Avatar + name */}
+              <div className="flex flex-col items-center gap-4">
                 <div className="relative">
-                  <Avatar className="h-20 w-20 border-2 border-slate-200">
-                    <AvatarFallback className="bg-blue-600 text-white text-xl font-bold">
-                      {getInitials(displayName)}
-                    </AvatarFallback>
-                    {avatarUrl && (
-                      <AvatarFallback>
-                        <img src={avatarUrl} alt={displayName} className="object-cover w-full h-full rounded-full" />
-                      </AvatarFallback>
-                    )}
+                  <Avatar className="h-24 w-24 border-2 border-slate-100 shadow-sm">
+                    {avatarUrl
+                      ? <img src={avatarUrl} alt={displayName} className="object-cover w-full h-full rounded-full" />
+                      : <AvatarFallback className="bg-blue-600 text-white text-2xl font-bold">{getInitials(displayName)}</AvatarFallback>
+                    }
                   </Avatar>
                   {avatarUploading ? (
                     <div className="absolute inset-0 bg-white/80 rounded-full flex items-center justify-center">
@@ -476,51 +470,49 @@ export function ProfilePage({ userRole }: ProfilePageProps) {
                   ) : (
                     <button
                       onClick={() => fileInputRef.current?.click()}
-                      className="absolute bottom-0 right-0 w-6 h-6 bg-blue-600 hover:bg-blue-700 rounded-full flex items-center justify-center shadow"
+                      className="absolute bottom-0 right-0 w-7 h-7 bg-blue-600 hover:bg-blue-700 rounded-full flex items-center justify-center shadow-md border-2 border-white"
                     >
-                      <Camera className="h-3 w-3 text-white" />
+                      <Camera className="h-3.5 w-3.5 text-white" />
                     </button>
                   )}
                   <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={handleAvatarUpload} className="hidden" />
                 </div>
 
-                <div className="text-center">
-                  <h2 className="font-bold text-slate-900 text-base leading-tight">{displayName}</h2>
-                  {headline && <p className="text-xs text-blue-600 font-medium mt-0.5">{headline}</p>}
-                  <Badge variant="secondary" className="mt-1.5 text-xs capitalize">{profile?.role}</Badge>
+                <div className="text-center space-y-1">
+                  <h2 className="font-bold text-slate-900 text-lg leading-tight">{displayName}</h2>
+                  {headline && <p className="text-sm text-blue-600 font-semibold">{headline}</p>}
+                  <Badge variant="secondary" className="text-xs capitalize mt-1">{profile?.role}</Badge>
                 </div>
               </div>
 
               {/* Bio */}
               {bio && (
-                <div className="text-xs text-slate-500 italic leading-relaxed border-l-2 border-blue-200 pl-3">
-                  "{bio}"
+                <div className="bg-slate-50 rounded-xl p-3 border border-slate-100">
+                  <p className="text-xs text-slate-500 italic leading-relaxed">"{bio}"</p>
                 </div>
               )}
 
-              {/* Stats */}
+              {/* Stats row */}
               <div className="grid grid-cols-3 gap-2 text-center">
-                <div className="bg-slate-50 rounded-lg py-2">
-                  <p className="text-lg font-bold text-slate-900">{taskStats.total}</p>
-                  <p className="text-[10px] text-slate-500">Tasks</p>
-                </div>
-                <div className="bg-slate-50 rounded-lg py-2">
-                  <p className="text-lg font-bold text-slate-900">{trustMetrics.total_evaluations}</p>
-                  <p className="text-[10px] text-slate-500">Evals</p>
-                </div>
-                <div className="bg-slate-50 rounded-lg py-2">
-                  <p className="text-lg font-bold text-slate-900">{topSkills.length}</p>
-                  <p className="text-[10px] text-slate-500">Skills</p>
-                </div>
+                {[
+                  { value: taskStats.total, label: "Tasks" },
+                  { value: trustMetrics.total_evaluations, label: "Evals" },
+                  { value: topSkills.length, label: "Skills" },
+                ].map(stat => (
+                  <div key={stat.label} className="bg-slate-50 rounded-xl py-3 border border-slate-100">
+                    <p className="text-xl font-bold text-slate-900">{stat.value}</p>
+                    <p className="text-[10px] text-slate-500 mt-0.5">{stat.label}</p>
+                  </div>
+                ))}
               </div>
 
               {/* Activity timeline */}
               {activeYears.length > 0 && (
                 <div>
-                  <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Activity</p>
-                  <div className="relative pl-2">
-                    <div className="absolute left-1 top-2 bottom-2 w-px bg-slate-200" />
-                    <div className="space-y-2">
+                  <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-3">Activity</p>
+                  <div className="relative pl-3">
+                    <div className="absolute left-1 top-1.5 bottom-1.5 w-px bg-slate-200" />
+                    <div className="space-y-3">
                       {activeYears.map(y => (
                         <TimelineDot key={y} year={y} active={y === currentYear} />
                       ))}
@@ -529,194 +521,223 @@ export function ProfilePage({ userRole }: ProfilePageProps) {
                 </div>
               )}
 
-              {/* Public profile link */}
+              {/* Buttons */}
               <div className="mt-auto pt-2 space-y-2">
-                <Button variant="outline" size="sm" className="w-full text-xs gap-1.5" onClick={handleCopyLink}>
-                  {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-                  Copy Profile Link
-                </Button>
-                <Button variant="ghost" size="sm" className="w-full text-xs gap-1.5 print:hidden" onClick={() => window.print()}>
-                  <Printer className="h-3.5 w-3.5" />
-                  Export as PDF
-                </Button>
+                <button
+                  onClick={handleCopyLink}
+                  className="w-full flex items-center justify-between px-4 py-3 rounded-xl border border-slate-200 hover:border-blue-200 hover:bg-blue-50 transition-colors text-sm text-slate-700 font-medium"
+                >
+                  <div className="flex items-center gap-2">
+                    {copied ? <Check className="h-4 w-4 text-blue-600" /> : <Share2 className="h-4 w-4 text-slate-400" />}
+                    Share Profile
+                  </div>
+                  <ChevronRight className="h-4 w-4 text-slate-400" />
+                </button>
+                <button
+                  onClick={() => window.print()}
+                  className="w-full flex items-center justify-between px-4 py-3 rounded-xl border border-slate-200 hover:border-blue-200 hover:bg-blue-50 transition-colors text-sm text-slate-700 font-medium print:hidden"
+                >
+                  <div className="flex items-center gap-2">
+                    <Printer className="h-4 w-4 text-slate-400" />
+                    Export as PDF
+                  </div>
+                  <ChevronRight className="h-4 w-4 text-slate-400" />
+                </button>
               </div>
             </div>
 
-            {/* ── CENTER: Capabilities ─────────────────────────────────── */}
-            <div className="p-6 space-y-6">
-              {/* Radar chart */}
-              <div>
-                <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Capability based on evaluated work</p>
-                <RadarChart skills={radarSkills} />
+            {/* ── RIGHT: Content area ─────────────────────────────────── */}
+            <div className="flex flex-col divide-y divide-slate-100">
 
-                {/* Level legend */}
-                <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 justify-center">
-                  {[
-                    { label: "1 – Foundational", color: "bg-slate-300" },
-                    { label: "2 – Developing", color: "bg-blue-200" },
-                    { label: "3 – Proficient", color: "bg-blue-400" },
-                    { label: "4 – Advanced", color: "bg-blue-600" },
-                    { label: "5 – Expert", color: "bg-blue-800" },
-                  ].map(l => (
-                    <div key={l.label} className="flex items-center gap-1.5">
-                      <span className={`w-2 h-2 rounded-full ${l.color}`} />
-                      <span className="text-[10px] text-slate-500">{l.label}</span>
+              {/* Top row: Radar chart + Top Contributions */}
+              <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] divide-y lg:divide-y-0 lg:divide-x divide-slate-100">
+
+                {/* Radar chart */}
+                <div className="p-6">
+                  <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                    Capability based on evaluated work
+                    <span className="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-slate-200 text-slate-500 text-[8px] cursor-default">i</span>
+                  </p>
+                  <RadarChart skills={radarSkills} />
+                  <div className="flex flex-wrap gap-x-3 gap-y-1 mt-3 justify-center">
+                    {[
+                      { label: "1 – Foundational", color: "bg-slate-300" },
+                      { label: "2 – Developing",   color: "bg-blue-200" },
+                      { label: "3 – Proficient",   color: "bg-blue-400" },
+                      { label: "4 – Advanced",     color: "bg-blue-600" },
+                      { label: "5 – Expert",       color: "bg-blue-800" },
+                    ].map(l => (
+                      <div key={l.label} className="flex items-center gap-1">
+                        <span className={`w-2 h-2 rounded-full ${l.color}`} />
+                        <span className="text-[10px] text-slate-500">{l.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Top Evaluated Contributions */}
+                <div className="p-6">
+                  <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-4">Top Evaluated Contributions</p>
+                  {activeProofs.length > 0 ? (
+                    <div className="space-y-3">
+                      {activeProofs
+                        .slice()
+                        .sort((a, b) => b.evaluation_score - a.evaluation_score)
+                        .slice(0, 3)
+                        .map(p => (
+                          <div key={p.proof_id} className="p-3.5 rounded-xl border border-slate-100 bg-white hover:border-blue-100 hover:shadow-sm transition-all">
+                            <div className="flex gap-3 mb-2">
+                              <div className="w-9 h-9 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center shrink-0">
+                                <svg className="h-4 w-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                              </div>
+                              <div className="min-w-0">
+                                <p className="text-xs font-semibold text-slate-800 leading-snug">{p.title}</p>
+                                <div className="flex items-center gap-1.5 mt-1">
+                                  <Stars score={p.evaluation_score} />
+                                  <span className="text-xs font-bold text-slate-700">{p.evaluation_score.toFixed(1)} / 5</span>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex items-center justify-between pt-2 border-t border-slate-50">
+                              <span className="text-[10px] text-slate-400">
+                                {new Date(p.timestamp).toLocaleDateString("en-GB", { month: "short", year: "numeric" })}
+                              </span>
+                              {p.on_chain && (
+                                <div className="flex items-center gap-1 text-[10px] text-emerald-600">
+                                  <Shield className="h-3 w-3" />
+                                  Verified
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      {activeProofs.length > 3 && (
+                        <button className="flex items-center gap-1 text-xs text-blue-600 hover:underline pt-1">
+                          View all contributions ({activeProofs.length}) <ChevronRight className="h-3 w-3" />
+                        </button>
+                      )}
                     </div>
-                  ))}
+                  ) : (
+                    <p className="text-xs text-slate-400 text-center py-8">No contributions yet</p>
+                  )}
                 </div>
               </div>
 
-              {/* Top Verified Capabilities */}
-              <div>
-                <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-3">Top Verified Capabilities</p>
-                {topSkills.length > 0 ? (
-                  <div className="grid sm:grid-cols-2 gap-2">
-                    {topSkills.slice(0, 6).map(s => (
-                      <div key={s.skill_id} className="flex items-center gap-3 p-2.5 rounded-lg border border-slate-100 bg-slate-50">
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs font-semibold text-slate-800 truncate">{s.name}</p>
-                          <div className="flex items-center gap-1.5 mt-1">
-                            <div className="h-1 flex-1 bg-slate-200 rounded-full overflow-hidden">
-                              <div className="h-full bg-blue-600 rounded-full" style={{ width: `${(s.score / 5) * 100}%` }} />
-                            </div>
-                            <span className="text-[10px] font-bold text-blue-700 shrink-0">{s.score.toFixed(1)}</span>
+              {/* Bottom row: Capabilities + Timeline + Key Skills */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 divide-y lg:divide-y-0 lg:divide-x divide-slate-100">
+
+                {/* Top Verified Capabilities */}
+                <div className="p-6">
+                  <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-4">Top Verified Capabilities</p>
+                  {topSkills.length > 0 ? (
+                    <div className="space-y-2.5">
+                      {topSkills.slice(0, 4).map(s => (
+                        <div key={s.skill_id} className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 hover:border-blue-100 transition-colors bg-white">
+                          <div className="w-8 h-8 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center shrink-0">
+                            <svg className="h-4 w-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                            </svg>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-semibold text-slate-800 truncate">{s.name}</p>
+                            <p className="text-[10px] text-slate-400 mt-0.5">→ based on {s.evidence_count} evaluation{s.evidence_count !== 1 ? "s" : ""}</p>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <p className="text-base font-bold text-slate-800">{s.score.toFixed(1)}</p>
+                            <p className="text-[9px] text-emerald-600 font-semibold">Avg Score</p>
                           </div>
                         </div>
-                        <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium shrink-0 ${LEVEL_COLORS[s.level] || "bg-slate-100 text-slate-600"}`}>
-                          {s.level}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-xs text-slate-400 text-center py-4">No verified capabilities yet</p>
-                )}
-              </div>
+                      ))}
+                      {topSkills.length > 4 && (
+                        <button className="flex items-center gap-1 text-xs text-blue-600 hover:underline pt-1">
+                          View all capabilities <ChevronRight className="h-3 w-3" />
+                        </button>
+                      )}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-slate-400 text-center py-6">No verified capabilities yet</p>
+                  )}
+                </div>
 
-              {/* Evaluation Timeline */}
-              <div>
-                <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-3">Evaluation Timeline</p>
-                {activeProofs.length > 0 ? (
-                  <div className="space-y-2">
-                    {activeProofs.slice(0, 6).map(p => (
-                      <div key={p.proof_id} className="flex items-center gap-3 p-2.5 rounded-lg border border-slate-100 hover:border-blue-200 transition-colors">
-                        <div className="shrink-0">
-                          {p.on_chain
-                            ? <Shield className="h-4 w-4 text-emerald-500" />
-                            : <div className="h-4 w-4 rounded-full bg-blue-100 flex items-center justify-center"><div className="h-1.5 w-1.5 rounded-full bg-blue-600" /></div>
-                          }
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs font-medium text-slate-800 truncate">{p.title}</p>
-                          <div className="flex items-center gap-2 mt-0.5">
-                            <Stars score={p.evaluation_score} />
-                            <span className="text-[10px] text-slate-400">
+                {/* Evaluation Timeline */}
+                <div className="p-6">
+                  <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-4">Evaluation Timeline</p>
+                  {activeProofs.length > 0 ? (
+                    <div className="relative">
+                      <div className="absolute left-22 top-2 bottom-2 w-px bg-slate-100" />
+                      <div className="space-y-3">
+                        {activeProofs.slice(0, 6).map(p => (
+                          <div key={p.proof_id} className="flex items-center gap-3">
+                            <span className="text-[10px] text-slate-400 w-20 shrink-0 text-right">
                               {new Date(p.timestamp).toLocaleDateString("en-GB", { month: "short", year: "numeric" })}
                             </span>
+                            <div className={`w-2.5 h-2.5 rounded-full shrink-0 z-10 border-2 ${p.on_chain ? "bg-emerald-500 border-emerald-300" : "bg-blue-500 border-blue-300"}`} />
+                            <div className="flex-1 flex items-center justify-between min-w-0">
+                              <p className="text-xs text-slate-700 truncate">{p.title}</p>
+                              <span className="text-xs font-bold text-slate-700 shrink-0 ml-2">{p.evaluation_score.toFixed(1)}</span>
+                            </div>
                           </div>
-                        </div>
-                        {p.task_difficulty && (
-                          <Badge variant="outline" className="text-[10px] shrink-0">{p.task_difficulty}</Badge>
-                        )}
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-xs text-slate-400 text-center py-4">No evaluations recorded yet</p>
-                )}
-              </div>
-            </div>
+                      {activeProofs.length > 6 && (
+                        <button className="flex items-center gap-1 text-xs text-blue-600 hover:underline mt-3">
+                          View full history <ChevronRight className="h-3 w-3" />
+                        </button>
+                      )}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-slate-400 text-center py-6">No evaluations recorded yet</p>
+                  )}
+                </div>
 
-            {/* ── RIGHT: Contributions + Key Skills ───────────────────── */}
-            <div className="p-6 space-y-6">
-              {/* Top Evaluated Contributions */}
-              <div>
-                <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-3">Top Evaluated Contributions</p>
-                {activeProofs.length > 0 ? (
-                  <div className="space-y-3">
-                    {activeProofs
-                      .slice()
-                      .sort((a, b) => b.evaluation_score - a.evaluation_score)
-                      .slice(0, 4)
-                      .map((p, idx) => (
-                        <div key={p.proof_id} className={`p-3 rounded-xl border ${idx === 0 ? "border-blue-200 bg-blue-50" : "border-slate-100 bg-slate-50"}`}>
-                          <div className="flex items-start justify-between gap-2 mb-1.5">
-                            <p className="text-xs font-semibold text-slate-800 leading-tight">{p.title}</p>
-                            <div className="flex gap-0.5 shrink-0">
-                              {[1, 2, 3, 4, 5].map(i => (
-                                <Star key={i} className={`h-3 w-3 ${i <= Math.round(p.evaluation_score) ? "fill-amber-400 text-amber-400" : "text-slate-200"}`} />
-                              ))}
-                            </div>
-                          </div>
-                          {p.skills.length > 0 && (
-                            <div className="flex flex-wrap gap-1 mb-1.5">
-                              {p.skills.map((s, i) => (
-                                <span key={i} className="text-[10px] bg-white border border-slate-200 px-1.5 py-0.5 rounded text-slate-500">{s}</span>
-                              ))}
-                            </div>
-                          )}
-                          <div className="flex items-center justify-between">
-                            <span className="text-[10px] text-slate-400">
-                              {new Date(p.timestamp).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
-                            </span>
-                            <span className="text-[10px] font-bold text-blue-700">{p.evaluation_score.toFixed(1)}/5</span>
-                          </div>
-                        </div>
-                      ))
-                    }
-                  </div>
-                ) : (
-                  <p className="text-xs text-slate-400 text-center py-4">No contributions yet</p>
-                )}
-              </div>
-
-              {/* Key Skills bar chart */}
-              <div>
-                <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-3">Key Skills (from evaluations)</p>
-                {topSkills.length > 0 ? (
-                  <div className="space-y-2.5">
-                    {topSkills.slice(0, 8).map(s => (
-                      <div key={s.skill_id}>
-                        <div className="flex items-center justify-between mb-0.5">
+                {/* Key Skills */}
+                <div className="p-6">
+                  <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-4">Key Skills (from evaluations)</p>
+                  {topSkills.length > 0 ? (
+                    <div className="space-y-3">
+                      {topSkills.slice(0, 6).map(s => (
+                        <div key={s.skill_id} className="flex items-center justify-between gap-3">
                           <span className="text-xs text-slate-700 font-medium truncate">{s.name}</span>
-                          <span className="text-[10px] text-slate-500 shrink-0 ml-2">{s.score.toFixed(1)}</span>
+                          <div className="flex items-end gap-0.5 shrink-0">
+                            {[1, 2, 3].map(i => (
+                              <div
+                                key={i}
+                                className={`w-1 rounded-sm ${
+                                  s.score >= i * 1.67
+                                    ? "bg-blue-600"
+                                    : "bg-slate-200"
+                                }`}
+                                style={{ height: `${i * 4 + 4}px` }}
+                              />
+                            ))}
+                          </div>
                         </div>
-                        <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                          <div
-                            className="h-full rounded-full bg-linear-to-r from-blue-500 to-blue-700 transition-all"
-                            style={{ width: `${(s.score / 5) * 100}%` }}
-                          />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-xs text-slate-400 text-center py-4">No skill data yet</p>
-                )}
+                      ))}
+                      {topSkills.length > 6 && (
+                        <button className="flex items-center gap-1 text-xs text-blue-600 hover:underline mt-1">
+                          View all skills <ChevronRight className="h-3 w-3" />
+                        </button>
+                      )}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-slate-400 text-center py-6">No skill data yet</p>
+                  )}
+                </div>
               </div>
-
-              {/* View all link */}
-              {activeProofs.length > 4 && (
-                <button className="flex items-center gap-1 text-xs text-blue-600 hover:underline mt-1">
-                  View all {activeProofs.length} evaluations <ChevronRight className="h-3 w-3" />
-                </button>
-              )}
             </div>
           </div>
 
-          {/* ── Verification Footer ──────────────────────────────────── */}
+          {/* ── Footer ──────────────────────────────────────────────────── */}
           <div className="px-8 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold border ${
-                trustMetrics.verified
-                  ? "bg-emerald-50 border-emerald-200 text-emerald-700"
-                  : "bg-slate-100 border-slate-200 text-slate-500"
-              }`}>
-                <Shield className="h-3.5 w-3.5" />
-                {trustMetrics.verified ? "Independently Verifiable" : "Evaluations are independently verifiable"}
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border bg-white border-slate-200 text-slate-600">
+                <Shield className="h-3.5 w-3.5 text-slate-400" />
+                Evaluations are independently verifiable
               </div>
               {trustMetrics.total_proofs > 0 && (
-                <span className="text-xs text-slate-400">{trustMetrics.total_proofs} proof{trustMetrics.total_proofs !== 1 ? "s" : ""} recorded</span>
+                <span className="text-xs text-slate-400">{trustMetrics.total_proofs} proof{trustMetrics.total_proofs !== 1 ? "s" : ""}</span>
               )}
             </div>
             <div className="flex items-center gap-2 text-xs text-slate-400">
