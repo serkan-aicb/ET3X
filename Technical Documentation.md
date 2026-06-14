@@ -1,7 +1,57 @@
 # Talent3X Technical Documentation
 
-Date: 14 June 2026  
-Schema source: Supabase export from `schema_summary.txt`, generated at `2026-06-14T03:18:12.801966+00:00`.
+Date: 13 June 2026  
+
+
+## Quick Technical Overview
+
+Talent3X is a full-stack TypeScript web application. The frontend and backend are both implemented with Next.js. Supabase provides authentication, the Postgres database, Row Level Security, and storage integration. Optional blockchain anchoring is implemented with Solidity smart contracts and an ethers.js relayer.
+
+### Programming Languages And File Types
+
+| Language / Format | Used For | Main Locations |
+| --- | --- | --- |
+| TypeScript | Application logic, server routes, Supabase clients, scripts, hooks, utility functions. | `src/app`, `src/components`, `src/lib`, `src/hooks`, `src/scripts` |
+| TSX | React UI components and Next.js pages. | `src/app`, `src/components` |
+| SQL | Supabase schema, RLS policies, migrations, cleanup scripts, diagnostic scripts. | `src/scripts/*.sql` |
+| Solidity | Optional Polygon smart contract for skill rating anchoring. | `contracts/Talent3XSkillRatings.sol` |
+| CSS / Tailwind | Global styling and component styling. | `src/app/globals.css`, component class names |
+| JavaScript | Contract deployment/setup scripts and a few database helper scripts. | `contracts/*.js`, selected `src/scripts/*.js` |
+| Markdown | Project and handover documentation. | `README.md`, `Technical Documentation.md`, `contracts/*.md` |
+| JSON | Package metadata and generated deployment artifacts. | `package.json`, `package-lock.json`, generated `contracts/*.json` |
+
+### Main Technologies
+
+| Area | Technology |
+| --- | --- |
+| Web framework | Next.js 16 App Router |
+| UI framework | React 19 |
+| Primary language | TypeScript / TSX |
+| Styling | Tailwind CSS 4 and local UI components |
+| Authentication | Supabase Auth |
+| Database | Supabase Postgres |
+| Authorization | Supabase Row Level Security plus route-level checks |
+| File handling | Supabase Storage plus `submission_files` metadata |
+| Optional blockchain | Solidity, ethers.js, Polygon PoS |
+| Testing | Jest and ts-jest |
+| Runtime/tooling | Node.js, npm, ESLint, TypeScript |
+
+### How The Main Parts Work Together
+
+1. Users open Talent3X in the browser.
+2. Next.js renders public, student, educator, admin, profile, and task pages.
+3. React client components handle forms, dashboards, rating UI, profile UI, and task interactions.
+4. Supabase Auth manages login sessions.
+5. The browser uses the Supabase anon key for normal user operations.
+6. Supabase Row Level Security controls which rows each user may read or write.
+7. Next.js API routes handle sensitive server-side work, for example signup/profile creation checks, public profile allowlisting, DID documents, and file upload/download.
+8. Educator-created tasks are stored in `tasks`.
+9. Student requests are stored in `task_requests`.
+10. Accepted work is stored in `task_assignments`.
+11. Student submissions are stored in `submissions`; uploaded file metadata is stored in `submission_files`.
+12. Educator evaluations are stored as normalized rating sessions in `task_ratings` and individual skill scores in `task_rating_skills`.
+13. Profile pages aggregate rating data into visible student skill evidence.
+14. The optional relayer can later read unanchored rating rows and anchor them to Polygon.
 
 ## Purpose
 
@@ -15,6 +65,30 @@ Talent3X is a university-oriented platform for turning student work into structu
 - The old direct `TalentRating` Polygon/IPFS flow has been removed from the codebase.
 - The relayer has been taken offline for security reasons and is disabled by default in code. It must be recreated and explicitly enabled.
 - Local `.env` files, Claude settings, generated contract deployment artifacts, build output, and dependency folders are ignored by Git.
+
+## Tech Stack
+
+| Layer | Technology | Main Files / Notes |
+| --- | --- | --- |
+| Programming language | TypeScript / TSX | Main application code in `src/app`, `src/components`, `src/lib`, and `src/hooks`. |
+| Frontend framework | React 19 | Client components, forms, dashboards, profile views, and interactive UI. |
+| Application framework | Next.js 16 App Router | Routing, layouts, server-rendered pages, API routes, and production build. |
+| Styling | Tailwind CSS 4 plus local UI components | Global styles in `src/app/globals.css`; shared components in `src/components/ui`. |
+| Backend/API layer | Next.js API routes | Server-side routes in `src/app/api`. Used for signup, public profiles, DID documents, file upload/download, task lookup, and health checks. |
+| Database | Supabase Postgres | Tables, constraints, indexes, RLS policies, and SQL scripts in `src/scripts`. |
+| Authentication | Supabase Auth | User sessions, auth callback, password reset, and role-linked profile records. |
+| Authorization | Supabase Row Level Security plus route-level checks | RLS protects database access; Next.js pages and APIs add role/session checks. |
+| Storage | Supabase Storage plus metadata tables | File metadata is stored in `submission_files`; storage access is handled by server routes and policies. |
+| Blockchain integration | Solidity, ethers.js, Polygon PoS | Optional anchoring through `contracts/Talent3XSkillRatings.sol` and `src/blockchain/relayer.ts`. |
+| Tests | Jest, ts-jest | Unit tests for XP calculation and username parsing. |
+| Tooling/runtime | Node.js, npm, ESLint, TypeScript | Scripts are defined in `package.json`. |
+
+Additional file formats used by the project:
+
+- SQL for Supabase schema, RLS, migrations, and cleanup scripts.
+- Markdown for project documentation.
+- JSON for package metadata and generated deployment artifacts.
+- CSS/Tailwind utility classes for styling.
 
 ## Architecture
 
@@ -39,6 +113,20 @@ Optional blockchain layer
   -> contracts/Talent3XSkillRatings.sol
   -> Polygon PoS mainnet
 ```
+
+## How The System Fits Together
+
+Talent3X is organized around Supabase as the central data layer and Next.js as the application layer.
+
+1. The browser renders Next.js pages and React client components.
+2. Client components use the Supabase anon client for normal user actions such as reading allowed tasks, submitting requests, editing own profile fields, and viewing own assignments.
+3. Supabase Row Level Security decides which rows the current user can read or write.
+4. Next.js API routes handle operations that must not run directly in the browser, such as public profile allowlisting, DID document generation, signup/profile creation checks, and file upload/download.
+5. Server-side routes use the service-role key only where RLS bypass is necessary and safe.
+6. Educator task work flows from `tasks` to `task_requests`, then to `task_assignments`, then to `submissions`.
+7. Educator evaluations are stored as one `task_ratings` session plus multiple `task_rating_skills` rows.
+8. Profile pages aggregate `task_ratings` and `task_rating_skills` into visible skill evidence.
+9. The optional relayer reads unanchored normalized rating rows, writes hashes, sends Polygon transactions, and stores transaction hashes back in Supabase.
 
 ## Main Application Areas
 
@@ -298,13 +386,3 @@ npm run build
 
 At the time of this documentation update, the previous baseline had passing tests and production build. Re-run all checks after every schema or UI change.
 
-## Cleanup Completed In This Handover
-
-- Replaced the German handover document with this English technical documentation.
-- Removed the old `TalentRating` contract flow and unused Polygon/IPFS client code.
-- Removed stale generated contract deployment JSON from Git tracking.
-- Replaced Educator task reads from legacy `ratings` with normalized `task_ratings`.
-- Aligned assignment management code with the live `task_assignments.created_at` schema.
-- Added `RELAYER_ENABLED=false` as the default relayer safety switch.
-- Updated `.gitignore` for generated contract artifacts and local AI/tool state.
-- Updated the baseline Supabase schema with public profiles, submission files, normalized ratings, and current task fields.
