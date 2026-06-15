@@ -1,0 +1,283 @@
+Page 1 of 9
+© Talent3X
+FINAL PHASE 1 DATABASE MODEL
+USERS
+Field Type
+user_id UUID
+email String
+password_hash String
+auth_provider Email / Google / LinkedIn
+role Contributor / Evaluator / Admin
+created_at Timestamp
+last_login Timestamp
+PROFILES
+Field Type
+profile_id UUID
+user_id UUID
+first_name String
+last_name String
+profile_image URL
+headline String
+current_role String
+organization String
+location String
+visibility Private / Link / Public
+profile_completeness Integer
+created_at Timestamp
+CREDENTIALS
+Courses, Degrees, Certifications
+
+-- 1 of 9 --
+
+Page 2 of 9
+© Talent3X
+Field Type
+credential_id UUID
+profile_id UUID
+credential_type Degree / Course / Certification / Training
+title String
+issuer String
+institution String
+issue_date Date
+expiry_date Date
+attachment_url URL
+verification_status Self Reported / Verified
+source LinkedIn / CV / Manual
+user_confirmed Boolean
+EXPERIENCE
+Employment, Research, Volunteer Work
+Field Type
+experience_id UUID
+profile_id UUID
+title String
+organization String
+experience_type Employment / Internship / Project / Volunteer / Research
+start_date Date
+end_date Date
+description Text
+source LinkedIn / CV / Manual
+user_confirmed Boolean
+
+-- 2 of 9 --
+
+Page 3 of 9
+© Talent3X
+ORGANIZATIONS
+Field Type
+organization_id UUID
+name String
+organization_type SME / University / Community / Freelancer / Enterprise
+domain String
+created_at Timestamp
+POLICIES
+Hidden in MVP
+Default:
+Talent3X Standard Policy v1.0
+Field Type
+policy_id UUID
+name String
+version String
+status Active / Deprecated
+created_at Timestamp
+ACTIONS
+Universal object
+Field Type
+action_id UUID
+policy_id UUID
+creator_profile_id UUID
+creator_type Contributor / Evaluator / Admin
+organization_id UUID
+action_title String
+
+-- 3 of 9 --
+
+Page 4 of 9
+© Talent3X
+Field Type
+description Text
+expected_outcome Text
+action_type Project / Research / Presentation / Assessment / Other
+difficulty Foundational / Intermediate / Advanced / Expert
+due_date Date
+status Draft / Shared / Submitted / Evaluated / Verified
+created_at Timestamp
+ACTION CAPABILITIES
+Field Type
+action_capability_id UUID
+action_id UUID
+capability_id UUID
+capability_name String
+capability_definition Text
+ai_suggested Boolean
+user_confirmed Boolean
+EVALUATOR ASSIGNMENTS
+Field Type
+evaluator_assignment_id UUID
+action_id UUID
+evaluator_name String
+evaluator_email String
+evaluator_profile_id UUID
+evaluator_role Professor / Manager / Client / Mentor / Peer / Supervisor / Other
+evaluator_organization String
+
+-- 4 of 9 --
+
+Page 5 of 9
+© Talent3X
+Field Type
+invitation_token String
+invitation_status Sent / Opened / Completed
+invited_at Timestamp
+completed_at Timestamp
+ACTION SHARES
+Links & QR
+Field Type
+share_id UUID
+action_id UUID
+share_type Link / QR / Email
+secure_token String
+created_at Timestamp
+SUBMISSIONS
+Most important update
+Field Type
+submission_id UUID
+action_id UUID
+contributor_profile_id UUID
+submitted_at Timestamp
+evidence_storage_mode Store / Hash Only / External Reference
+evidence_type File / Link / Text / External
+evidence_reference String
+evidence_hash String
+evidence_filename String
+evidence_mime_type String
+
+-- 5 of 9 --
+
+Page 6 of 9
+© Talent3X
+Field Type
+evidence_size Integer
+evidence_deleted_after_hash Boolean
+supporting_notes Text
+status Submitted / Awaiting Evaluation / Evaluated
+EVALUATIONS
+Field Type
+evaluation_id UUID
+action_id UUID
+submission_id UUID
+evaluator_assignment_id UUID
+evaluator_profile_id UUID
+evaluator_name String
+evaluator_email String
+evaluator_role String
+evaluator_organization String
+confidence_level Low / Medium / High
+confirmation_checked Boolean
+evaluated_at Timestamp
+policy_id UUID
+status Completed / Verified
+EVALUATION SCORES
+Per Capability
+Field Type
+evaluation_score_id UUID
+evaluation_id UUID
+
+-- 6 of 9 --
+
+Page 7 of 9
+© Talent3X
+Field Type
+capability_id UUID
+score 1–5
+comment Text
+No overall score.
+CAPABILITIES
+Master capability framework
+Field Type
+capability_id UUID
+name String
+description Text
+category String
+active Boolean
+PROFILE CAPABILITY SCORES
+Generated from evaluations
+Field Type
+profile_capability_score_id UUID
+profile_id UUID
+capability_id UUID
+average_score Decimal
+evaluation_count Integer
+highest_difficulty Foundational / Intermediate / Advanced / Expert
+latest_evaluation_date Date
+last_updated Timestamp
+REPORTS
+
+-- 7 of 9 --
+
+Page 8 of 9
+© Talent3X
+Field Type
+report_id UUID
+organization_id UUID
+report_type Capability / Team / Contributor / Growth / Evaluation
+generated_by UUID
+generated_at Timestamp
+date_range String
+ai_summary Text
+pdf_url URL
+AI INTERACTIONS (NEW)
+This is what enables future AI features.
+Field Type
+ai_interaction_id UUID
+profile_id UUID
+action_id UUID
+interaction_type Capability Suggestion / Evaluation Interpretation / Report Summary
+prompt Text
+response Text
+created_at Timestamp
+FINAL PHASE 1 DATA FLOW
+User
+↓
+Profile
+├── Credentials
+├── Experience
+│
+↓
+Action
+↓
+AI Capability Suggestion
+↓
+
+-- 8 of 9 --
+
+Page 9 of 9
+© Talent3X
+Evaluator Assignment
+↓
+Link / QR Share
+↓
+Submission
+(Store / Hash Only / External Reference)
+↓
+Evaluation
+↓
+Capability Record Update
+↓
+Profile Studio
+↓
+Analytics
+↓
+Reports
+This is the version I would freeze before development. It supports:
+• SMEs (primary revenue)
+• Universities
+• Communities
+• Students
+• Freelancers
+• Consultants under NDA
+• Enterprise expansion later
+while remaining simple enough for a small team to implement quickly with Claude-assisted
+development.
+
+-- 9 of 9 --
+

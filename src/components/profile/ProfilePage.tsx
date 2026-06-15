@@ -8,7 +8,6 @@ import { AppLayout } from "@/components/app-layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import {
@@ -406,27 +405,30 @@ export function ProfilePage({ userRole }: ProfilePageProps) {
           </div>
 
           {/* ── Profile Header ─────────────────────────────────────────── */}
-          <div className="px-10 pt-8 pb-7 border-b border-slate-100">
-            <div className="flex items-center gap-7">
+          <div className="relative bg-gradient-to-br from-blue-600 via-blue-500 to-indigo-600 px-10 pt-9 pb-9 print:py-6">
+            {/* Subtle texture overlay */}
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.08),transparent_60%)] pointer-events-none" />
+
+            <div className="relative flex items-center gap-7">
 
               {/* Avatar */}
               <div className="relative shrink-0">
-                <div className="relative h-20 w-20 rounded-2xl overflow-hidden bg-blue-600 border border-slate-200">
+                <div className="relative h-[88px] w-[88px] rounded-2xl overflow-hidden bg-white/20 border-2 border-white/30 shadow-xl">
                   {avatarUrl
-                    ? <Image src={avatarUrl} alt={displayName} fill sizes="80px" className="object-cover" unoptimized />
-                    : <div className="w-full h-full flex items-center justify-center text-white text-xl font-bold tracking-tight">{getInitials(displayName)}</div>
+                    ? <Image src={avatarUrl} alt={displayName} fill sizes="88px" className="object-cover" unoptimized />
+                    : <div className="w-full h-full flex items-center justify-center text-white text-2xl font-bold tracking-tight">{getInitials(displayName)}</div>
                   }
                 </div>
                 {avatarUploading ? (
-                  <div className="absolute inset-0 bg-white/80 rounded-2xl flex items-center justify-center">
-                    <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
+                  <div className="absolute inset-0 bg-black/30 rounded-2xl flex items-center justify-center">
+                    <Loader2 className="h-4 w-4 animate-spin text-white" />
                   </div>
                 ) : (
                   <button
                     onClick={() => fileInputRef.current?.click()}
-                    className="absolute -bottom-1.5 -right-1.5 w-6 h-6 bg-white border border-slate-200 hover:bg-slate-50 rounded-full flex items-center justify-center shadow-sm print:hidden transition-colors"
+                    className="absolute -bottom-1.5 -right-1.5 w-6 h-6 bg-white/90 hover:bg-white border border-white/50 rounded-full flex items-center justify-center shadow-md print:hidden transition-colors"
                   >
-                    <Camera className="h-3 w-3 text-slate-400" />
+                    <Camera className="h-3 w-3 text-slate-500" />
                   </button>
                 )}
                 <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={handleAvatarUpload} className="hidden" />
@@ -436,34 +438,36 @@ export function ProfilePage({ userRole }: ProfilePageProps) {
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between gap-6">
                   <div>
-                    <h1 className="text-[1.75rem] font-bold text-slate-900 leading-none tracking-tight">{displayName}</h1>
+                    <h1 className="text-[1.85rem] font-bold text-white leading-none tracking-tight drop-shadow-sm">{displayName}</h1>
                     {headline && (
-                      <p className="text-base text-blue-600 font-medium mt-1.5 leading-none">{headline}</p>
+                      <p className="text-[15px] text-blue-100 font-medium mt-2 leading-none">{headline}</p>
                     )}
-                    <div className="flex items-center gap-2 mt-2.5">
-                      <Badge variant="secondary" className="text-xs capitalize font-medium px-2.5 py-0.5">{profile?.role}</Badge>
+                    <div className="flex items-center gap-2 mt-3">
+                      <span className="inline-flex items-center text-[11px] font-semibold text-white/80 bg-white/15 border border-white/20 px-2.5 py-0.5 rounded-full capitalize">
+                        {profile?.role}
+                      </span>
                       {trustMetrics.verified && (
-                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-300 bg-emerald-900/30 border border-emerald-400/30 px-2 py-0.5 rounded-full">
                           <Shield className="h-3 w-3" />
                           Verified
                         </span>
                       )}
                     </div>
                     {bio && (
-                      <p className="mt-3 text-sm text-slate-500 leading-relaxed max-w-xl">&ldquo;{bio}&rdquo;</p>
+                      <p className="mt-3.5 text-sm text-blue-100/80 leading-relaxed max-w-xl italic">&ldquo;{bio}&rdquo;</p>
                     )}
                   </div>
 
                   {/* Stats */}
-                  <div className="hidden lg:flex items-center shrink-0 pr-2 divide-x divide-slate-100">
+                  <div className="hidden lg:flex items-center shrink-0 pr-1 divide-x divide-white/20">
                     {[
                       { value: taskStats.total, label: "Tasks" },
                       { value: trustMetrics.total_evaluations, label: "Evaluations" },
                       { value: topSkills.length, label: "Skills" },
                     ].map((stat) => (
                       <div key={stat.label} className="text-center px-8 first:pl-0 last:pr-0">
-                        <p className="text-2xl font-bold text-slate-900 leading-none tabular-nums">{stat.value}</p>
-                        <p className="text-[11px] text-slate-400 font-medium mt-1.5 uppercase tracking-wider">{stat.label}</p>
+                        <p className="text-3xl font-bold text-white leading-none tabular-nums">{stat.value}</p>
+                        <p className="text-[11px] text-blue-200 font-medium mt-1.5 uppercase tracking-wider">{stat.label}</p>
                       </div>
                     ))}
                   </div>
