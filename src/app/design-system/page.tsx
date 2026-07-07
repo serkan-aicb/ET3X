@@ -1,0 +1,430 @@
+"use client";
+
+import { Users, Star, ClipboardList, TrendingUp } from "lucide-react";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Progress } from "@/components/ui/progress";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
+import { StatusBadge } from "@/components/ui/status-badge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Textarea } from "@/components/ui/textarea";
+import { KpiCard } from "@/components/dashboard/kpi-card";
+import { SectionHeader } from "@/components/dashboard/section-header";
+import { CapabilityScore } from "@/components/evaluation/capability-score";
+import { ScoreScale } from "@/components/evaluation/score-scale";
+import { mockEvaluationConfig } from "@/lib/verification/mock-config";
+
+const COLOR_TOKENS = [
+  { name: "primary", cssVar: "--primary", note: "brand blue · actions, links" },
+  { name: "foreground", cssVar: "--foreground", note: "headings, body text" },
+  { name: "muted-foreground", cssVar: "--muted-foreground", note: "secondary text" },
+  { name: "muted / secondary", cssVar: "--muted", note: "subtle surfaces" },
+  { name: "border", cssVar: "--border", note: "borders, dividers" },
+  { name: "sidebar", cssVar: "--sidebar", note: "sidebar background" },
+  { name: "destructive", cssVar: "--destructive", note: "errors, rejected" },
+  { name: "chart-1", cssVar: "--chart-1", note: "charts · blue" },
+  { name: "chart-2", cssVar: "--chart-2", note: "charts · orange" },
+  { name: "chart-3", cssVar: "--chart-3", note: "charts · purple" },
+  { name: "chart-4", cssVar: "--chart-4", note: "charts · green" },
+  { name: "chart-5", cssVar: "--chart-5", note: "charts · slate" },
+];
+
+const TYPE_SCALE = [
+  { cls: "text-3xl font-semibold tracking-tight", label: "text-3xl · page titles, KPI values" },
+  { cls: "text-2xl font-semibold tracking-tight", label: "text-2xl · card titles" },
+  { cls: "text-xl font-semibold tracking-tight", label: "text-xl · section titles" },
+  { cls: "text-base", label: "text-base · long-form body" },
+  { cls: "text-sm", label: "text-sm · default UI text" },
+  { cls: "text-xs text-muted-foreground", label: "text-xs · captions, metadata" },
+];
+
+function DesignSystemSection({
+  title,
+  description,
+  children,
+}: {
+  title: string;
+  description?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="space-y-4">
+      <SectionHeader title={title} description={description} />
+      {children}
+    </section>
+  );
+}
+
+export default function DesignSystemPage() {
+  const config = mockEvaluationConfig;
+
+  return (
+    <div className="min-h-screen bg-background">
+      <header className="border-b bg-background px-6 py-4 print:hidden">
+        <div className="mx-auto max-w-6xl">
+          <h1 className="text-3xl font-semibold tracking-tight">
+            Talent3X Design System
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Week 1 · UI foundation reference. Product lists (roles, difficulty,
+            score scale, capabilities) render from verification-layer config —
+            currently a stub, never hardcoded.
+          </p>
+        </div>
+      </header>
+
+      <main className="mx-auto max-w-6xl space-y-12 px-6 py-10">
+        {/* ── Tokens ─────────────────────────────────────────────── */}
+        <DesignSystemSection
+          title="Color tokens"
+          description="Defined in globals.css. Always reference tokens, never raw hex, so a future theme change is one edit."
+        >
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+            {COLOR_TOKENS.map((token) => (
+              <div key={token.name} className="rounded-lg border p-3">
+                <div
+                  className="h-10 w-full rounded-md border"
+                  style={{ backgroundColor: `var(${token.cssVar})` }}
+                />
+                <p className="mt-2 text-sm font-medium">{token.name}</p>
+                <p className="text-xs text-muted-foreground">{token.note}</p>
+              </div>
+            ))}
+          </div>
+        </DesignSystemSection>
+
+        <DesignSystemSection
+          title="Typography"
+          description="Inter everywhere. Weights: 400 body · 500 labels · 600 headings."
+        >
+          <Card>
+            <CardContent className="space-y-3 p-6">
+              {TYPE_SCALE.map((t) => (
+                <div key={t.label} className="flex flex-wrap items-baseline gap-x-6 gap-y-1">
+                  <p className={t.cls}>Capability intelligence</p>
+                  <p className="text-xs text-muted-foreground">{t.label}</p>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </DesignSystemSection>
+
+        {/* ── Primitives ─────────────────────────────────────────── */}
+        <DesignSystemSection
+          title="Buttons & badges"
+          description="shadcn/ui primitives — use these variants, don't invent new ones."
+        >
+          <Card>
+            <CardContent className="space-y-4 p-6">
+              <div className="flex flex-wrap items-center gap-3">
+                <Button>Primary</Button>
+                <Button variant="secondary">Secondary</Button>
+                <Button variant="outline">Outline</Button>
+                <Button variant="ghost">Ghost</Button>
+                <Button variant="destructive">Destructive</Button>
+                <Button variant="link">Link</Button>
+                <Button size="sm">Small</Button>
+              </div>
+              <div className="flex flex-wrap items-center gap-3">
+                <Badge>Default</Badge>
+                <Badge variant="secondary">Secondary</Badge>
+                <Badge variant="outline">Outline</Badge>
+                <Badge variant="destructive">Destructive</Badge>
+              </div>
+            </CardContent>
+          </Card>
+        </DesignSystemSection>
+
+        <DesignSystemSection
+          title="Status badges"
+          description="Tone is visual only — labels come from data (e.g. verification tiers below), never hardcoded in the component."
+        >
+          <Card>
+            <CardContent className="flex flex-wrap items-center gap-3 p-6">
+              <StatusBadge tone="success">Verified</StatusBadge>
+              <StatusBadge tone="warning">Pending</StatusBadge>
+              <StatusBadge tone="destructive">Rejected</StatusBadge>
+              <StatusBadge tone="info">Invited</StatusBadge>
+              <StatusBadge tone="neutral">Draft</StatusBadge>
+            </CardContent>
+          </Card>
+        </DesignSystemSection>
+
+        <DesignSystemSection
+          title="Forms"
+          description="react-hook-form + zod in real screens; these are the visual primitives."
+        >
+          <Card>
+            <CardContent className="grid gap-6 p-6 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="ds-title">Action title</Label>
+                <Input id="ds-title" placeholder="e.g. Market analysis for X" />
+              </div>
+              <div className="space-y-2">
+                <Label>Difficulty (from config)</Label>
+                <Select>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select difficulty" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {config.difficultyLevels.map((level) => (
+                      <SelectItem key={level.id} value={level.id}>
+                        {level.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2 sm:col-span-2">
+                <Label htmlFor="ds-desc">Description</Label>
+                <Textarea id="ds-desc" placeholder="Describe the work…" rows={3} />
+              </div>
+              <div className="flex items-center gap-2">
+                <Checkbox id="ds-hash" />
+                <Label htmlFor="ds-hash" className="font-normal">
+                  Hash-only evidence (NDA work)
+                </Label>
+              </div>
+            </CardContent>
+          </Card>
+        </DesignSystemSection>
+
+        {/* ── Dashboard patterns ─────────────────────────────────── */}
+        <DesignSystemSection
+          title="KPI cards"
+          description="Numbers must tell a story: value + trend + plain-language caption, never a bare number."
+        >
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <KpiCard
+              label="Active contributors"
+              value="248"
+              deltaPercent={12}
+              caption="vs. last 30 days"
+              icon={<Users />}
+            />
+            <KpiCard
+              label="Evaluations completed"
+              value="1,432"
+              deltaPercent={8}
+              caption="vs. last 30 days"
+              icon={<Star />}
+            />
+            <KpiCard
+              label="Open actions"
+              value="37"
+              deltaPercent={-5}
+              caption="vs. last 30 days"
+              icon={<ClipboardList />}
+            />
+            <KpiCard
+              label="Avg. capability growth"
+              value="+0.4"
+              caption="across all contributors, 90 days"
+              icon={<TrendingUp />}
+            />
+          </div>
+        </DesignSystemSection>
+
+        <DesignSystemSection
+          title="Table"
+          description="Standard data table for lists (profiles, actions, evaluations)."
+        >
+          <Card>
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Contributor</TableHead>
+                    <TableHead>Action</TableHead>
+                    <TableHead>Verification</TableHead>
+                    <TableHead className="text-right">Score</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  <TableRow>
+                    <TableCell className="font-medium">Sarah Johnson</TableCell>
+                    <TableCell>Market Analysis Project</TableCell>
+                    <TableCell>
+                      <StatusBadge tone="success">
+                        {config.verificationTiers[0].label}
+                      </StatusBadge>
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums">4.3</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell className="font-medium">Deniz Aksoy</TableCell>
+                    <TableCell>Research Sustainability Review</TableCell>
+                    <TableCell>
+                      <StatusBadge tone="warning">Pending</StatusBadge>
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums">—</TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </DesignSystemSection>
+
+        {/* ── Product patterns from verification-layer config ────── */}
+        <DesignSystemSection
+          title="Evaluation score scale (from config)"
+          description="Fixed 0–5 scale rendered from the verification-layer stub. Scores 1 and 5 auto-require a comment."
+        >
+          <div className="grid gap-4 lg:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Scale reference</CardTitle>
+                <CardDescription>config.scoreScale, unselected</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ScoreScale steps={config.scoreScale} />
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">With a selection</CardTitle>
+                <CardDescription>display-only selected state (4 · Strong)</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ScoreScale steps={config.scoreScale} selected={4} />
+              </CardContent>
+            </Card>
+          </div>
+        </DesignSystemSection>
+
+        <DesignSystemSection
+          title="Per-capability scores"
+          description="Computed by the capability engine (score × evaluation_weight). Deliberately no overall score."
+        >
+          <Card>
+            <CardContent className="grid gap-6 p-6 sm:grid-cols-2">
+              <CapabilityScore
+                label="Strategic Thinking"
+                score={4.6}
+                caption="based on 3 evaluated actions"
+              />
+              <CapabilityScore
+                label="Communication"
+                score={4.3}
+                caption="based on 2 evaluations"
+              />
+              <CapabilityScore
+                label="Problem Solving"
+                score={3.8}
+                caption="based on 4 evaluated actions"
+              />
+              <CapabilityScore
+                label="Leadership"
+                score={2.9}
+                caption="based on 1 evaluation · low familiarity"
+              />
+            </CardContent>
+          </Card>
+        </DesignSystemSection>
+
+        <DesignSystemSection
+          title="Config-driven lists (verification-layer stub)"
+          description="Everything below renders from mock-config.ts and will switch to the live API without UI changes."
+        >
+          <div className="grid gap-4 lg:grid-cols-3">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Evaluator roles</CardTitle>
+                <CardDescription>context: {config.context}</CardDescription>
+              </CardHeader>
+              <CardContent className="flex flex-wrap gap-2">
+                {config.evaluatorRoles.map((role) => (
+                  <Badge key={role.id} variant="secondary">
+                    {role.label}
+                  </Badge>
+                ))}
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Difficulty levels</CardTitle>
+                <CardDescription>fixed in every context</CardDescription>
+              </CardHeader>
+              <CardContent className="flex flex-wrap gap-2">
+                {config.difficultyLevels.map((level) => (
+                  <Badge key={level.id} variant="outline">
+                    {level.label}
+                  </Badge>
+                ))}
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Capability catalogue</CardTitle>
+                <CardDescription>families → capabilities</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {config.capabilityCatalogue.map((family) => (
+                  <div key={family.id}>
+                    <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                      {family.label}
+                    </p>
+                    <div className="mt-1 flex flex-wrap gap-1.5">
+                      {family.capabilities.map((capability) => (
+                        <Badge key={capability.id} variant="secondary">
+                          {capability.label}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          </div>
+        </DesignSystemSection>
+
+        <DesignSystemSection
+          title="Progress & loading"
+          description="Progress for multi-step flows (onboarding, evaluation); skeletons while data loads."
+        >
+          <Card>
+            <CardContent className="space-y-6 p-6">
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Step 2 of 4 · Capabilities</span>
+                  <span className="font-medium">50%</span>
+                </div>
+                <Progress value={50} />
+              </div>
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-2/3" />
+                <Skeleton className="h-4 w-1/2" />
+                <Skeleton className="h-24 w-full" />
+              </div>
+            </CardContent>
+          </Card>
+        </DesignSystemSection>
+      </main>
+    </div>
+  );
+}

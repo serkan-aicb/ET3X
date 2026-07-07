@@ -22,6 +22,7 @@ const PUBLIC_PREFIXES = [
   '/_next',
   '/edu',
   '/stud',
+  '/design-system',
 ]
 
 export async function proxy(request: NextRequest) {
