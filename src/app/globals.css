@@ -6,7 +6,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-inter);
+  --font-sans: var(--font-app);
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -41,6 +41,12 @@
   --color-secondary: var(--secondary);
   --color-primary-foreground: var(--primary-foreground);
   --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-ink: var(--ink);
+  --color-ink-foreground: var(--ink-foreground);
+  --color-ink-hover: var(--ink-hover);
+  --color-tint-sky: var(--tint-sky);
+  --color-tint-steel: var(--tint-steel);
   --color-popover-foreground: var(--popover-foreground);
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
@@ -53,19 +59,30 @@
 
 :root {
   --radius: 0.625rem;
-  /* Background: clean white */
-  --background: #FFFFFF;
+  /* Canvas: light blue-gray (mockup-true); cards stay pure white on top */
+  --background: #F8FAFC;
   --foreground: #111827;
-  
+
   /* Cards/Container: white with subtle border */
   --card: #FFFFFF;
   --card-foreground: #111827;
   --popover: #FFFFFF;
   --popover-foreground: #111827;
-  
-  /* Primary = professional blue */
+
+  /* Primary = interactive blue (UI-tuned; the logo blues are tints below) */
   --primary: #2563EB;
   --primary-foreground: #FFFFFF;
+  --primary-hover: #1D4ED8;
+
+  /* Brand ink (exact logo navy #081B30). Allowed in exactly three homes:
+     ink button variant, auth/marketing brand panel, PDF export chrome. */
+  --ink: #081B30;
+  --ink-foreground: #FFFFFF;
+  --ink-hover: #0D2A4A;
+
+  /* Logo support tints — decorative tier only (chips, avatars, charts) */
+  --tint-sky: #76AFE2;
+  --tint-steel: #4F7BA9;
   
   /* Secondary = light slate */
   --secondary: #F1F5F9;
@@ -98,11 +115,12 @@
   --input: #E2E8F0;
   --ring: #2563EB;
 
-  /* Chart colors */
+  /* Chart colors — categorical (decorative tier). Purple removed (D1 amended);
+     teal ≠ trust-emerald, amber = the warm accent. */
   --chart-1: #2563EB;
-  --chart-2: #F97316;
-  --chart-3: #8B5CF6;
-  --chart-4: #10B981;
+  --chart-2: #14B8A6;
+  --chart-3: #F59E0B;
+  --chart-4: #76AFE2;
   --chart-5: #64748B;
 
   /* Sidebar colors */
@@ -116,60 +134,9 @@
   --sidebar-ring: #2563EB;
 }
 
-.dark {
-  /* Light theme overrides - we keep dark class for compatibility but use light values */
-  --background: #FFFFFF;
-  --foreground: #111827;
-  
-  --card: #FFFFFF;
-  --card-foreground: #111827;
-  --popover: #FFFFFF;
-  --popover-foreground: #111827;
-  
-  --primary: #2563EB;
-  --primary-foreground: #FFFFFF;
-  
-  --secondary: #F1F5F9;
-  --secondary-foreground: #111827;
-  
-  --muted: #F1F5F9;
-  --muted-foreground: #64748B;
-  
-  --accent: #F1F5F9;
-  --accent-foreground: #111827;
-  
-  --destructive: #EF4444;
-  --destructive-foreground: #FFFFFF;
-
-  /* Semantic status tokens (mirror of :root — see D2: .dark flagged for removal) */
-  --success: #10B981;
-  --success-foreground: #FFFFFF;
-  --warning: #F59E0B;
-  --warning-foreground: #111827;
-  --danger: #EF4444;
-  --danger-foreground: #FFFFFF;
-  --info: #2563EB;
-  --info-foreground: #FFFFFF;
-
-  --border: #E2E8F0;
-  --input: #E2E8F0;
-  --ring: #2563EB;
-  
-  --chart-1: #2563EB;
-  --chart-2: #F97316;
-  --chart-3: #8B5CF6;
-  --chart-4: #10B981;
-  --chart-5: #64748B;
-  
-  --sidebar: #F8FAFC;
-  --sidebar-foreground: #111827;
-  --sidebar-primary: #2563EB;
-  --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #F1F5F9;
-  --sidebar-accent-foreground: #111827;
-  --sidebar-border: #E2E8F0;
-  --sidebar-ring: #2563EB;
-}
+/* D2: light-only. The .dark mirror block was removed 2026-07-08; the
+   class-based dark variant stays declared so stray `dark:` utilities in
+   vendored components can never activate via OS preference. */
 
 /* Skill checkbox styling */
 .skill-checkbox input[type='checkbox'] {
@@ -182,8 +149,38 @@
 }
 
 .skill-checkbox input[type='checkbox']:checked {
-  background-color: #2563EB;
-  border-color: #2563EB;
+  background-color: var(--primary);
+  border-color: var(--primary);
+}
+
+/* Motion utilities — the one lift taken from /design-lab, toned to product
+   calm. Only interactive elements may move (motion = affordance signal). */
+@layer components {
+  .card-interactive {
+    transition:
+      transform 200ms cubic-bezier(0.2, 0.7, 0.2, 1),
+      box-shadow 200ms cubic-bezier(0.2, 0.7, 0.2, 1),
+      border-color 150ms ease-out;
+  }
+  .card-interactive:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px -12px rgb(8 27 48 / 0.18);
+    border-color: color-mix(in srgb, var(--primary) 40%, transparent);
+  }
+  .row-interactive {
+    transition: background-color 150ms ease-out;
+  }
+  .row-interactive:hover {
+    background-color: var(--muted);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card-interactive,
+  .card-interactive:hover {
+    transition: none;
+    transform: none;
+  }
 }
 
 @layer base {

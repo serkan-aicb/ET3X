@@ -40,17 +40,20 @@ import { ScoreScale } from "@/components/evaluation/score-scale";
 import { mockEvaluationConfig } from "@/lib/verification/mock-config";
 
 const COLOR_TOKENS = [
-  { name: "primary", cssVar: "--primary", note: "brand blue · actions, links" },
+  { name: "primary", cssVar: "--primary", note: "interactive blue · buttons, links, focus" },
+  { name: "ink", cssVar: "--ink", note: "brand navy (logo) · ink CTA, auth panel, PDF chrome ONLY" },
+  { name: "tint-sky", cssVar: "--tint-sky", note: "logo sky · decorative tier only" },
+  { name: "tint-steel", cssVar: "--tint-steel", note: "logo steel · decorative tier only" },
+  { name: "background", cssVar: "--background", note: "canvas · light blue-gray, cards sit white on top" },
   { name: "foreground", cssVar: "--foreground", note: "headings, body text" },
   { name: "muted-foreground", cssVar: "--muted-foreground", note: "secondary text" },
   { name: "muted / secondary", cssVar: "--muted", note: "subtle surfaces" },
   { name: "border", cssVar: "--border", note: "borders, dividers" },
-  { name: "sidebar", cssVar: "--sidebar", note: "sidebar background" },
   { name: "destructive", cssVar: "--destructive", note: "errors, rejected" },
   { name: "chart-1", cssVar: "--chart-1", note: "charts · blue" },
-  { name: "chart-2", cssVar: "--chart-2", note: "charts · orange" },
-  { name: "chart-3", cssVar: "--chart-3", note: "charts · purple" },
-  { name: "chart-4", cssVar: "--chart-4", note: "charts · green" },
+  { name: "chart-2", cssVar: "--chart-2", note: "charts · teal" },
+  { name: "chart-3", cssVar: "--chart-3", note: "charts · amber" },
+  { name: "chart-4", cssVar: "--chart-4", note: "charts · sky" },
   { name: "chart-5", cssVar: "--chart-5", note: "charts · slate" },
 ];
 
@@ -120,7 +123,7 @@ export default function DesignSystemPage() {
 
         <DesignSystemSection
           title="Typography"
-          description="Inter everywhere. Weights: 400 body · 500 labels · 600 headings."
+          description="DM Sans everywhere (closest real match to the approved mockups). Weights: 400 body · 500 labels · 600 headings. Scores and KPI numerals always tabular-nums."
         >
           <Card>
             <CardContent className="space-y-3 p-6">
@@ -137,14 +140,16 @@ export default function DesignSystemPage() {
         {/* ── Primitives ─────────────────────────────────────────── */}
         <DesignSystemSection
           title="Buttons & badges"
-          description="shadcn/ui primitives — use these variants, don't invent new ones."
+          description="One primary CTA per screen. Hierarchy: primary (blue) → outline (neutral) → tint (tertiary, in-card). Ink is reserved for the single hero CTA on public-projection pages."
         >
           <Card>
             <CardContent className="space-y-4 p-6">
               <div className="flex flex-wrap items-center gap-3">
                 <Button>Primary</Button>
-                <Button variant="secondary">Secondary</Button>
                 <Button variant="outline">Outline</Button>
+                <Button variant="secondary">Secondary</Button>
+                <Button variant="tint">Tint · tertiary</Button>
+                <Button variant="ink">Ink · public CTA</Button>
                 <Button variant="ghost">Ghost</Button>
                 <Button variant="destructive">Destructive</Button>
                 <Button variant="link">Link</Button>
@@ -399,6 +404,30 @@ export default function DesignSystemPage() {
                   </div>
                 ))}
               </CardContent>
+            </Card>
+          </div>
+        </DesignSystemSection>
+
+        <DesignSystemSection
+          title="Motion"
+          description="Only interactive elements move — motion is an affordance signal. Use .card-interactive on clickable cards and .row-interactive on clickable rows; never on static content. Respects prefers-reduced-motion."
+        >
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Card className="card-interactive cursor-pointer">
+              <CardHeader>
+                <CardTitle className="text-base">Clickable card</CardTitle>
+                <CardDescription>
+                  hover me — lifts 2px, soft ink shadow, blue border hint
+                </CardDescription>
+              </CardHeader>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Static card</CardTitle>
+                <CardDescription>
+                  not clickable, so it does not move
+                </CardDescription>
+              </CardHeader>
             </Card>
           </div>
         </DesignSystemSection>
