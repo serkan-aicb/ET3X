@@ -26,10 +26,11 @@ export default function PrivacyPolicyPage() {
             <div>
               <h2 className="text-xl font-bold text-slate-900 mb-3">1. Controller</h2>
               <p className="text-slate-600 leading-relaxed">
-                The data controller responsible for personal data processed through the Talent3X platform (talent3x.com) is:
+                Talent3X (talent3x.com) is operated by AI.COREBLOCK Ltd ("we", "us", "our"). We are committed to protecting your personal data in accordance with the UK General Data Protection Regulation (UK GDPR) and the Data Protection Act 2018. The data controller responsible for personal data processed through the Talent3X platform is:
               </p>
               <div className="mt-3 p-4 bg-slate-50 rounded-lg border border-slate-200 text-slate-600 text-sm">
-                <p>Talent3X</p>
+                <p>AI.COREBLOCK Ltd</p>
+                <p>128 City Road, London, EC1V 2NX, United Kingdom</p>
                 <p>Email: <a href="mailto:hello@talent3x.com" className="text-blue-600 hover:underline">hello@talent3x.com</a></p>
               </div>
             </div>
@@ -151,7 +152,8 @@ export default function PrivacyPolicyPage() {
               <p className="text-slate-600 text-sm mt-4">
                 To exercise any of these rights, contact us at{" "}
                 <a href="mailto:hello@talent3x.com" className="text-blue-600 hover:underline">hello@talent3x.com</a>.
-                You also have the right to lodge a complaint with your national data protection authority.
+                You also have the right to lodge a complaint with the UK Information Commissioner's Office (ICO) at{" "}
+                <a href="https://ico.org.uk" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">ico.org.uk</a>.
               </p>
             </div>
 

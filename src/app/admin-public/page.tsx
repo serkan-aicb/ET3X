@@ -4,6 +4,9 @@ import GovernanceDashboardContent, {
   GovernanceLiveData,
 } from "./dashboard-content";
 
+// Live Supabase data — must be fetched at request time, not baked in at build time.
+export const dynamic = "force-dynamic";
+
 // ── Exact oulu_domain TEXT values as stored in public.skills ─
 const DOMAIN_KEYS = [
   "Analytical, Critical & Creative Thinking",

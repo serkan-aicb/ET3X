@@ -25,7 +25,18 @@ export default function LegalNoticePage() {
           <div>
             <h2 className="text-xl font-bold text-slate-900 mb-3">Operator</h2>
             <div className="p-5 bg-slate-50 border border-slate-200 rounded-xl text-sm leading-relaxed">
-              <p className="font-semibold text-slate-900 mb-2">Talent3X</p>
+              <p className="font-semibold text-slate-900 mb-2">Talent3X is operated by AI.COREBLOCK Ltd</p>
+              <p><strong>Company Registration Number:</strong> 16356921</p>
+              <p><strong>Registered Office:</strong> 128 City Road, London, EC1V 2NX, United Kingdom</p>
+              <p><strong>Place of Registration:</strong> England and Wales</p>
+              <p><strong>Legal Form:</strong> Private Limited Company</p>
+              <p><strong>Incorporated under:</strong> the Companies Act 2006 (United Kingdom)</p>
+            </div>
+          </div>
+
+          <div>
+            <h2 className="text-xl font-bold text-slate-900 mb-3">Contact</h2>
+            <div className="p-5 bg-slate-50 border border-slate-200 rounded-xl text-sm leading-relaxed">
               <p>
                 Email:{" "}
                 <a href="mailto:hello@talent3x.com" className="text-blue-600 hover:underline">
@@ -37,9 +48,24 @@ export default function LegalNoticePage() {
           </div>
 
           <div>
+            <h2 className="text-xl font-bold text-slate-900 mb-3">Company Directors</h2>
+            <div className="p-5 bg-slate-50 border border-slate-200 rounded-xl text-sm leading-relaxed">
+              <p><strong>André Pager</strong> — Founder &amp; CEO</p>
+              <p><strong>Dr. Bilyaminu Auwal Romo</strong> — Co-Founder &amp; CIO</p>
+            </div>
+          </div>
+
+          <div>
+            <h2 className="text-xl font-bold text-slate-900 mb-3">VAT Information</h2>
+            <p className="leading-relaxed text-sm">
+              AI.COREBLOCK Ltd is registered in the United Kingdom. VAT registration is currently in progress. The VAT number will be published on this page once registration is complete and the number has been formally issued by HMRC.
+            </p>
+          </div>
+
+          <div>
             <h2 className="text-xl font-bold text-slate-900 mb-3">Disclaimer of Liability</h2>
             <p className="leading-relaxed text-sm">
-              The content of this website has been prepared with the utmost care. However, we cannot guarantee the accuracy, completeness, or timeliness of the content. The information on this website is provided for general informational purposes only and does not constitute legal, financial, or technical advice.
+              The content of this website has been prepared with the utmost care. However, AI.COREBLOCK Ltd cannot guarantee the accuracy, completeness, or timeliness of the content. The information on this website is provided for general informational purposes only and does not constitute legal, financial, or technical advice.
             </p>
             <p className="leading-relaxed text-sm mt-3">
               Our offering contains links to external third-party websites, over whose content we have no influence. We therefore cannot accept any liability for this external content. The respective provider or operator of the linked pages is always responsible for the content of those pages.
@@ -49,7 +75,7 @@ export default function LegalNoticePage() {
           <div>
             <h2 className="text-xl font-bold text-slate-900 mb-3">Intellectual Property</h2>
             <p className="leading-relaxed text-sm">
-              All content on this website — including text, graphics, logos, icons, and code — is the property of Talent3X and is protected under applicable intellectual property laws. Reproduction or distribution of any material without prior written consent from Talent3X is strictly prohibited.
+              All content on this website — including text, graphics, logos, icons, and code — is the property of AI.COREBLOCK Ltd and is protected under applicable intellectual property laws. Reproduction or distribution of any material without prior written consent from AI.COREBLOCK Ltd is strictly prohibited.
             </p>
           </div>
 

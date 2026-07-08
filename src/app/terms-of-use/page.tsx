@@ -25,7 +25,7 @@ export default function TermsOfUsePage() {
           <div>
             <h2 className="text-xl font-bold text-slate-900 mb-3">1. Acceptance of Terms</h2>
             <p className="leading-relaxed">
-              By accessing or using the Talent3X platform (available at talent3x.com), you agree to be bound by these Terms of Use. If you do not agree to these terms, you may not use the platform.
+              Talent3X (available at talent3x.com) is operated by AI.COREBLOCK Ltd, a private limited company registered in England and Wales (Company No. 16356921), registered office at 128 City Road, London, EC1V 2NX, United Kingdom. By accessing or using the Talent3X platform, you agree to be bound by these Terms of Use. If you do not agree to these terms, you may not use the platform.
             </p>
           </div>
 
@@ -131,7 +131,7 @@ export default function TermsOfUsePage() {
           <div>
             <h2 className="text-xl font-bold text-slate-900 mb-3">11. Governing Law</h2>
             <p className="leading-relaxed">
-              These terms are governed by applicable law. Any disputes arising from these terms shall be subject to the exclusive jurisdiction of the competent courts at the registered address of Talent3X.
+              These terms are governed by the laws of England and Wales. Any disputes arising from these terms shall be subject to the exclusive jurisdiction of the competent courts of England and Wales.
             </p>
           </div>
 
