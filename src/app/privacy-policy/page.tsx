@@ -30,8 +30,7 @@ export default function PrivacyPolicyPage() {
               </p>
               <div className="mt-3 p-4 bg-slate-50 rounded-lg border border-slate-200 text-slate-600 text-sm">
                 <p>Talent3X</p>
-                <p>[Registered address — to be completed]</p>
-                <p>Email: <a href="mailto:privacy@talent3x.com" className="text-blue-600 hover:underline">privacy@talent3x.com</a></p>
+                <p>Email: <a href="mailto:hello@talent3x.com" className="text-blue-600 hover:underline">hello@talent3x.com</a></p>
               </div>
             </div>
 
@@ -151,7 +150,7 @@ export default function PrivacyPolicyPage() {
               </div>
               <p className="text-slate-600 text-sm mt-4">
                 To exercise any of these rights, contact us at{" "}
-                <a href="mailto:privacy@talent3x.com" className="text-blue-600 hover:underline">privacy@talent3x.com</a>.
+                <a href="mailto:hello@talent3x.com" className="text-blue-600 hover:underline">hello@talent3x.com</a>.
                 You also have the right to lodge a complaint with your national data protection authority.
               </p>
             </div>
@@ -174,7 +173,7 @@ export default function PrivacyPolicyPage() {
               <h2 className="text-xl font-bold text-slate-900 mb-3">11. Contact</h2>
               <p className="text-slate-600 leading-relaxed">
                 For any questions about this privacy policy or your personal data, contact:{" "}
-                <a href="mailto:privacy@talent3x.com" className="text-blue-600 hover:underline">privacy@talent3x.com</a>
+                <a href="mailto:hello@talent3x.com" className="text-blue-600 hover:underline">hello@talent3x.com</a>
               </p>
             </div>
 

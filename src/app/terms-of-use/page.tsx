@@ -146,7 +146,7 @@ export default function TermsOfUsePage() {
             <h2 className="text-xl font-bold text-slate-900 mb-3">13. Contact</h2>
             <p className="leading-relaxed">
               For questions about these terms:{" "}
-              <a href="mailto:legal@talent3x.com" className="text-blue-600 hover:underline">legal@talent3x.com</a>
+              <a href="mailto:hello@talent3x.com" className="text-blue-600 hover:underline">hello@talent3x.com</a>
             </p>
           </div>
 
