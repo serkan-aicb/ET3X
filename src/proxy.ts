@@ -23,6 +23,9 @@ const PUBLIC_PREFIXES = [
   '/edu',
   '/stud',
   '/design-system',
+  '/design-lab',
+  '/profile-studio-preview',
+  '/onboarding-preview',
 ]
 
 export async function proxy(request: NextRequest) {

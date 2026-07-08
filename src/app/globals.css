@@ -25,6 +25,14 @@
   --color-input: var(--input);
   --color-border: var(--border);
   --color-destructive: var(--destructive);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-danger: var(--danger);
+  --color-danger-foreground: var(--danger-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
@@ -74,19 +82,29 @@
   /* Destructive = red */
   --destructive: #EF4444;
   --destructive-foreground: #FFFFFF;
-  
+
+  /* Semantic status tokens (D1 frozen) — components reference these, never hex */
+  --success: #10B981;            /* verified / positive growth */
+  --success-foreground: #FFFFFF;
+  --warning: #F59E0B;            /* pending / attention */
+  --warning-foreground: #111827;
+  --danger: #EF4444;             /* errors / destructive */
+  --danger-foreground: #FFFFFF;
+  --info: #2563EB;               /* published / neutral highlight */
+  --info-foreground: #FFFFFF;
+
   /* Borders: light gray */
   --border: #E2E8F0;
   --input: #E2E8F0;
   --ring: #2563EB;
-  
+
   /* Chart colors */
   --chart-1: #2563EB;
   --chart-2: #F97316;
   --chart-3: #8B5CF6;
   --chart-4: #10B981;
   --chart-5: #64748B;
-  
+
   /* Sidebar colors */
   --sidebar: #F8FAFC;
   --sidebar-foreground: #111827;
@@ -122,7 +140,17 @@
   
   --destructive: #EF4444;
   --destructive-foreground: #FFFFFF;
-  
+
+  /* Semantic status tokens (mirror of :root — see D2: .dark flagged for removal) */
+  --success: #10B981;
+  --success-foreground: #FFFFFF;
+  --warning: #F59E0B;
+  --warning-foreground: #111827;
+  --danger: #EF4444;
+  --danger-foreground: #FFFFFF;
+  --info: #2563EB;
+  --info-foreground: #FFFFFF;
+
   --border: #E2E8F0;
   --input: #E2E8F0;
   --ring: #2563EB;
