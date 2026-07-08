@@ -661,7 +661,7 @@ function Confirmation() {
         <h2 className="text-sm font-semibold text-[#111827]">What happens next</h2>
         <ol className="mt-3 space-y-3">
           {[
-            "Create your first Task (a piece of real work).",
+            "Create your first Action (a piece of real work).",
             "Invite an educator to evaluate it.",
             "Their evaluation turns skills into verified Capabilities.",
           ].map((t, i) => (
@@ -683,7 +683,7 @@ function Confirmation() {
           View my Profile Studio <ArrowRight className="size-4" />
         </a>
         <button className="inline-flex h-11 items-center justify-center gap-1.5 rounded-lg border border-[#E2E8F0] bg-white px-6 text-sm font-semibold text-[#334155] transition-colors hover:bg-[#F8FAFC]">
-          Create my first Task
+          Create my first Action
         </button>
       </div>
     </div>

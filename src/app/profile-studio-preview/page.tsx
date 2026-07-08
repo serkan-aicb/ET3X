@@ -10,8 +10,10 @@
  *        FIXED button look (blue solid / blue outline), not the broken
  *        purple-gradient default variant.
  *  - D2  Light-only. No .dark dependency.
- *  - D3  Vocabulary: "Capabilities" (one noun), "Evaluations", "Tasks".
- *        The old "Key Skills" panel is now a second VIEW of Capabilities.
+ *  - D3  Vocabulary: "Capabilities" (one noun), "Evaluations", "Actions";
+ *        "Contribution" = evaluated work as displayed on a profile.
+ *        The old "Key Skills" panel is now "Demonstrated Capabilities"
+ *        (legacy skills map to capabilities per the 25-June feedback doc).
  *  - D4  Public-projection archetype: chromeless top bar, no app sidebar.
  *  - D5  Consumer-light density (pride-first), one component set.
  *
@@ -33,6 +35,8 @@ import {
   TrendingUp,
 } from "lucide-react";
 
+import { mockEvaluationConfig } from "@/lib/verification/mock-config";
+
 /* ------------------------------------------------------------------ */
 /* Mock data (Klenis Arapaj — from the Desktop View mockup)             */
 /* ------------------------------------------------------------------ */
@@ -53,7 +57,7 @@ const profile = {
   headlineStory: "Strategy Development improved 18% over the last 90 days.",
 };
 
-// Radar axes — the verified Capabilities (scored 1–5)
+// Radar axes — the verified Capabilities (scored 0–5, per config.scoreScale)
 const radar = [
   { label: "Strategy Dev.", value: 4.6 },
   { label: "Communication", value: 4.5 },
@@ -63,33 +67,38 @@ const radar = [
   { label: "Leadership", value: 3.6 },
 ];
 
+// Evidence counts per the 18-June Profile Studio adjustments (§5).
 const topCapabilities = [
-  { label: "Strategy Development", value: 4.6 },
-  { label: "Communication", value: 4.5 },
-  { label: "Analytical Thinking", value: 4.2 },
+  { label: "Strategy Development", value: 4.6, evaluatedActions: 3 },
+  { label: "Communication", value: 4.5, evaluatedActions: 2 },
+  { label: "Analytical Thinking", value: 4.2, evaluatedActions: 4 },
 ];
 
-// Was "Key Skills (from evaluations)" — now a detailed VIEW of Capabilities (D3)
-const capabilityDetail = [
-  { label: "Strategic Planning", value: 4.5 },
-  { label: "Data Analysis", value: 4.3 },
-  { label: "Blockchain Technology", value: 4.6 },
-  { label: "Financial Modeling", value: 4.1 },
-  { label: "Project Management", value: 3.9 },
+// Was "Key Skills (from evaluations)" — legacy skills map to capabilities,
+// so this is the complete evidence-backed capability list (top panel = top 3).
+const demonstratedCapabilities = [
+  { label: "Strategic Planning", value: 4.5, evaluatedActions: 2 },
+  { label: "Data Analysis", value: 4.3, evaluatedActions: 3 },
+  { label: "Blockchain Technology", value: 4.6, evaluatedActions: 2 },
+  { label: "Financial Modeling", value: 4.1, evaluatedActions: 1 },
+  { label: "Project Management", value: 3.9, evaluatedActions: 2 },
 ];
 
+// Difficulty labels come from config.difficultyLevels in the real build.
 const contributions = [
   {
     title: "Blockchain Strategic Implementation White Paper",
     org: "Quinnipiac University",
     date: "Apr 2026",
     score: 4.5,
+    difficulty: "Advanced",
   },
   {
     title: "Strategy Presentation & Defense",
     org: "Quinnipiac University",
     date: "Apr 2026",
     score: 4.4,
+    difficulty: "Intermediate",
   },
 ];
 
@@ -120,13 +129,13 @@ const experience = [
   },
 ];
 
-const RADAR_LEGEND = [
-  "1 – Foundational",
-  "2 – Developing",
-  "3 – Proficient",
-  "4 – Advanced",
-  "5 – Expert",
-];
+// Score bounds derive from the verification-layer config — never hardcoded.
+// (The old "1 Foundational … 5 Expert" legend conflated difficulty labels
+// with scores and predates the 0–5 scale; public-facing display labels are
+// an open question for the verification layer.)
+const scoreValues = mockEvaluationConfig.scoreScale.map((s) => s.value);
+const SCORE_MIN = Math.min(...scoreValues);
+const SCORE_MAX = Math.max(...scoreValues);
 
 /* ------------------------------------------------------------------ */
 /* Primitives (frozen look: rounded-xl, flat bordered card)           */
@@ -134,11 +143,13 @@ const RADAR_LEGEND = [
 
 function Panel({
   title,
+  subtitle,
   action,
   children,
   className = "",
 }: {
   title?: string;
+  subtitle?: string;
   action?: string;
   children: React.ReactNode;
   className?: string;
@@ -148,14 +159,19 @@ function Panel({
       className={`rounded-xl border border-[#E2E8F0] bg-white p-6 ${className}`}
     >
       {title && (
-        <header className="mb-5 flex items-center justify-between">
-          <h2 className="text-[13px] font-semibold uppercase tracking-wide text-[#64748B]">
-            {title}
-          </h2>
-          {action && (
-            <button className="text-xs font-medium text-[#2563EB] hover:underline">
-              {action}
-            </button>
+        <header className="mb-5">
+          <div className="flex items-center justify-between">
+            <h2 className="text-[13px] font-semibold uppercase tracking-wide text-[#64748B]">
+              {title}
+            </h2>
+            {action && (
+              <button className="text-xs font-medium text-[#2563EB] hover:underline">
+                {action}
+              </button>
+            )}
+          </div>
+          {subtitle && (
+            <p className="mt-1 text-xs text-[#94A3B8]">{subtitle}</p>
           )}
         </header>
       )}
@@ -164,7 +180,15 @@ function Panel({
   );
 }
 
-function ScoreBar({ label, value }: { label: string; value: number }) {
+function ScoreBar({
+  label,
+  value,
+  evaluatedActions,
+}: {
+  label: string;
+  value: number;
+  evaluatedActions?: number;
+}) {
   return (
     <div>
       <div className="mb-1.5 flex items-center justify-between">
@@ -176,9 +200,15 @@ function ScoreBar({ label, value }: { label: string; value: number }) {
       <div className="h-2 w-full overflow-hidden rounded-full bg-[#F1F5F9]">
         <div
           className="h-full rounded-full bg-[#2563EB]"
-          style={{ width: `${(value / 5) * 100}%` }}
+          style={{ width: `${(value / SCORE_MAX) * 100}%` }}
         />
       </div>
+      {evaluatedActions !== undefined && (
+        <p className="mt-1 text-[11px] text-[#94A3B8]">
+          based on {evaluatedActions} evaluated{" "}
+          {evaluatedActions === 1 ? "action" : "actions"}
+        </p>
+      )}
     </div>
   );
 }
@@ -206,7 +236,7 @@ function RadarChart({ data }: { data: { label: string; value: number }[] }) {
   const R = 108;
   const labelR = R + 20;
   const lineH = 13;
-  const max = 5;
+  const max = SCORE_MAX;
   const n = data.length;
 
   const pointAt = (i: number, r: number) => {
@@ -382,7 +412,9 @@ export default function ProfileStudioPreview() {
                 “{profile.bio}”
               </p>
             </Panel>
-            <Panel title="Experience">
+            {/* Credentials & Experience — informational only, never scored,
+                never in the radar (18-June adjustments §1). */}
+            <Panel title="Credentials & Experience">
               <ol className="space-y-5">
                 {experience.map((e) => (
                   <li key={e.year} className="relative pl-5">
@@ -404,23 +436,16 @@ export default function ProfileStudioPreview() {
           </div>
 
           {/* Center: radar */}
-          <Panel title="Capability based on evaluated work" action="View all">
+          <Panel
+            title="Capability based on evaluated work"
+            subtitle="Demonstrated capability derived from evaluated actions"
+            action="View all"
+          >
             <div className="flex flex-col items-center">
               <RadarChart data={radar} />
-              <ul className="mt-4 flex flex-wrap justify-center gap-x-4 gap-y-1.5">
-                {RADAR_LEGEND.map((l, i) => (
-                  <li
-                    key={l}
-                    className="flex items-center gap-1.5 text-[11px] text-[#64748B]"
-                  >
-                    <span
-                      className="size-2 rounded-full"
-                      style={{ background: `rgba(37,99,235,${0.25 + i * 0.18})` }}
-                    />
-                    {l}
-                  </li>
-                ))}
-              </ul>
+              <p className="mt-4 text-[11px] text-[#94A3B8]">
+                Scored {SCORE_MIN}–{SCORE_MAX} through evaluated work
+              </p>
             </div>
           </Panel>
 
@@ -446,6 +471,10 @@ export default function ProfileStudioPreview() {
                         <span className="text-[#CBD5E1]">·</span>
                         {c.org}
                       </div>
+                      {/* Difficulty badge (18-June adjustments §3); label from config.difficultyLevels */}
+                      <span className="mt-1.5 inline-flex rounded-md border border-[#E2E8F0] bg-[#F8FAFC] px-1.5 py-0.5 text-[11px] font-medium text-[#64748B]">
+                        {c.difficulty}
+                      </span>
                     </div>
                   </div>
                   <div className="mt-3 flex items-center justify-between">
@@ -494,9 +523,9 @@ export default function ProfileStudioPreview() {
             </ol>
           </Panel>
 
-          <Panel title="Capability Detail" action="View all">
+          <Panel title="Demonstrated Capabilities" action="View all">
             <div className="space-y-4">
-              {capabilityDetail.map((c) => (
+              {demonstratedCapabilities.map((c) => (
                 <ScoreBar key={c.label} {...c} />
               ))}
             </div>
@@ -507,9 +536,14 @@ export default function ProfileStudioPreview() {
       {/* Footer — trust anchor (Rule 3) */}
       <footer className="mt-4 border-t border-[#E2E8F0] bg-white">
         <div className="mx-auto flex max-w-[1240px] items-center justify-between px-8 py-5">
-          <span className="inline-flex items-center gap-2 text-sm font-medium text-[#475569]">
-            <ShieldCheck className="size-4 text-[#10B981]" />
-            Evaluations are independently verifiable
+          <span className="flex flex-col gap-0.5">
+            <span className="inline-flex items-center gap-2 text-sm font-medium text-[#475569]">
+              <ShieldCheck className="size-4 text-[#10B981]" />
+              Evaluations are independently verifiable
+            </span>
+            <span className="pl-6 text-xs text-[#94A3B8]">
+              Capabilities are derived from evaluated actions, not self-reported claims
+            </span>
           </span>
           <span className="text-sm text-[#94A3B8]">
             talent3x.com<span className="text-[#CBD5E1]"> · </span>

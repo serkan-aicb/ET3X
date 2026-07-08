@@ -42,6 +42,11 @@ export type VerificationTier = {
   label: string
 }
 
+export type EvidenceStorageMode = {
+  id: string
+  label: string
+}
+
 export type EvaluatorFamiliarity = {
   id: string
   label: string
@@ -56,6 +61,7 @@ export type EvaluationConfig = {
   capabilityCatalogue: CapabilityFamily[]
   verificationTiers: VerificationTier[]
   evaluatorFamiliarity: EvaluatorFamiliarity[]
+  evidenceStorageModes: EvidenceStorageMode[]
 }
 
 // Fixed in every context (architecture adjustments §1).
@@ -86,11 +92,13 @@ export const mockEvaluationConfig: EvaluationConfig = {
     { id: "supervisor", label: "Supervisor" },
     { id: "peer", label: "Peer" },
   ],
+  // Action types per the 260618 User Journey (Step 2).
   actionCategories: [
-    { id: "research-project", label: "Research Project" },
-    { id: "software-development", label: "Software Development" },
-    { id: "product-design", label: "Product Design" },
-    { id: "marketing-plan", label: "Marketing Plan" },
+    { id: "project", label: "Project" },
+    { id: "research", label: "Research" },
+    { id: "presentation", label: "Presentation" },
+    { id: "assessment", label: "Assessment" },
+    { id: "other", label: "Other" },
   ],
   capabilityCatalogue: [
     {
@@ -129,5 +137,12 @@ export const mockEvaluationConfig: EvaluationConfig = {
     { id: "low", label: "Low familiarity" },
     { id: "medium", label: "Medium familiarity" },
     { id: "high", label: "High familiarity" },
+  ],
+  // Per the 260618 User Journey / Database Model ("Hash Only": file is
+  // hashed and the document deleted; raw evidence never leaves the app).
+  evidenceStorageModes: [
+    { id: "store", label: "Store Evidence" },
+    { id: "hash-only", label: "Hash Only" },
+    { id: "external-reference", label: "External Reference" },
   ],
 }
