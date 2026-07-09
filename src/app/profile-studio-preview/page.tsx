@@ -2,26 +2,23 @@
  * Profile Studio — Desktop View (design preview)
  * ------------------------------------------------------------------
  * Week-1 proof that the frozen UI system can render the Week-5 hero
- * surface. Mock data (André Pager); NOT wired to Supabase yet.
+ * surface. Mock data; NOT wired to Supabase yet.
  *
- * Applies the resolved decisions:
- *  - D1  Brand = blue #2563EB (chrome only). Green #10B981 = verified/trust.
- *        Purple reserved for AI (not used here). NB: authored with the
- *        FIXED button look (blue solid / blue outline), not the broken
- *        purple-gradient default variant.
- *  - D2  Light-only. No .dark dependency.
- *  - D3  Vocabulary: "Capabilities" (one noun), "Evaluations", "Actions";
- *        "Contribution" = evaluated work as displayed on a profile.
- *        The old "Key Skills" panel is now "Demonstrated Capabilities"
- *        (legacy skills map to capabilities per the 25-June feedback doc).
- *  - D4  Public-projection archetype: chromeless top bar, no app sidebar.
- *  - D5  Consumer-light density (pride-first), one component set.
- *
- * Trust (Rule 3) is made visible: verified seal, evaluation/educator
- * counts, "independently verifiable" footer.
- * Data tells a story (Rule 4): narrative line, not bare numbers.
+ * Built on the decisions from the 8-July grill sessions (workspace
+ * docs 10–11):
+ *  - Tokens only — no raw hex; theme swaps stay a one-file change.
+ *  - Public-projection archetype (D4): chromeless top bar, no sidebar,
+ *    real logo asset, single ink hero CTA (Export PDF), trust footer.
+ *  - Vocabulary (D3 amended): Capabilities / Evaluations / Actions;
+ *    "Contribution" = evaluated work displayed on a profile.
+ *  - Score scale 0–5 from the verification-layer config, never hardcoded.
+ *  - 18-June Profile Studio adjustments applied: Credentials & Experience,
+ *    capability subtitle, difficulty badges, evidence counts, second
+ *    verification line.
+ *  - Motion: only clickable cards move (.card-interactive).
  */
 
+import Image from "next/image";
 import {
   BadgeCheck,
   Calendar,
@@ -35,10 +32,11 @@ import {
   TrendingUp,
 } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
 import { mockEvaluationConfig } from "@/lib/verification/mock-config";
 
 /* ------------------------------------------------------------------ */
-/* Mock data (Klenis Arapaj — from the Desktop View mockup)             */
+/* Mock data                                                          */
 /* ------------------------------------------------------------------ */
 
 const profile = {
@@ -130,9 +128,6 @@ const experience = [
 ];
 
 // Score bounds derive from the verification-layer config — never hardcoded.
-// (The old "1 Foundational … 5 Expert" legend conflated difficulty labels
-// with scores and predates the 0–5 scale; public-facing display labels are
-// an open question for the verification layer.)
 const scoreValues = mockEvaluationConfig.scoreScale.map((s) => s.value);
 const SCORE_MIN = Math.min(...scoreValues);
 const SCORE_MAX = Math.max(...scoreValues);
@@ -155,23 +150,21 @@ function Panel({
   className?: string;
 }) {
   return (
-    <section
-      className={`rounded-xl border border-[#E2E8F0] bg-white p-6 ${className}`}
-    >
+    <section className={`rounded-xl border bg-card p-6 ${className}`}>
       {title && (
         <header className="mb-5">
           <div className="flex items-center justify-between">
-            <h2 className="text-[13px] font-semibold uppercase tracking-wide text-[#64748B]">
+            <h2 className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">
               {title}
             </h2>
             {action && (
-              <button className="text-xs font-medium text-[#2563EB] hover:underline">
+              <button className="text-xs font-medium text-primary hover:underline">
                 {action}
               </button>
             )}
           </div>
           {subtitle && (
-            <p className="mt-1 text-xs text-[#94A3B8]">{subtitle}</p>
+            <p className="mt-1 text-xs text-muted-foreground/70">{subtitle}</p>
           )}
         </header>
       )}
@@ -192,19 +185,19 @@ function ScoreBar({
   return (
     <div>
       <div className="mb-1.5 flex items-center justify-between">
-        <span className="text-sm font-medium text-[#111827]">{label}</span>
-        <span className="text-sm font-semibold tabular-nums text-[#111827]">
+        <span className="text-sm font-medium text-foreground">{label}</span>
+        <span className="text-sm font-semibold tabular-nums text-foreground">
           {value.toFixed(1)}
         </span>
       </div>
-      <div className="h-2 w-full overflow-hidden rounded-full bg-[#F1F5F9]">
+      <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
         <div
-          className="h-full rounded-full bg-[#2563EB]"
+          className="h-full rounded-full bg-primary"
           style={{ width: `${(value / SCORE_MAX) * 100}%` }}
         />
       </div>
       {evaluatedActions !== undefined && (
-        <p className="mt-1 text-[11px] text-[#94A3B8]">
+        <p className="mt-1 text-[11px] text-muted-foreground/70">
           based on {evaluatedActions} evaluated{" "}
           {evaluatedActions === 1 ? "action" : "actions"}
         </p>
@@ -216,7 +209,7 @@ function ScoreBar({
 /* Verified seal — the green trust mark (D1: green carries verification) */
 function VerifiedSeal({ label = "Verified" }: { label?: string }) {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-[#ECFDF5] px-2.5 py-0.5 text-xs font-semibold text-[#059669] ring-1 ring-[#A7F3D0]">
+    <span className="inline-flex items-center gap-1 rounded-full bg-success/10 px-2.5 py-0.5 text-xs font-semibold text-success ring-1 ring-success/25">
       <BadgeCheck className="size-3.5" strokeWidth={2.2} />
       {label}
     </span>
@@ -266,7 +259,7 @@ function RadarChart({ data }: { data: { label: string; value: number }[] }) {
           key={level}
           points={ringPolygon(level)}
           fill="none"
-          stroke="#E2E8F0"
+          stroke="var(--border)"
           strokeWidth={1}
         />
       ))}
@@ -274,22 +267,30 @@ function RadarChart({ data }: { data: { label: string; value: number }[] }) {
       {data.map((_, i) => {
         const [x, y] = pointAt(i, R);
         return (
-          <line key={i} x1={cx} y1={cy} x2={x} y2={y} stroke="#E2E8F0" strokeWidth={1} />
+          <line
+            key={i}
+            x1={cx}
+            y1={cy}
+            x2={x}
+            y2={y}
+            stroke="var(--border)"
+            strokeWidth={1}
+          />
         );
       })}
       {/* value polygon */}
       <polygon
         points={valuePolygon}
-        fill="#2563EB"
+        fill="var(--primary)"
         fillOpacity={0.14}
-        stroke="#2563EB"
+        stroke="var(--primary)"
         strokeWidth={2}
         strokeLinejoin="round"
       />
       {/* value dots */}
       {data.map((d, i) => {
         const [x, y] = pointAt(i, (R * d.value) / max);
-        return <circle key={i} cx={x} cy={y} r={3.5} fill="#2563EB" />;
+        return <circle key={i} cx={x} cy={y} r={3.5} fill="var(--primary)" />;
       })}
       {/* labels — placed inside the viewBox; long ones wrap to 2 lines */}
       {data.map((d, i) => {
@@ -305,7 +306,7 @@ function RadarChart({ data }: { data: { label: string; value: number }[] }) {
             y={startY}
             textAnchor={anchor}
             dominantBaseline="middle"
-            className="fill-[#475569]"
+            className="fill-muted-foreground"
             fontSize={11}
             fontWeight={500}
           >
@@ -327,31 +328,35 @@ function RadarChart({ data }: { data: { label: string; value: number }[] }) {
 
 export default function ProfileStudioPreview() {
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-[#111827]">
-      {/* Top bar — public-projection chrome (D4): no app sidebar */}
-      <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-[#E2E8F0] bg-white/90 px-8 backdrop-blur">
+    <div className="min-h-screen bg-background text-foreground">
+      {/* Top bar — public-projection chrome (D4): real logo, no app sidebar */}
+      <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b bg-card/90 px-8 backdrop-blur">
         <div className="flex items-center gap-2.5">
-          <div className="flex size-8 items-center justify-center rounded-lg bg-linear-to-br from-[#22B8CF] to-[#2563EB] text-sm font-bold text-white">
-            X
-          </div>
+          <Image
+            src="/pics/logo-mark.png"
+            alt="Talent3X"
+            width={32}
+            height={32}
+            className="size-8"
+          />
           <span className="text-[15px] font-semibold tracking-tight">
             Talent3X
           </span>
-          <span className="ml-1 text-sm font-medium text-[#94A3B8]">
+          <span className="ml-1 text-sm font-medium text-muted-foreground/70">
             Profile Studio
           </span>
         </div>
         <div className="flex items-center gap-2.5">
-          <button className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-[#E2E8F0] bg-white px-4 text-sm font-medium text-[#334155] transition-colors hover:bg-[#F8FAFC]">
-            <Pencil className="size-4" /> Edit
-          </button>
-          <button className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-[#E2E8F0] bg-white px-4 text-sm font-medium text-[#334155] transition-colors hover:bg-[#F8FAFC]">
-            <Share2 className="size-4" /> Share
-          </button>
-          {/* primary action — the FROZEN blue button (D1 fix) */}
-          <button className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-[#2563EB] px-4 text-sm font-semibold text-white transition-colors hover:bg-[#1D4ED8]">
-            <FileDown className="size-4" /> Export PDF
-          </button>
+          <Button variant="outline">
+            <Pencil /> Edit
+          </Button>
+          <Button variant="outline">
+            <Share2 /> Share
+          </Button>
+          {/* single ink hero CTA — the one sanctioned navy button (T4) */}
+          <Button variant="ink">
+            <FileDown /> Export PDF
+          </Button>
         </div>
       </header>
 
@@ -359,7 +364,7 @@ export default function ProfileStudioPreview() {
         {/* Hero row: identity + headline story (Rule 4 + Rule 3) */}
         <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_auto]">
           <div className="flex items-start gap-5">
-            <div className="flex size-20 shrink-0 items-center justify-center rounded-2xl bg-linear-to-br from-[#2563EB] to-[#1E40AF] text-2xl font-bold text-white">
+            <div className="flex size-20 shrink-0 items-center justify-center rounded-2xl bg-ink text-2xl font-bold text-ink-foreground">
               {profile.initials}
             </div>
             <div className="pt-1">
@@ -369,17 +374,17 @@ export default function ProfileStudioPreview() {
                 </h1>
                 <VerifiedSeal />
               </div>
-              <p className="mt-0.5 text-[15px] font-medium text-[#2563EB]">
+              <p className="mt-0.5 text-[15px] font-medium text-primary">
                 {profile.title}
               </p>
-              <div className="mt-1 flex items-center gap-1.5 text-sm text-[#64748B]">
+              <div className="mt-1 flex items-center gap-1.5 text-sm text-muted-foreground">
                 <GraduationCap className="size-4" />
                 {profile.university}
-                <span className="mx-1 text-[#CBD5E1]">·</span>
+                <span className="mx-1 text-border">·</span>
                 {profile.role}
               </div>
               {/* Rule 4 — story, not a bare number */}
-              <div className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-[#ECFDF5] px-3 py-1.5 text-sm font-medium text-[#047857]">
+              <div className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-success/10 px-3 py-1.5 text-sm font-medium text-success">
                 <TrendingUp className="size-4" />
                 {profile.headlineStory}
               </div>
@@ -387,7 +392,7 @@ export default function ProfileStudioPreview() {
           </div>
 
           {/* Trust counts (Rule 3) */}
-          <div className="flex items-center gap-8 rounded-xl border border-[#E2E8F0] bg-white px-7 py-4">
+          <div className="flex items-center gap-8 rounded-xl border bg-card px-7 py-4">
             {[
               { label: "Evaluations", value: profile.evaluations },
               { label: "Educators", value: profile.educators },
@@ -395,7 +400,7 @@ export default function ProfileStudioPreview() {
             ].map((s) => (
               <div key={s.label} className="text-center">
                 <div className="text-2xl font-bold tabular-nums">{s.value}</div>
-                <div className="text-[11px] font-medium uppercase tracking-wide text-[#94A3B8]">
+                <div className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground/70">
                   {s.label}
                 </div>
               </div>
@@ -405,10 +410,10 @@ export default function ProfileStudioPreview() {
 
         {/* Main grid: left rail / radar / contributions */}
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[300px_1fr_320px]">
-          {/* Left rail: bio + experience */}
+          {/* Left rail: bio + credentials & experience */}
           <div className="flex flex-col gap-6">
             <Panel>
-              <p className="border-l-2 border-[#2563EB] pl-3 text-sm italic leading-relaxed text-[#475569]">
+              <p className="border-l-2 border-primary pl-3 text-sm italic leading-relaxed text-muted-foreground">
                 “{profile.bio}”
               </p>
             </Panel>
@@ -418,15 +423,15 @@ export default function ProfileStudioPreview() {
               <ol className="space-y-5">
                 {experience.map((e) => (
                   <li key={e.year} className="relative pl-5">
-                    <span className="absolute left-0 top-1.5 size-2 rounded-full bg-[#2563EB]" />
-                    <div className="text-xs font-semibold text-[#94A3B8]">
+                    <span className="absolute left-0 top-1.5 size-2 rounded-full bg-primary" />
+                    <div className="text-xs font-semibold text-muted-foreground/70">
                       {e.year}
                     </div>
-                    <div className="text-sm font-semibold text-[#111827]">
+                    <div className="text-sm font-semibold text-foreground">
                       {e.role}
                     </div>
-                    <div className="text-xs text-[#64748B]">{e.org}</div>
-                    <p className="mt-1 text-xs leading-relaxed text-[#94A3B8]">
+                    <div className="text-xs text-muted-foreground">{e.org}</div>
+                    <p className="mt-1 text-xs leading-relaxed text-muted-foreground/70">
                       {e.note}
                     </p>
                   </li>
@@ -443,7 +448,7 @@ export default function ProfileStudioPreview() {
           >
             <div className="flex flex-col items-center">
               <RadarChart data={radar} />
-              <p className="mt-4 text-[11px] text-[#94A3B8]">
+              <p className="mt-4 text-[11px] text-muted-foreground/70">
                 Scored {SCORE_MIN}–{SCORE_MAX} through evaluated work
               </p>
             </div>
@@ -455,38 +460,38 @@ export default function ProfileStudioPreview() {
               {contributions.map((c) => (
                 <article
                   key={c.title}
-                  className="rounded-lg border border-[#E2E8F0] p-4 transition-colors hover:border-[#2563EB]/40"
+                  className="card-interactive cursor-pointer rounded-lg border bg-card p-4"
                 >
                   <div className="flex items-start gap-3">
-                    <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-[#EFF6FF] text-[#2563EB]">
+                    <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
                       <FileText className="size-5" />
                     </div>
                     <div className="min-w-0">
-                      <h3 className="text-sm font-semibold leading-snug text-[#111827]">
+                      <h3 className="text-sm font-semibold leading-snug text-foreground">
                         {c.title}
                       </h3>
-                      <div className="mt-0.5 flex items-center gap-1.5 text-xs text-[#64748B]">
+                      <div className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
                         <Calendar className="size-3" />
                         {c.date}
-                        <span className="text-[#CBD5E1]">·</span>
+                        <span className="text-border">·</span>
                         {c.org}
                       </div>
                       {/* Difficulty badge (18-June adjustments §3); label from config.difficultyLevels */}
-                      <span className="mt-1.5 inline-flex rounded-md border border-[#E2E8F0] bg-[#F8FAFC] px-1.5 py-0.5 text-[11px] font-medium text-[#64748B]">
+                      <span className="mt-1.5 inline-flex rounded-md border bg-background px-1.5 py-0.5 text-[11px] font-medium text-muted-foreground">
                         {c.difficulty}
                       </span>
                     </div>
                   </div>
                   <div className="mt-3 flex items-center justify-between">
-                    <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#111827]">
+                    <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-foreground">
                       {c.score.toFixed(1)}
-                      <span className="text-xs font-normal text-[#94A3B8]">
-                        / 5
+                      <span className="text-xs font-normal text-muted-foreground/70">
+                        / {SCORE_MAX}
                       </span>
                     </span>
                     <VerifiedSeal />
                   </div>
-                  <button className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-[#2563EB] hover:underline">
+                  <button className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline">
                     View work <ExternalLink className="size-3" />
                   </button>
                 </article>
@@ -509,14 +514,14 @@ export default function ProfileStudioPreview() {
             <ol className="space-y-4">
               {timeline.map((t) => (
                 <li key={t.title} className="flex items-start gap-3">
-                  <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#EFF6FF] text-xs font-semibold text-[#2563EB]">
+                  <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold tabular-nums text-primary">
                     {t.score.toFixed(1)}
                   </div>
                   <div className="min-w-0">
-                    <div className="text-sm font-medium leading-snug text-[#111827]">
+                    <div className="text-sm font-medium leading-snug text-foreground">
                       {t.title}
                     </div>
-                    <div className="text-xs text-[#94A3B8]">{t.date}</div>
+                    <div className="text-xs text-muted-foreground/70">{t.date}</div>
                   </div>
                 </li>
               ))}
@@ -533,21 +538,21 @@ export default function ProfileStudioPreview() {
         </div>
       </main>
 
-      {/* Footer — trust anchor (Rule 3) */}
-      <footer className="mt-4 border-t border-[#E2E8F0] bg-white">
+      {/* Footer — trust anchor (Rule 3): light-blue band per T8 */}
+      <footer className="mt-4 border-t bg-primary/5">
         <div className="mx-auto flex max-w-[1240px] items-center justify-between px-8 py-5">
           <span className="flex flex-col gap-0.5">
-            <span className="inline-flex items-center gap-2 text-sm font-medium text-[#475569]">
-              <ShieldCheck className="size-4 text-[#10B981]" />
+            <span className="inline-flex items-center gap-2 text-sm font-medium text-foreground">
+              <ShieldCheck className="size-4 text-success" />
               Evaluations are independently verifiable
             </span>
-            <span className="pl-6 text-xs text-[#94A3B8]">
+            <span className="pl-6 text-xs text-muted-foreground">
               Capabilities are derived from evaluated actions, not self-reported claims
             </span>
           </span>
-          <span className="text-sm text-[#94A3B8]">
-            talent3x.com<span className="text-[#CBD5E1]"> · </span>
-            <span className="text-[#64748B]">/p/{profile.slug}</span>
+          <span className="text-sm text-muted-foreground/70">
+            talent3x.com<span className="text-border"> · </span>
+            <span className="text-muted-foreground">/p/{profile.slug}</span>
           </span>
         </div>
       </footer>

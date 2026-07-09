@@ -3,26 +3,25 @@
 /**
  * Profile Onboarding — flow preview (Week 2)
  * ------------------------------------------------------------------
- * Covers the ClickUp subtasks in one walkable flow:
- *   Welcome → Import (CV upload / LinkedIn) → Review → Confirmation
+ * Welcome → Import (CV upload / LinkedIn) → Review → Confirmation
  * Goal: "No Profile → Profile Created in minutes."
  *
  * Mock data; NOT wired to Supabase. Design preview only.
  *
- * Decisions applied:
- *  - D1  blue #2563EB chrome, green #10B981 = verified/trust.
- *  - D2  light-only.
- *  - D3  raw imported "Skills" are the ALLOWED input-stage use of the
- *        word — they become verified Capabilities only after evaluation.
- *  - D4  "focused flow" archetype: minimal chrome, progress stepper,
- *        no app sidebar.
- *  - D5  consumer-light (pride-first), reuses the frozen visual language.
+ * Built on the 8-July grill decisions (workspace docs 10–11):
+ *  - Tokens only; DM Sans; real logo asset; Button component variants.
+ *  - Focused-flow archetype (D4): minimal chrome, stepper, 760px column.
+ *  - Vocabulary: Actions (D3 amended); raw imported "Skills" are the
+ *    allowed input-stage use — they become verified Capabilities only
+ *    after evaluation.
+ *  - Forms spec (T7): h-10 inputs, primary focus ring, semantic states.
  *
- * UX rules: Rule 1 (always show progress — stepper + upload progress),
- * Rule 2 (one decision per screen), Rule 3 (state nothing is verified yet),
- * Rule 5 (every screen says why it matters).
+ * UX rules: Rule 1 (always show progress), Rule 2 (one decision per
+ * screen), Rule 3 (state nothing is verified yet), Rule 5 (every screen
+ * says why it matters).
  */
 
+import Image from "next/image";
 import { useRef, useState } from "react";
 import {
   ArrowLeft,
@@ -38,6 +37,8 @@ import {
   Upload,
   X,
 } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
 
 type Method = "cv" | "linkedin";
 type Status = "idle" | "uploading" | "done";
@@ -65,16 +66,20 @@ export default function OnboardingPreview() {
   const [method, setMethod] = useState<Method>("cv");
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#F8FAFC] text-[#111827]">
+    <div className="flex min-h-screen flex-col bg-background text-foreground">
       {/* Minimal chrome (focused flow — no app sidebar) */}
-      <header className="flex h-16 items-center justify-between border-b border-[#E2E8F0] bg-white px-8">
+      <header className="flex h-16 items-center justify-between border-b bg-card px-8">
         <div className="flex items-center gap-2.5">
-          <div className="flex size-8 items-center justify-center rounded-lg bg-linear-to-br from-[#22B8CF] to-[#2563EB] text-sm font-bold text-white">
-            X
-          </div>
+          <Image
+            src="/pics/logo-mark.png"
+            alt="Talent3X"
+            width={32}
+            height={32}
+            className="size-8"
+          />
           <span className="text-[15px] font-semibold tracking-tight">Talent3X</span>
         </div>
-        <button className="text-sm font-medium text-[#94A3B8] hover:text-[#64748B]">
+        <button className="text-sm font-medium text-muted-foreground/70 hover:text-muted-foreground">
           Save &amp; exit
         </button>
       </header>
@@ -115,7 +120,7 @@ export default function OnboardingPreview() {
 
 function Stepper({ current }: { current: number }) {
   return (
-    <div className="border-b border-[#E2E8F0] bg-white">
+    <div className="border-b bg-card">
       <ol className="mx-auto flex max-w-[760px] items-center gap-2 px-6 py-4">
         {STEPS.map((label, i) => {
           const done = i < current;
@@ -125,24 +130,24 @@ function Stepper({ current }: { current: number }) {
               <span
                 className={`flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold transition-colors ${
                   done
-                    ? "bg-[#10B981] text-white"
+                    ? "bg-success text-success-foreground"
                     : active
-                      ? "bg-[#2563EB] text-white"
-                      : "bg-[#F1F5F9] text-[#94A3B8]"
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground/70"
                 }`}
               >
                 {done ? <Check className="size-4" strokeWidth={2.5} /> : i + 1}
               </span>
               <span
                 className={`text-sm font-medium ${
-                  active ? "text-[#111827]" : "text-[#94A3B8]"
+                  active ? "text-foreground" : "text-muted-foreground/70"
                 }`}
               >
                 {label}
               </span>
               {i < STEPS.length - 1 && (
                 <span
-                  className={`mx-1 h-px flex-1 ${done ? "bg-[#10B981]" : "bg-[#E2E8F0]"}`}
+                  className={`mx-1 h-px flex-1 ${done ? "bg-success" : "bg-border"}`}
                 />
               )}
             </li>
@@ -169,9 +174,9 @@ function Welcome({
       <h1 className="text-3xl font-bold tracking-tight">
         Let&apos;s build your capability profile
       </h1>
-      <p className="mt-2 max-w-[560px] text-[15px] leading-relaxed text-[#64748B]">
+      <p className="mt-2 max-w-[560px] text-[15px] leading-relaxed text-muted-foreground">
         Start from your CV or LinkedIn. We&apos;ll turn it into a profile you can
-        grow into <span className="font-medium text-[#111827]">verified capabilities</span> —
+        grow into <span className="font-medium text-foreground">verified capabilities</span> —
         evidence of what you can actually do, not just claims. Takes a few minutes.
       </p>
 
@@ -192,7 +197,7 @@ function Welcome({
         />
       </div>
 
-      <p className="mt-6 text-sm text-[#94A3B8]">
+      <p className="mt-6 text-sm text-muted-foreground/70">
         Nothing is published until you say so. You can edit everything in the next step.
       </p>
     </div>
@@ -215,16 +220,16 @@ function ChoiceCard({
   return (
     <button
       onClick={onClick}
-      className={`group flex flex-col items-start gap-3 rounded-xl border bg-white p-5 text-left transition-all hover:border-[#2563EB] hover:shadow-sm ${
-        selected ? "border-[#2563EB] ring-1 ring-[#2563EB]" : "border-[#E2E8F0]"
+      className={`card-interactive group flex flex-col items-start gap-3 rounded-xl border bg-card p-5 text-left ${
+        selected ? "border-primary ring-1 ring-primary" : ""
       }`}
     >
-      <span className="flex size-11 items-center justify-center rounded-lg bg-[#EFF6FF] text-[#2563EB]">
+      <span className="flex size-11 items-center justify-center rounded-lg bg-primary/10 text-primary">
         {icon}
       </span>
-      <span className="text-base font-semibold text-[#111827]">{title}</span>
-      <span className="text-sm leading-relaxed text-[#64748B]">{desc}</span>
-      <span className="mt-1 inline-flex items-center gap-1 text-sm font-medium text-[#2563EB] opacity-0 transition-opacity group-hover:opacity-100">
+      <span className="text-base font-semibold text-foreground">{title}</span>
+      <span className="text-sm leading-relaxed text-muted-foreground">{desc}</span>
+      <span className="mt-1 inline-flex items-center gap-1 text-sm font-medium text-primary opacity-0 transition-opacity group-hover:opacity-100">
         Continue <ArrowRight className="size-4" />
       </span>
     </button>
@@ -258,13 +263,15 @@ function ImportStep({
       />
 
       {/* method toggle */}
-      <div className="mb-6 inline-flex rounded-lg border border-[#E2E8F0] bg-white p-1">
+      <div className="mb-6 inline-flex rounded-lg border bg-card p-1">
         {(["cv", "linkedin"] as Method[]).map((m) => (
           <button
             key={m}
             onClick={() => onMethodChange(m)}
             className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-              method === m ? "bg-[#2563EB] text-white" : "text-[#64748B] hover:text-[#111827]"
+              method === m
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:text-foreground"
             }`}
           >
             {m === "cv" ? "CV file" : "LinkedIn"}
@@ -316,14 +323,14 @@ function CvUpload({ onDone }: { onDone: () => void }) {
 
   if (status === "done") {
     return (
-      <div className="rounded-xl border border-[#E2E8F0] bg-white p-6">
+      <div className="rounded-xl border bg-card p-6">
         <div className="flex items-center gap-3">
-          <span className="flex size-10 items-center justify-center rounded-lg bg-[#ECFDF5] text-[#10B981]">
+          <span className="flex size-10 items-center justify-center rounded-lg bg-success/10 text-success">
             <CheckCircle2 className="size-5" />
           </span>
           <div className="min-w-0 flex-1">
-            <div className="truncate text-sm font-semibold text-[#111827]">{fileName}</div>
-            <div className="text-xs text-[#10B981]">Extracted successfully</div>
+            <div className="truncate text-sm font-semibold text-foreground">{fileName}</div>
+            <div className="text-xs text-success">Extracted successfully</div>
           </div>
           <button
             onClick={() => {
@@ -331,17 +338,14 @@ function CvUpload({ onDone }: { onDone: () => void }) {
               setProgress(0);
               setFileName("");
             }}
-            className="text-xs font-medium text-[#94A3B8] hover:text-[#64748B]"
+            className="text-xs font-medium text-muted-foreground/70 hover:text-muted-foreground"
           >
             Replace
           </button>
         </div>
-        <button
-          onClick={onDone}
-          className="mt-5 inline-flex h-10 w-full items-center justify-center gap-1.5 rounded-lg bg-[#2563EB] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#1D4ED8]"
-        >
-          Review what we found <ArrowRight className="size-4" />
-        </button>
+        <Button onClick={onDone} className="mt-5 w-full">
+          Review what we found <ArrowRight />
+        </Button>
       </div>
     );
   }
@@ -361,8 +365,8 @@ function CvUpload({ onDone }: { onDone: () => void }) {
           if (file) handleFile(file);
         }}
         onClick={() => status === "idle" && inputRef.current?.click()}
-        className={`flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed bg-white px-6 py-14 text-center transition-colors ${
-          dragging ? "border-[#2563EB] bg-[#EFF6FF]" : "border-[#CBD5E1] hover:border-[#2563EB]"
+        className={`flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed bg-card px-6 py-14 text-center transition-colors ${
+          dragging ? "border-primary bg-primary/5" : "border-border hover:border-primary"
         }`}
       >
         <input
@@ -377,30 +381,30 @@ function CvUpload({ onDone }: { onDone: () => void }) {
         />
         {status === "uploading" ? (
           <div className="w-full max-w-[320px]">
-            <div className="mb-3 flex items-center justify-center gap-2 text-sm font-medium text-[#2563EB]">
+            <div className="mb-3 flex items-center justify-center gap-2 text-sm font-medium text-primary">
               <Loader2 className="size-4 animate-spin" /> Reading {fileName}…
             </div>
-            <div className="h-2 w-full overflow-hidden rounded-full bg-[#F1F5F9]">
+            <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
               <div
-                className="h-full rounded-full bg-[#2563EB] transition-all"
+                className="h-full rounded-full bg-primary transition-all"
                 style={{ width: `${progress}%` }}
               />
             </div>
           </div>
         ) : (
           <>
-            <span className="mb-4 flex size-12 items-center justify-center rounded-full bg-[#EFF6FF] text-[#2563EB]">
+            <span className="mb-4 flex size-12 items-center justify-center rounded-full bg-primary/10 text-primary">
               <Upload className="size-6" />
             </span>
-            <p className="text-sm font-semibold text-[#111827]">
-              Drag your CV here, or <span className="text-[#2563EB]">browse</span>
+            <p className="text-sm font-semibold text-foreground">
+              Drag your CV here, or <span className="text-primary">browse</span>
             </p>
-            <p className="mt-1 text-xs text-[#94A3B8]">PDF or Word · up to 10 MB</p>
+            <p className="mt-1 text-xs text-muted-foreground/70">PDF or Word · up to 10 MB</p>
           </>
         )}
       </div>
       {error && (
-        <p className="mt-3 flex items-center gap-1.5 text-sm text-[#EF4444]">
+        <p className="mt-3 flex items-center gap-1.5 text-sm text-danger">
           <X className="size-4" /> {error}
         </p>
       )}
@@ -419,38 +423,31 @@ function LinkedInImport({ onDone }: { onDone: () => void }) {
   };
 
   return (
-    <div className="rounded-xl border border-[#E2E8F0] bg-white p-6">
-      <label className="text-sm font-medium text-[#111827]">LinkedIn profile URL</label>
+    <div className="rounded-xl border bg-card p-6">
+      <label className="text-sm font-medium text-foreground">LinkedIn profile URL</label>
       <div className="mt-2 flex items-center gap-2">
-        <div className="flex flex-1 items-center gap-2 rounded-lg border border-[#E2E8F0] px-3 focus-within:border-[#2563EB] focus-within:ring-1 focus-within:ring-[#2563EB]">
-          <Linkedin className="size-4 text-[#94A3B8]" />
+        <div className="flex flex-1 items-center gap-2 rounded-lg border px-3 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20">
+          <Linkedin className="size-4 text-muted-foreground/70" />
           <input
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             placeholder="linkedin.com/in/your-name"
-            className="h-10 w-full bg-transparent text-sm outline-none placeholder:text-[#94A3B8]"
+            className="h-10 w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground/70"
           />
         </div>
         {status === "done" ? (
-          <button
-            onClick={onDone}
-            className="inline-flex h-10 items-center gap-1.5 rounded-lg bg-[#2563EB] px-5 text-sm font-semibold text-white hover:bg-[#1D4ED8]"
-          >
-            Review <ArrowRight className="size-4" />
-          </button>
+          <Button onClick={onDone}>
+            Review <ArrowRight />
+          </Button>
         ) : (
-          <button
-            onClick={start}
-            disabled={!url.trim() || status === "uploading"}
-            className="inline-flex h-10 items-center gap-1.5 rounded-lg bg-[#2563EB] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#1D4ED8] disabled:opacity-50"
-          >
-            {status === "uploading" ? <Loader2 className="size-4 animate-spin" /> : null}
+          <Button onClick={start} disabled={!url.trim() || status === "uploading"}>
+            {status === "uploading" ? <Loader2 className="animate-spin" /> : null}
             {status === "uploading" ? "Importing…" : "Import"}
-          </button>
+          </Button>
         )}
       </div>
       {status === "done" && (
-        <p className="mt-3 flex items-center gap-1.5 text-sm text-[#10B981]">
+        <p className="mt-3 flex items-center gap-1.5 text-sm text-success">
           <CheckCircle2 className="size-4" /> Imported. Review your details next.
         </p>
       )}
@@ -478,10 +475,10 @@ function ReviewStep({ onBack, onContinue }: { onBack: () => void; onContinue: ()
       />
 
       {/* Rule 3 — be honest about verification state */}
-      <div className="mb-6 flex items-start gap-2 rounded-lg bg-[#FFFBEB] px-4 py-3 text-sm text-[#92400E]">
-        <Sparkles className="mt-0.5 size-4 shrink-0" />
+      <div className="mb-6 flex items-start gap-2 rounded-lg bg-warning/10 px-4 py-3 text-sm text-warning-foreground">
+        <Sparkles className="mt-0.5 size-4 shrink-0 text-warning" />
         <span>
-          Imported from your {`profile`} — <strong>not yet verified</strong>. Your skills
+          Imported from your profile — <strong>not yet verified</strong>. Your skills
           become <strong>verified Capabilities</strong> once educators evaluate your work.
         </span>
       </div>
@@ -519,12 +516,12 @@ function ReviewStep({ onBack, onContinue }: { onBack: () => void; onContinue: ()
             {skills.map((s) => (
               <span
                 key={s}
-                className="inline-flex items-center gap-1.5 rounded-full bg-[#F1F5F9] py-1 pl-3 pr-1.5 text-sm font-medium text-[#334155]"
+                className="inline-flex items-center gap-1.5 rounded-full bg-muted py-1 pl-3 pr-1.5 text-sm font-medium text-foreground/80"
               >
                 {s}
                 <button
                   onClick={() => setSkills(skills.filter((x) => x !== s))}
-                  className="flex size-4 items-center justify-center rounded-full text-[#94A3B8] hover:bg-[#E2E8F0] hover:text-[#475569]"
+                  className="flex size-4 items-center justify-center rounded-full text-muted-foreground/70 hover:bg-border hover:text-muted-foreground"
                 >
                   <X className="size-3" />
                 </button>
@@ -542,30 +539,28 @@ function ReviewStep({ onBack, onContinue }: { onBack: () => void; onContinue: ()
                 }
               }}
               placeholder="Add a skill"
-              className="h-9 flex-1 rounded-lg border border-[#E2E8F0] px-3 text-sm outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
+              className="h-9 flex-1 rounded-lg border px-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
             />
-            <button
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => {
                 if (newSkill.trim()) {
                   setSkills([...skills, newSkill.trim()]);
                   setNewSkill("");
                 }
               }}
-              className="inline-flex h-9 items-center gap-1 rounded-lg border border-[#E2E8F0] px-3 text-sm font-medium text-[#334155] hover:bg-[#F8FAFC]"
             >
-              <Plus className="size-4" /> Add
-            </button>
+              <Plus /> Add
+            </Button>
           </div>
         </ReviewCard>
       </div>
 
       <NavRow onBack={onBack}>
-        <button
-          onClick={onContinue}
-          className="inline-flex h-10 items-center gap-1.5 rounded-lg bg-[#2563EB] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#1D4ED8]"
-        >
-          Looks good — create my profile <ArrowRight className="size-4" />
-        </button>
+        <Button onClick={onContinue}>
+          Looks good — create my profile <ArrowRight />
+        </Button>
       </NavRow>
     </div>
   );
@@ -583,11 +578,11 @@ function ReviewCard({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-xl border border-[#E2E8F0] bg-white p-5">
+    <section className="rounded-xl border bg-card p-5">
       <header className="mb-3 flex items-center gap-2">
-        {icon && <span className="text-[#64748B]">{icon}</span>}
-        <h2 className="text-sm font-semibold text-[#111827]">{title}</h2>
-        {hint && <span className="text-xs text-[#94A3B8]">· {hint}</span>}
+        {icon && <span className="text-muted-foreground">{icon}</span>}
+        <h2 className="text-sm font-semibold text-foreground">{title}</h2>
+        {hint && <span className="text-xs text-muted-foreground/70">· {hint}</span>}
       </header>
       {children}
     </section>
@@ -605,11 +600,11 @@ function Field({
 }) {
   return (
     <div className="mb-3 last:mb-0">
-      <label className="mb-1 block text-xs font-medium text-[#64748B]">{label}</label>
+      <label className="mb-1 block text-xs font-medium text-muted-foreground">{label}</label>
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="h-10 w-full rounded-lg border border-[#E2E8F0] px-3 text-sm outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
+        className="h-10 w-full rounded-lg border px-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
       />
     </div>
   );
@@ -625,14 +620,14 @@ function RowItem({
   onRemove: () => void;
 }) {
   return (
-    <div className="flex items-center justify-between border-b border-[#F1F5F9] py-2.5 last:border-0">
+    <div className="row-interactive flex items-center justify-between border-b border-muted py-2.5 last:border-0">
       <div className="min-w-0">
-        <div className="truncate text-sm font-medium text-[#111827]">{primary}</div>
-        <div className="truncate text-xs text-[#94A3B8]">{secondary}</div>
+        <div className="truncate text-sm font-medium text-foreground">{primary}</div>
+        <div className="truncate text-xs text-muted-foreground/70">{secondary}</div>
       </div>
       <button
         onClick={onRemove}
-        className="ml-3 flex size-7 shrink-0 items-center justify-center rounded-lg text-[#94A3B8] hover:bg-[#FEF2F2] hover:text-[#EF4444]"
+        className="ml-3 flex size-7 shrink-0 items-center justify-center rounded-lg text-muted-foreground/70 hover:bg-danger/10 hover:text-danger"
       >
         <X className="size-4" />
       </button>
@@ -647,26 +642,26 @@ function RowItem({
 function Confirmation() {
   return (
     <div className="flex flex-col items-center py-8 text-center">
-      <span className="flex size-16 items-center justify-center rounded-full bg-[#ECFDF5] text-[#10B981]">
+      <span className="flex size-16 items-center justify-center rounded-full bg-success/10 text-success">
         <CheckCircle2 className="size-9" />
       </span>
       <h1 className="mt-6 text-3xl font-bold tracking-tight">Your profile is ready</h1>
-      <p className="mt-2 max-w-[460px] text-[15px] leading-relaxed text-[#64748B]">
+      <p className="mt-2 max-w-[460px] text-[15px] leading-relaxed text-muted-foreground">
         You went from no profile to a live one. Right now it holds your claims —
-        the next step turns them into <span className="font-medium text-[#111827]">verified capabilities</span>.
+        the next step turns them into <span className="font-medium text-foreground">verified capabilities</span>.
       </p>
 
       {/* Rule 5 — what's next, and why it matters */}
-      <div className="mt-8 w-full max-w-[420px] rounded-xl border border-[#E2E8F0] bg-white p-5 text-left">
-        <h2 className="text-sm font-semibold text-[#111827]">What happens next</h2>
+      <div className="mt-8 w-full max-w-[420px] rounded-xl border bg-card p-5 text-left">
+        <h2 className="text-sm font-semibold text-foreground">What happens next</h2>
         <ol className="mt-3 space-y-3">
           {[
             "Create your first Action (a piece of real work).",
             "Invite an educator to evaluate it.",
             "Their evaluation turns skills into verified Capabilities.",
           ].map((t, i) => (
-            <li key={i} className="flex items-start gap-2.5 text-sm text-[#475569]">
-              <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-[#EFF6FF] text-[11px] font-semibold text-[#2563EB]">
+            <li key={i} className="flex items-start gap-2.5 text-sm text-muted-foreground">
+              <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[11px] font-semibold text-primary">
                 {i + 1}
               </span>
               {t}
@@ -676,15 +671,14 @@ function Confirmation() {
       </div>
 
       <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-        <a
-          href="/profile-studio-preview"
-          className="inline-flex h-11 items-center justify-center gap-1.5 rounded-lg bg-[#2563EB] px-6 text-sm font-semibold text-white transition-colors hover:bg-[#1D4ED8]"
-        >
-          View my Profile Studio <ArrowRight className="size-4" />
-        </a>
-        <button className="inline-flex h-11 items-center justify-center gap-1.5 rounded-lg border border-[#E2E8F0] bg-white px-6 text-sm font-semibold text-[#334155] transition-colors hover:bg-[#F8FAFC]">
+        <Button size="lg" asChild>
+          <a href="/profile-studio-preview">
+            View my Profile Studio <ArrowRight />
+          </a>
+        </Button>
+        <Button size="lg" variant="outline">
           Create my first Action
-        </button>
+        </Button>
       </div>
     </div>
   );
@@ -698,7 +692,7 @@ function StepHeading({ title, subtitle }: { title: string; subtitle: string }) {
   return (
     <div className="mb-6">
       <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
-      <p className="mt-1.5 text-[15px] text-[#64748B]">{subtitle}</p>
+      <p className="mt-1.5 text-[15px] text-muted-foreground">{subtitle}</p>
     </div>
   );
 }
@@ -712,12 +706,9 @@ function NavRow({
 }) {
   return (
     <div className="mt-8 flex items-center justify-between">
-      <button
-        onClick={onBack}
-        className="inline-flex h-10 items-center gap-1.5 rounded-lg px-3 text-sm font-medium text-[#64748B] transition-colors hover:text-[#111827]"
-      >
-        <ArrowLeft className="size-4" /> Back
-      </button>
+      <Button variant="ghost" onClick={onBack}>
+        <ArrowLeft /> Back
+      </Button>
       {children}
     </div>
   );
