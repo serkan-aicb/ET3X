@@ -95,6 +95,7 @@ export default function OnboardingPreview() {
               setMethod(m);
               setStep(1);
             }}
+            onScratch={() => setStep(2)}
           />
         )}
         {step === 1 && (
@@ -165,9 +166,11 @@ function Stepper({ current }: { current: number }) {
 function Welcome({
   method,
   onPick,
+  onScratch,
 }: {
   method: Method;
   onPick: (m: Method) => void;
+  onScratch: () => void;
 }) {
   return (
     <div>
@@ -197,7 +200,17 @@ function Welcome({
         />
       </div>
 
-      <p className="mt-6 text-sm text-muted-foreground/70">
+      {/* Third path (9-July grill Q4): no CV or LinkedIn required.
+          In the real build this opens Review with empty fields. */}
+      <button
+        onClick={onScratch}
+        className="mt-5 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+      >
+        Or start from scratch — add your details manually
+        <ArrowRight className="size-4" />
+      </button>
+
+      <p className="mt-4 text-sm text-muted-foreground/70">
         Nothing is published until you say so. You can edit everything in the next step.
       </p>
     </div>
@@ -459,6 +472,10 @@ function LinkedInImport({ onDone }: { onDone: () => void }) {
 /* Step 2 — Review extracted data (editable)                         */
 /* ------------------------------------------------------------------ */
 
+/* AI-suggested canonical capabilities (mock — AI suggestion service in
+   Week 2). Pattern: AI suggests, user confirms; nothing auto-applies. */
+const initialSuggestions = ["Strategic Thinking", "Communication", "Solution Design"];
+
 function ReviewStep({ onBack, onContinue }: { onBack: () => void; onContinue: () => void }) {
   const [name, setName] = useState("André Pager");
   const [headline, setHeadline] = useState("Blockchain Strategy & Implementation");
@@ -466,6 +483,8 @@ function ReviewStep({ onBack, onContinue }: { onBack: () => void; onContinue: ()
   const [experience, setExperience] = useState(initialExperience);
   const [skills, setSkills] = useState(initialSkills);
   const [newSkill, setNewSkill] = useState("");
+  const [confirmed, setConfirmed] = useState<string[]>([]);
+  const [suggestions, setSuggestions] = useState(initialSuggestions);
 
   return (
     <div>
@@ -555,6 +574,64 @@ function ReviewStep({ onBack, onContinue }: { onBack: () => void; onContinue: ()
             </Button>
           </div>
         </ReviewCard>
+
+        {/* AI signature surface (T2): sparkle + light blue, explicit label,
+            confirm/dismiss per suggestion — never auto-applied. */}
+        <section className="rounded-xl border border-primary/15 bg-primary/5 p-5">
+          <header className="flex items-center gap-2">
+            <span className="flex size-7 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              <Sparkles className="size-4" />
+            </span>
+            <h2 className="text-sm font-semibold text-foreground">
+              Suggested capabilities
+            </h2>
+            <span className="text-xs text-muted-foreground/70">· AI</span>
+          </header>
+          <p className="mt-1.5 text-xs text-muted-foreground">
+            Suggested from your skills — nothing is applied until you confirm.
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {suggestions.map((s) => {
+              const isConfirmed = confirmed.includes(s);
+              return (
+                <span
+                  key={s}
+                  className={`inline-flex items-center gap-1 rounded-full py-1 pl-3 pr-1.5 text-sm font-medium transition-colors ${
+                    isConfirmed
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-card text-foreground ring-1 ring-primary/25"
+                  }`}
+                >
+                  {isConfirmed && <Check className="size-3.5" />}
+                  {s}
+                  {!isConfirmed && (
+                    <>
+                      <button
+                        onClick={() => setConfirmed([...confirmed, s])}
+                        aria-label={`Confirm ${s}`}
+                        className="flex size-5 items-center justify-center rounded-full text-success hover:bg-success/10"
+                      >
+                        <Check className="size-3.5" />
+                      </button>
+                      <button
+                        onClick={() => setSuggestions(suggestions.filter((x) => x !== s))}
+                        aria-label={`Dismiss ${s}`}
+                        className="flex size-5 items-center justify-center rounded-full text-muted-foreground/70 hover:bg-danger/10 hover:text-danger"
+                      >
+                        <X className="size-3.5" />
+                      </button>
+                    </>
+                  )}
+                </span>
+              );
+            })}
+            {suggestions.length === 0 && (
+              <span className="text-sm text-muted-foreground/70">
+                All suggestions handled.
+              </span>
+            )}
+          </div>
+        </section>
       </div>
 
       <NavRow onBack={onBack}>

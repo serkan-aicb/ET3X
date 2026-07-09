@@ -31,7 +31,6 @@ import {
   Users,
 } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -63,6 +62,16 @@ const topCapabilities = [
   { label: "Problem Solving", value: 4.1, chip: "bg-chart-3/10 text-chart-3" },
   { label: "Strategic Thinking", value: 3.9, chip: "bg-tint-steel/10 text-tint-steel" },
 ];
+
+// Category badges: tinted from the categorical palette (decorative tier,
+// 9-July grill Q6). rounded-md distinguishes them from round status pills.
+const CATEGORY_TINTS: Record<string, string> = {
+  Assessment: "bg-chart-1/10 text-chart-1 ring-chart-1/20",
+  Project: "bg-chart-2/10 text-chart-2 ring-chart-2/20",
+  Research: "bg-chart-3/10 text-chart-3 ring-chart-3/20",
+  Presentation: "bg-tint-steel/10 text-tint-steel ring-tint-steel/20",
+  Other: "bg-chart-5/10 text-chart-5 ring-chart-5/20",
+};
 
 const actions = [
   {
@@ -310,7 +319,11 @@ export default function DesignLab() {
                     <tr key={a.title} className="row-interactive cursor-pointer border-b last:border-0">
                       <td className="px-6 py-3 font-medium">{a.title}</td>
                       <td className="px-3 py-3">
-                        <Badge variant="outline">{a.category}</Badge>
+                        <span
+                          className={`inline-flex rounded-md px-2 py-0.5 text-xs font-medium ring-1 ${CATEGORY_TINTS[a.category] ?? CATEGORY_TINTS.Other}`}
+                        >
+                          {a.category}
+                        </span>
                       </td>
                       <td className="px-3 py-3 text-muted-foreground">{a.owner}</td>
                       <td className="px-3 py-3">

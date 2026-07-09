@@ -102,6 +102,48 @@ export default function DesignSystemPage() {
       </header>
 
       <main className="mx-auto max-w-6xl space-y-12 px-6 py-10">
+        {/* ── Page archetypes ────────────────────────────────────── */}
+        <DesignSystemSection
+          title="Page archetypes"
+          description="Every screen declares exactly one archetype — no hybrids."
+        >
+          <div className="grid gap-4 lg:grid-cols-3">
+            {[
+              {
+                name: "Workspace",
+                spec: "240px sidebar · content ≤1280px",
+                use: "Dashboards & management (Overview, Analytics, Reports). Sidebar nav, org switcher, one primary CTA per screen. Desktop-first, ≥1024px.",
+                demo: "/design-lab",
+              },
+              {
+                name: "Public projection",
+                spec: "chromeless top bar · ≤1240px",
+                use: "Profile Studio — the pride-first public surface. No sidebar; single ink hero CTA; trust footer. Mobile-first at 375px.",
+                demo: "/profile-studio-preview",
+              },
+              {
+                name: "Focused flow",
+                spec: "stepper · single 760px column",
+                use: "Onboarding, evaluation. Minimal chrome, Save & exit, one decision per screen, Back never loses data. Mobile-first at 375px.",
+                demo: "/onboarding-preview",
+              },
+            ].map((a) => (
+              <Card key={a.name}>
+                <CardHeader>
+                  <CardTitle className="text-base">{a.name}</CardTitle>
+                  <CardDescription>{a.spec}</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <p className="text-sm text-muted-foreground">{a.use}</p>
+                  <a href={a.demo} className="text-xs font-medium text-primary hover:underline">
+                    Live example: {a.demo}
+                  </a>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </DesignSystemSection>
+
         {/* ── Tokens ─────────────────────────────────────────────── */}
         <DesignSystemSection
           title="Color tokens"
@@ -118,6 +160,62 @@ export default function DesignSystemPage() {
                 <p className="text-xs text-muted-foreground">{token.note}</p>
               </div>
             ))}
+          </div>
+        </DesignSystemSection>
+
+        <DesignSystemSection
+          title="Color tiers"
+          description="Three tiers, one rule: a decorative color never appears on a button, status badge, or chrome element."
+        >
+          <div className="grid gap-4 lg:grid-cols-3">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">1 · Chrome — monochrome</CardTitle>
+                <CardDescription>surfaces, borders, text, one blue</CardDescription>
+              </CardHeader>
+              <CardContent className="flex flex-wrap gap-2">
+                {["--background", "--card", "--border", "--muted-foreground", "--foreground", "--primary", "--ink"].map((v) => (
+                  <span
+                    key={v}
+                    className="size-8 rounded-md border"
+                    title={v}
+                    style={{ backgroundColor: `var(${v})` }}
+                  />
+                ))}
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">2 · Semantic — meaning only</CardTitle>
+                <CardDescription>green = verified/trust, never decoration</CardDescription>
+              </CardHeader>
+              <CardContent className="flex flex-wrap gap-2">
+                {["--success", "--warning", "--danger", "--info"].map((v) => (
+                  <span
+                    key={v}
+                    className="size-8 rounded-md border"
+                    title={v}
+                    style={{ backgroundColor: `var(${v})` }}
+                  />
+                ))}
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">3 · Decorative — bounded</CardTitle>
+                <CardDescription>chips, category badges, charts, bands ONLY</CardDescription>
+              </CardHeader>
+              <CardContent className="flex flex-wrap gap-2">
+                {["--chart-1", "--chart-2", "--chart-3", "--chart-4", "--chart-5", "--tint-sky", "--tint-steel"].map((v) => (
+                  <span
+                    key={v}
+                    className="size-8 rounded-md border"
+                    title={v}
+                    style={{ backgroundColor: `var(${v})` }}
+                  />
+                ))}
+              </CardContent>
+            </Card>
           </div>
         </DesignSystemSection>
 
@@ -167,15 +265,42 @@ export default function DesignSystemPage() {
 
         <DesignSystemSection
           title="Status badges"
-          description="Tone is visual only — labels come from data (e.g. verification tiers below), never hardcoded in the component."
+          description="Canonical mapping: Completed/Verified = success · In Progress = warning · Pending/Invited = info · Overdue/Rejected = danger · Draft = neutral. Labels come from data, never hardcoded in the component."
         >
           <Card>
             <CardContent className="flex flex-wrap items-center gap-3 p-6">
+              <StatusBadge tone="success">Completed</StatusBadge>
               <StatusBadge tone="success">Verified</StatusBadge>
-              <StatusBadge tone="warning">Pending</StatusBadge>
-              <StatusBadge tone="destructive">Rejected</StatusBadge>
-              <StatusBadge tone="info">Invited</StatusBadge>
+              <StatusBadge tone="warning">In Progress</StatusBadge>
+              <StatusBadge tone="info">Invite sent</StatusBadge>
+              <StatusBadge tone="destructive">Overdue</StatusBadge>
               <StatusBadge tone="neutral">Draft</StatusBadge>
+            </CardContent>
+          </Card>
+        </DesignSystemSection>
+
+        <DesignSystemSection
+          title="Category badges"
+          description="Decorative tier: categories may carry categorical color for scannability. rounded-md tints — visually distinct from round status pills with dots, so color never reads as status."
+        >
+          <Card>
+            <CardContent className="flex flex-wrap items-center gap-3 p-6">
+              {[
+                ["Assessment", "bg-chart-1/10 text-chart-1 ring-chart-1/20"],
+                ["Project", "bg-chart-2/10 text-chart-2 ring-chart-2/20"],
+                ["Research", "bg-chart-3/10 text-chart-3 ring-chart-3/20"],
+                ["Presentation", "bg-tint-steel/10 text-tint-steel ring-tint-steel/20"],
+                ["Other", "bg-chart-5/10 text-chart-5 ring-chart-5/20"],
+              ].map(([label, cls]) => (
+                <span
+                  key={label}
+                  className={`inline-flex rounded-md px-2 py-0.5 text-xs font-medium ring-1 ${cls}`}
+                >
+                  {label}
+                </span>
+              ))}
+              <span className="mx-2 text-xs text-muted-foreground">vs. status:</span>
+              <StatusBadge tone="warning">In Progress</StatusBadge>
             </CardContent>
           </Card>
         </DesignSystemSection>
@@ -215,6 +340,56 @@ export default function DesignSystemPage() {
                   Hash-only evidence (NDA work)
                 </Label>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Input states (T7). Mark OPTIONAL fields, not required ones. */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Input states</CardTitle>
+              <CardDescription>
+                validate on blur, live after first error · submit-level summary for screen readers
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-6 p-6 pt-0 sm:grid-cols-3">
+              <div className="space-y-2">
+                <Label>Focused</Label>
+                <div className="flex h-10 items-center rounded-lg border border-primary px-3 text-sm ring-2 ring-primary/20">
+                  Editing…
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-danger">With error</Label>
+                <div className="flex h-10 items-center rounded-lg border border-danger px-3 text-sm text-muted-foreground ring-2 ring-danger/15">
+                  bad@value
+                </div>
+                <p className="text-sm text-danger">Enter a valid email address.</p>
+              </div>
+              <div className="space-y-2">
+                <Label>
+                  Nickname{" "}
+                  <span className="font-normal text-muted-foreground/70">(optional)</span>
+                </Label>
+                <Input disabled placeholder="Disabled state" />
+              </div>
+            </CardContent>
+          </Card>
+        </DesignSystemSection>
+
+        <DesignSystemSection
+          title="Empty states"
+          description="Pattern: muted icon → what's missing → why it matters → ONE call to action. Action vocabulary, never a dead end."
+        >
+          <Card>
+            <CardContent className="flex flex-col items-center px-6 py-10 text-center">
+              <span className="flex size-12 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                <ClipboardList className="size-6" />
+              </span>
+              <p className="mt-4 text-sm font-semibold">No evaluated actions yet</p>
+              <p className="mt-1 max-w-[360px] text-sm text-muted-foreground">
+                Evaluations turn your work into verified capabilities.
+              </p>
+              <Button className="mt-5">Create your first Action</Button>
             </CardContent>
           </Card>
         </DesignSystemSection>
