@@ -38,7 +38,7 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { TopBar, TopBarBrand } from "@/components/ui/top-bar";
+import { FocusedFlowShell } from "@/components/layout/focused-flow-shell";
 
 type Method = "cv" | "linkedin";
 type Status = "idle" | "uploading" | "done";
@@ -65,91 +65,33 @@ export default function OnboardingPreview() {
   const [step, setStep] = useState(0);
   const [method, setMethod] = useState<Method>("cv");
 
+  // Shared focused-flow shell (Week-3 §1): ink bar + stepper as one sticky
+  // unit; the Action wizard and evaluation flow reuse this exact chrome.
   return (
-    <div className="flex min-h-screen flex-col bg-background text-foreground">
-      {/* Minimal chrome (focused flow, S6/S7): ink bar + stepper travel as
-          ONE sticky unit so the stepper is always visible (T8). */}
-      <div className="sticky top-0 z-20">
-        <TopBar className="static">
-          <TopBarBrand />
-          <button className="text-sm font-medium text-white/70 hover:text-white">
-            Save &amp; exit
-          </button>
-        </TopBar>
-
-        {/* Progress stepper (Rule 1) — light row under the ink bar */}
-        <Stepper current={step} />
-      </div>
-
-      <main className="mx-auto flex w-full max-w-[760px] flex-1 flex-col px-6 py-10">
-        {step === 0 && (
-          <Welcome
-            method={method}
-            onPick={(m) => {
-              setMethod(m);
-              setStep(1);
-            }}
-            onScratch={() => setStep(2)}
-          />
-        )}
-        {step === 1 && (
-          <ImportStep
-            method={method}
-            onMethodChange={setMethod}
-            onBack={() => setStep(0)}
-            onContinue={() => setStep(2)}
-          />
-        )}
-        {step === 2 && (
-          <ReviewStep onBack={() => setStep(1)} onContinue={() => setStep(3)} />
-        )}
-        {step === 3 && <Confirmation />}
-      </main>
-    </div>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/* Stepper                                                            */
-/* ------------------------------------------------------------------ */
-
-function Stepper({ current }: { current: number }) {
-  return (
-    <div className="border-b bg-card">
-      <ol className="mx-auto flex max-w-[760px] items-center gap-2 px-6 py-4">
-        {STEPS.map((label, i) => {
-          const done = i < current;
-          const active = i === current;
-          return (
-            <li key={label} className="flex flex-1 items-center gap-2 last:flex-none">
-              <span
-                className={`flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold transition-colors ${
-                  done
-                    ? "bg-success text-success-foreground"
-                    : active
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-muted-foreground/70"
-                }`}
-              >
-                {done ? <Check className="size-4" strokeWidth={2.5} /> : i + 1}
-              </span>
-              <span
-                className={`text-sm font-medium ${
-                  active ? "text-foreground" : "text-muted-foreground/70"
-                }`}
-              >
-                {label}
-              </span>
-              {i < STEPS.length - 1 && (
-                <span
-                  className={`mx-1 h-px flex-1 ${done ? "bg-success" : "bg-border"}`}
-                />
-              )}
-            </li>
-          );
-        })}
-      </ol>
-    </div>
+    <FocusedFlowShell steps={STEPS} currentStep={step}>
+      {step === 0 && (
+        <Welcome
+          method={method}
+          onPick={(m) => {
+            setMethod(m);
+            setStep(1);
+          }}
+          onScratch={() => setStep(2)}
+        />
+      )}
+      {step === 1 && (
+        <ImportStep
+          method={method}
+          onMethodChange={setMethod}
+          onBack={() => setStep(0)}
+          onContinue={() => setStep(2)}
+        />
+      )}
+      {step === 2 && (
+        <ReviewStep onBack={() => setStep(1)} onContinue={() => setStep(3)} />
+      )}
+      {step === 3 && <Confirmation />}
+    </FocusedFlowShell>
   );
 }
 

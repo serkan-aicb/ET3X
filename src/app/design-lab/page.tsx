@@ -15,13 +15,10 @@
  *  - Motion: .card-interactive / .row-interactive on clickable things only.
  */
 
-import Image from "next/image";
 import {
   BarChart3,
   Bell,
-  Building2,
   Calendar,
-  ChevronDown,
   ClipboardList,
   FileText,
   LayoutDashboard,
@@ -40,18 +37,23 @@ import {
 } from "@/components/ui/card";
 import { KpiCard } from "@/components/dashboard/kpi-card";
 import { StatusBadge } from "@/components/ui/status-badge";
+import {
+  WorkspaceShell,
+  WorkspaceHeader,
+  type WorkspaceNavItem,
+} from "@/components/layout/workspace-shell";
 
 /* ------------------------------------------------------------------ */
 /* Mock data                                                          */
 /* ------------------------------------------------------------------ */
 
-const NAV = [
-  { label: "Overview", icon: LayoutDashboard, active: true },
-  { label: "Profiles", icon: Users, active: false },
-  { label: "Actions", icon: ClipboardList, active: false },
-  { label: "Evaluations", icon: Star, active: false },
-  { label: "Analytics", icon: BarChart3, active: false },
-  { label: "Reports", icon: FileText, active: false },
+const NAV: WorkspaceNavItem[] = [
+  { label: "Overview", href: "#", icon: LayoutDashboard, active: true },
+  { label: "Profiles", href: "#", icon: Users },
+  { label: "Actions", href: "#", icon: ClipboardList },
+  { label: "Evaluations", href: "#", icon: Star },
+  { label: "Analytics", href: "#", icon: BarChart3 },
+  { label: "Reports", href: "#", icon: FileText },
 ];
 
 // Decorative tier in action: icon chips may use the categorical palette;
@@ -121,65 +123,11 @@ const activity = [
 
 export default function DesignLab() {
   return (
-    <div className="flex min-h-screen bg-background text-foreground">
-      {/* Sidebar — ink workspace chrome (T1 amended 13 July: app chrome is
-          ink home #4; navy rail + white text, sky ring, white/10 active pill) */}
-      <aside className="sticky top-0 flex h-screen w-60 shrink-0 flex-col border-r border-sidebar-border bg-sidebar px-3 py-5 text-sidebar-foreground">
-        <div className="mb-8 flex items-center gap-2.5 px-2">
-          <Image
-            src="/pics/logo-mark.png"
-            alt="Talent3X"
-            width={32}
-            height={32}
-            className="size-8"
-          />
-          <span className="text-[15px] font-semibold tracking-tight text-white">Talent3X</span>
-        </div>
-
-        <nav className="space-y-1">
-          {NAV.map((item) => {
-            const Icon = item.icon;
-            return (
-              <a
-                key={item.label}
-                href="#"
-                className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                  item.active
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                    : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-white"
-                }`}
-              >
-                <Icon className="size-4" />
-                {item.label}
-              </a>
-            );
-          })}
-        </nav>
-
-        <div className="mt-auto space-y-2">
-          <button className="flex w-full items-center gap-2.5 rounded-lg border border-sidebar-border bg-white/5 px-3 py-2.5 text-left transition-colors hover:bg-sidebar-accent">
-            <Building2 className="size-4 text-sidebar-foreground" />
-            <span className="min-w-0 flex-1">
-              <span className="block text-[11px] text-sidebar-foreground/70">Organization</span>
-              <span className="block truncate text-sm font-medium text-white">Quinnipiac University</span>
-            </span>
-            <ChevronDown className="size-4 text-sidebar-foreground/70" />
-          </button>
-          <button className="flex w-full items-center gap-2.5 rounded-lg border border-sidebar-border bg-white/5 px-3 py-2.5 text-left transition-colors hover:bg-sidebar-accent">
-            <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-tint-sky text-xs font-semibold text-ink">
-              ML
-            </span>
-            <span className="min-w-0 flex-1">
-              <span className="block truncate text-sm font-medium text-white">Dr. Michael Lee</span>
-              <span className="block text-[11px] text-sidebar-foreground/70">Administrator</span>
-            </span>
-          </button>
-        </div>
-      </aside>
-
-      {/* Content */}
-      <div className="min-w-0 flex-1">
-        <main className="mx-auto max-w-7xl px-8 py-8">
+    <WorkspaceShell
+      nav={NAV}
+      org={{ name: "Quinnipiac University" }}
+      user={{ name: "Dr. Michael Lee", role: "Administrator", initials: "ML" }}
+    >
           {/* Orientation strip (13-July review): this page is a theme sample,
               not a product screen — say so and name what it demonstrates. */}
           <div className="mb-8 flex flex-wrap items-center gap-3 rounded-lg border border-dashed bg-card px-4 py-3">
@@ -198,26 +146,21 @@ export default function DesignLab() {
             </p>
           </div>
 
-          {/* Header row: title + subtitle + ONE primary CTA */}
-          <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <h1 className="text-3xl font-semibold tracking-tight">Overview</h1>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Key insights from your Talent3X ecosystem.
-              </p>
-            </div>
-            <div className="flex items-center gap-2.5">
-              <Button variant="outline">
-                <Calendar /> Apr 1 – Apr 30, 2026
-              </Button>
-              <Button variant="outline" size="icon" aria-label="Notifications">
-                <Bell />
-              </Button>
-              <Button>
-                <Plus /> Create Action
-              </Button>
-            </div>
-          </div>
+          {/* S6 title block via the shared shell header */}
+          <WorkspaceHeader
+            title="Overview"
+            subtitle="Key insights from your Talent3X ecosystem."
+          >
+            <Button variant="outline">
+              <Calendar /> Apr 1 – Apr 30, 2026
+            </Button>
+            <Button variant="outline" size="icon" aria-label="Notifications">
+              <Bell />
+            </Button>
+            <Button>
+              <Plus /> Create Action
+            </Button>
+          </WorkspaceHeader>
 
           {/* KPI row — value + trend + story. Deliberately NO overall
               capability score (7-July rule; Thursday question). */}
@@ -375,8 +318,6 @@ export default function DesignLab() {
               View full insight
             </Button>
           </div>
-        </main>
-      </div>
-    </div>
+    </WorkspaceShell>
   );
 }
