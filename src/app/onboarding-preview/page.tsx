@@ -21,7 +21,6 @@
  * says why it matters).
  */
 
-import Image from "next/image";
 import { useRef, useState } from "react";
 import {
   ArrowLeft,
@@ -39,6 +38,7 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { TopBar, TopBarBrand } from "@/components/ui/top-bar";
 
 type Method = "cv" | "linkedin";
 type Status = "idle" | "uploading" | "done";
@@ -67,25 +67,19 @@ export default function OnboardingPreview() {
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
-      {/* Minimal chrome (focused flow — no app sidebar) */}
-      <header className="flex h-16 items-center justify-between border-b bg-card px-8">
-        <div className="flex items-center gap-2.5">
-          <Image
-            src="/pics/logo-mark.png"
-            alt="Talent3X"
-            width={32}
-            height={32}
-            className="size-8"
-          />
-          <span className="text-[15px] font-semibold tracking-tight">Talent3X</span>
-        </div>
-        <button className="text-sm font-medium text-muted-foreground/70 hover:text-muted-foreground">
-          Save &amp; exit
-        </button>
-      </header>
+      {/* Minimal chrome (focused flow, S6/S7): ink bar + stepper travel as
+          ONE sticky unit so the stepper is always visible (T8). */}
+      <div className="sticky top-0 z-20">
+        <TopBar className="static">
+          <TopBarBrand />
+          <button className="text-sm font-medium text-white/70 hover:text-white">
+            Save &amp; exit
+          </button>
+        </TopBar>
 
-      {/* Progress stepper (Rule 1) */}
-      <Stepper current={step} />
+        {/* Progress stepper (Rule 1) — light row under the ink bar */}
+        <Stepper current={step} />
+      </div>
 
       <main className="mx-auto flex w-full max-w-[760px] flex-1 flex-col px-6 py-10">
         {step === 0 && (
@@ -233,7 +227,7 @@ function ChoiceCard({
   return (
     <button
       onClick={onClick}
-      className={`card-interactive group flex flex-col items-start gap-3 rounded-xl border bg-card p-5 text-left ${
+      className={`card-interactive group flex flex-col items-start gap-3 rounded-xl border bg-card p-6 shadow-card text-left ${
         selected ? "border-primary ring-1 ring-primary" : ""
       }`}
     >
@@ -336,7 +330,7 @@ function CvUpload({ onDone }: { onDone: () => void }) {
 
   if (status === "done") {
     return (
-      <div className="rounded-xl border bg-card p-6">
+      <div className="rounded-xl border bg-card p-6 shadow-card">
         <div className="flex items-center gap-3">
           <span className="flex size-10 items-center justify-center rounded-lg bg-success/10 text-success">
             <CheckCircle2 className="size-5" />
@@ -436,7 +430,7 @@ function LinkedInImport({ onDone }: { onDone: () => void }) {
   };
 
   return (
-    <div className="rounded-xl border bg-card p-6">
+    <div className="rounded-xl border bg-card p-6 shadow-card">
       <label className="text-sm font-medium text-foreground">LinkedIn profile URL</label>
       <div className="mt-2 flex items-center gap-2">
         <div className="flex flex-1 items-center gap-2 rounded-lg border px-3 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20">
@@ -577,7 +571,7 @@ function ReviewStep({ onBack, onContinue }: { onBack: () => void; onContinue: ()
 
         {/* AI signature surface (T2): sparkle + light blue, explicit label,
             confirm/dismiss per suggestion — never auto-applied. */}
-        <section className="rounded-xl border border-primary/15 bg-primary/5 p-5">
+        <section className="rounded-xl border border-primary-border bg-primary-soft p-6 shadow-card">
           <header className="flex items-center gap-2">
             <span className="flex size-7 items-center justify-center rounded-lg bg-primary/10 text-primary">
               <Sparkles className="size-4" />
@@ -655,7 +649,7 @@ function ReviewCard({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-xl border bg-card p-5">
+    <section className="rounded-xl border bg-card p-6 shadow-card">
       <header className="mb-3 flex items-center gap-2">
         {icon && <span className="text-muted-foreground">{icon}</span>}
         <h2 className="text-sm font-semibold text-foreground">{title}</h2>
@@ -719,7 +713,9 @@ function RowItem({
 function Confirmation() {
   return (
     <div className="flex flex-col items-center py-8 text-center">
-      <span className="flex size-16 items-center justify-center rounded-full bg-success/10 text-success">
+      {/* Imagery slot (S5): the Done step may carry a flat brand-tint spot
+          illustration; the icon chip below is the placeholder until assets exist. */}
+      <span className="flex size-16 items-center justify-center rounded-full bg-success-soft text-success">
         <CheckCircle2 className="size-9" />
       </span>
       <h1 className="mt-6 text-3xl font-bold tracking-tight">Your profile is ready</h1>
@@ -729,7 +725,7 @@ function Confirmation() {
       </p>
 
       {/* Rule 5 — what's next, and why it matters */}
-      <div className="mt-8 w-full max-w-[420px] rounded-xl border bg-card p-5 text-left">
+      <div className="mt-8 w-full max-w-[420px] rounded-xl border bg-card p-6 shadow-card text-left">
         <h2 className="text-sm font-semibold text-foreground">What happens next</h2>
         <ol className="mt-3 space-y-3">
           {[

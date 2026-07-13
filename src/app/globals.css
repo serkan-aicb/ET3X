@@ -35,6 +35,26 @@
   --color-info-foreground: var(--info-foreground);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
+  --color-primary-soft: var(--primary-soft);
+  --color-primary-border: var(--primary-border);
+  --color-success-soft: var(--success-soft);
+  --color-warning-soft: var(--warning-soft);
+  --color-info-soft: var(--info-soft);
+  --color-danger-soft: var(--danger-soft);
+  --color-badge-blue-bg: var(--badge-blue-bg);
+  --color-badge-blue-text: var(--badge-blue-text);
+  --color-badge-teal-bg: var(--badge-teal-bg);
+  --color-badge-teal-text: var(--badge-teal-text);
+  --color-badge-amber-bg: var(--badge-amber-bg);
+  --color-badge-amber-text: var(--badge-amber-text);
+  --color-badge-sky-bg: var(--badge-sky-bg);
+  --color-badge-sky-text: var(--badge-sky-text);
+  --color-badge-slate-bg: var(--badge-slate-bg);
+  --color-badge-slate-text: var(--badge-slate-text);
+  --color-badge-steel-bg: var(--badge-steel-bg);
+  --color-badge-steel-text: var(--badge-steel-text);
+  --shadow-card: var(--shadow-card);
+  --shadow-overlay: var(--shadow-overlay);
   --color-muted-foreground: var(--muted-foreground);
   --color-muted: var(--muted);
   --color-secondary-foreground: var(--secondary-foreground);
@@ -73,6 +93,8 @@
   --primary: #2563EB;
   --primary-foreground: #FFFFFF;
   --primary-hover: #1D4ED8;
+  --primary-soft: #EFF4FE;     /* selected rows, subtle fills, AI band base */
+  --primary-border: #BFD3F8;   /* borders on primary-soft surfaces */
 
   /* Brand ink (exact logo navy #081B30). Allowed in exactly three homes:
      ink button variant, auth/marketing brand panel, PDF export chrome. */
@@ -100,15 +122,35 @@
   --destructive: #EF4444;
   --destructive-foreground: #FFFFFF;
 
-  /* Semantic status tokens (D1 frozen) — components reference these, never hex */
+  /* Semantic status tokens (D1 frozen) — components reference these, never hex.
+     -soft pairs (theme grill S2, 13 July) back banners/pills; hue meanings unchanged. */
   --success: #10B981;            /* verified / positive growth */
   --success-foreground: #FFFFFF;
+  --success-soft: #ECFDF5;
   --warning: #F59E0B;            /* pending / attention */
   --warning-foreground: #111827;
+  --warning-soft: #FEF5E7;
   --danger: #EF4444;             /* errors / destructive */
   --danger-foreground: #FFFFFF;
+  --danger-soft: #FEF2F2;
   --info: #2563EB;               /* published / neutral highlight */
   --info-foreground: #FFFFFF;
+  --info-soft: #EFF6FF;
+
+  /* Category-badge pairs (decorative tier, P6 + theme grill S2) —
+     bg/text tuned for contrast; never on buttons, status badges, or chrome */
+  --badge-blue-bg:  #EFF4FE;  --badge-blue-text:  #1D4ED8;
+  --badge-teal-bg:  #E6F9F6;  --badge-teal-text:  #0F766E;
+  --badge-amber-bg: #FEF5E7;  --badge-amber-text: #B45309;
+  --badge-sky-bg:   #EFF6FC;  --badge-sky-text:   #3B6EA8;
+  --badge-slate-bg: #F1F5F9;  --badge-slate-text: #475569;
+  --badge-steel-bg: #EDF2F7;  --badge-steel-text: #3D6084;
+
+  /* Elevation (theme grill S1): border-led hybrid. shadow-card = whisper
+     resting shadow on every card; shadow-overlay = earned elevation for
+     popovers/dialogs. Hover lift stays the T9 motion utility. */
+  --shadow-card: 0 1px 2px rgb(15 23 42 / 0.06);
+  --shadow-overlay: 0 4px 12px rgb(15 23 42 / 0.08);
 
   /* Borders: light gray */
   --border: #E2E8F0;
@@ -123,15 +165,16 @@
   --chart-4: #76AFE2;
   --chart-5: #64748B;
 
-  /* Sidebar colors */
-  --sidebar: #F8FAFC;
-  --sidebar-foreground: #111827;
+  /* Sidebar = ink chrome (T1 amended 13 July: app chrome is ink home #4).
+     Workspace rail + top bars share the navy; content stays light. */
+  --sidebar: #081B30;
+  --sidebar-foreground: #CBD5E1;
   --sidebar-primary: #2563EB;
   --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #F1F5F9;
-  --sidebar-accent-foreground: #111827;
-  --sidebar-border: #E2E8F0;
-  --sidebar-ring: #2563EB;
+  --sidebar-accent: rgb(255 255 255 / 0.10);
+  --sidebar-accent-foreground: #FFFFFF;
+  --sidebar-border: rgb(255 255 255 / 0.10);
+  --sidebar-ring: #76AFE2;
 }
 
 /* D2: light-only. The .dark mirror block was removed 2026-07-08; the

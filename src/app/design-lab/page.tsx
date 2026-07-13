@@ -63,14 +63,14 @@ const topCapabilities = [
   { label: "Strategic Thinking", value: 3.9, chip: "bg-tint-steel/10 text-tint-steel" },
 ];
 
-// Category badges: tinted from the categorical palette (decorative tier,
-// 9-July grill Q6). rounded-md distinguishes them from round status pills.
+// Category badges: tokenized bg/text pairs (S2, 13-July theme grill) —
+// decorative tier; rounded-md distinguishes them from round status pills.
 const CATEGORY_TINTS: Record<string, string> = {
-  Assessment: "bg-chart-1/10 text-chart-1 ring-chart-1/20",
-  Project: "bg-chart-2/10 text-chart-2 ring-chart-2/20",
-  Research: "bg-chart-3/10 text-chart-3 ring-chart-3/20",
-  Presentation: "bg-tint-steel/10 text-tint-steel ring-tint-steel/20",
-  Other: "bg-chart-5/10 text-chart-5 ring-chart-5/20",
+  Assessment: "bg-badge-blue-bg text-badge-blue-text ring-badge-blue-text/15",
+  Project: "bg-badge-teal-bg text-badge-teal-text ring-badge-teal-text/15",
+  Research: "bg-badge-amber-bg text-badge-amber-text ring-badge-amber-text/15",
+  Presentation: "bg-badge-steel-bg text-badge-steel-text ring-badge-steel-text/15",
+  Other: "bg-badge-slate-bg text-badge-slate-text ring-badge-slate-text/15",
 };
 
 const actions = [
@@ -122,8 +122,9 @@ const activity = [
 export default function DesignLab() {
   return (
     <div className="flex min-h-screen bg-background text-foreground">
-      {/* Sidebar — workspace chrome (light, per mockups; navy is NOT chrome) */}
-      <aside className="sticky top-0 flex h-screen w-60 shrink-0 flex-col border-r bg-sidebar px-3 py-5">
+      {/* Sidebar — ink workspace chrome (T1 amended 13 July: app chrome is
+          ink home #4; navy rail + white text, sky ring, white/10 active pill) */}
+      <aside className="sticky top-0 flex h-screen w-60 shrink-0 flex-col border-r border-sidebar-border bg-sidebar px-3 py-5 text-sidebar-foreground">
         <div className="mb-8 flex items-center gap-2.5 px-2">
           <Image
             src="/pics/logo-mark.png"
@@ -132,7 +133,7 @@ export default function DesignLab() {
             height={32}
             className="size-8"
           />
-          <span className="text-[15px] font-semibold tracking-tight">Talent3X</span>
+          <span className="text-[15px] font-semibold tracking-tight text-white">Talent3X</span>
         </div>
 
         <nav className="space-y-1">
@@ -144,8 +145,8 @@ export default function DesignLab() {
                 href="#"
                 className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
                   item.active
-                    ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                    : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-white"
                 }`}
               >
                 <Icon className="size-4" />
@@ -156,21 +157,21 @@ export default function DesignLab() {
         </nav>
 
         <div className="mt-auto space-y-2">
-          <button className="row-interactive flex w-full items-center gap-2.5 rounded-lg border bg-card px-3 py-2.5 text-left">
-            <Building2 className="size-4 text-muted-foreground" />
+          <button className="flex w-full items-center gap-2.5 rounded-lg border border-sidebar-border bg-white/5 px-3 py-2.5 text-left transition-colors hover:bg-sidebar-accent">
+            <Building2 className="size-4 text-sidebar-foreground" />
             <span className="min-w-0 flex-1">
-              <span className="block text-[11px] text-muted-foreground/70">Organization</span>
-              <span className="block truncate text-sm font-medium">Quinnipiac University</span>
+              <span className="block text-[11px] text-sidebar-foreground/70">Organization</span>
+              <span className="block truncate text-sm font-medium text-white">Quinnipiac University</span>
             </span>
-            <ChevronDown className="size-4 text-muted-foreground/70" />
+            <ChevronDown className="size-4 text-sidebar-foreground/70" />
           </button>
-          <button className="row-interactive flex w-full items-center gap-2.5 rounded-lg border bg-card px-3 py-2.5 text-left">
-            <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-ink text-xs font-semibold text-ink-foreground">
+          <button className="flex w-full items-center gap-2.5 rounded-lg border border-sidebar-border bg-white/5 px-3 py-2.5 text-left transition-colors hover:bg-sidebar-accent">
+            <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-tint-sky text-xs font-semibold text-ink">
               ML
             </span>
             <span className="min-w-0 flex-1">
-              <span className="block truncate text-sm font-medium">Dr. Michael Lee</span>
-              <span className="block text-[11px] text-muted-foreground/70">Administrator</span>
+              <span className="block truncate text-sm font-medium text-white">Dr. Michael Lee</span>
+              <span className="block text-[11px] text-sidebar-foreground/70">Administrator</span>
             </span>
           </button>
         </div>
@@ -180,7 +181,7 @@ export default function DesignLab() {
       <div className="min-w-0 flex-1">
         <main className="mx-auto max-w-7xl px-8 py-8">
           {/* Header row: title + subtitle + ONE primary CTA */}
-          <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
+          <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
             <div>
               <h1 className="text-3xl font-semibold tracking-tight">Overview</h1>
               <p className="mt-1 text-sm text-muted-foreground">
@@ -202,7 +203,7 @@ export default function DesignLab() {
 
           {/* KPI row — value + trend + story. Deliberately NO overall
               capability score (7-July rule; Thursday question). */}
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
             <KpiCard
               label="Contributors"
               value="198"
@@ -234,7 +235,7 @@ export default function DesignLab() {
           </div>
 
           {/* Card grid */}
-          <div className="mt-6 grid gap-6 lg:grid-cols-[1.2fr_1fr]">
+          <div className="mt-8 grid gap-6 lg:grid-cols-[1.2fr_1fr]">
             <Card>
               <CardHeader className="flex-row items-center justify-between">
                 <CardTitle className="text-base">Top Capabilities</CardTitle>
@@ -295,7 +296,7 @@ export default function DesignLab() {
           </div>
 
           {/* Actions table — status pills carry meaning (semantic tier) */}
-          <Card className="mt-6">
+          <Card className="mt-8">
             <CardHeader className="flex-row items-center justify-between">
               <CardTitle className="text-base">Actions</CardTitle>
               <button className="text-xs font-medium text-primary hover:underline">
@@ -307,10 +308,10 @@ export default function DesignLab() {
                 <thead>
                   <tr className="border-b text-left text-xs text-muted-foreground">
                     <th className="px-6 py-2 font-medium">Action</th>
-                    <th className="px-3 py-2 font-medium">Category</th>
-                    <th className="px-3 py-2 font-medium">Owner</th>
-                    <th className="px-3 py-2 font-medium">Status</th>
-                    <th className="px-3 py-2 font-medium">Due</th>
+                    <th className="px-4 py-2 font-medium">Category</th>
+                    <th className="px-4 py-2 font-medium">Owner</th>
+                    <th className="px-4 py-2 font-medium">Status</th>
+                    <th className="px-4 py-2 font-medium">Due</th>
                     <th className="px-6 py-2 text-right font-medium">Evaluations</th>
                   </tr>
                 </thead>
@@ -318,18 +319,18 @@ export default function DesignLab() {
                   {actions.map((a) => (
                     <tr key={a.title} className="row-interactive cursor-pointer border-b last:border-0">
                       <td className="px-6 py-3 font-medium">{a.title}</td>
-                      <td className="px-3 py-3">
+                      <td className="px-4 py-3">
                         <span
                           className={`inline-flex rounded-md px-2 py-0.5 text-xs font-medium ring-1 ${CATEGORY_TINTS[a.category] ?? CATEGORY_TINTS.Other}`}
                         >
                           {a.category}
                         </span>
                       </td>
-                      <td className="px-3 py-3 text-muted-foreground">{a.owner}</td>
-                      <td className="px-3 py-3">
+                      <td className="px-4 py-3 text-muted-foreground">{a.owner}</td>
+                      <td className="px-4 py-3">
                         <StatusBadge tone={a.status.tone}>{a.status.label}</StatusBadge>
                       </td>
-                      <td className="px-3 py-3 text-muted-foreground">{a.due}</td>
+                      <td className="px-4 py-3 text-muted-foreground">{a.due}</td>
                       <td className="px-6 py-3 text-right tabular-nums">{a.evaluations}</td>
                     </tr>
                   ))}
@@ -340,8 +341,8 @@ export default function DesignLab() {
 
           {/* AI Insight band — the sanctioned AI signature: sparkle + light
               blue + explicit label. Never purple. AI explains, never scores. */}
-          <div className="mt-6 flex items-center gap-4 rounded-xl border border-primary/15 bg-primary/5 px-6 py-5">
-            <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+          <div className="mt-8 flex items-center gap-4 rounded-xl border border-primary-border bg-primary-soft px-6 py-5">
+            <span className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
               <Sparkles className="size-5" />
             </span>
             <div className="min-w-0 flex-1">

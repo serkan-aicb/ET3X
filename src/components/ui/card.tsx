@@ -9,7 +9,9 @@ const Card = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "rounded-lg border bg-card text-card-foreground shadow-sm",
+      // Surface recipe (theme grill S1/S4): top-level card = rounded-xl,
+      // 1px border, whisper resting shadow; elevation beyond this is earned.
+      "rounded-xl border bg-card text-card-foreground shadow-card",
       className
     )}
     {...props}

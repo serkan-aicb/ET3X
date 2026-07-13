@@ -16,6 +16,12 @@ const buttonVariants = cva(
         default:
           "bg-primary text-primary-foreground hover:bg-primary-hover hover:shadow-sm active:translate-y-px active:shadow-none",
         ink: "bg-ink text-ink-foreground hover:bg-ink-hover hover:shadow-sm active:translate-y-px active:shadow-none",
+        // On-ink variants (T1 amended: ink top bars/sidebar). inverse = the
+        // hero CTA on an ink bar; inverse-outline = secondary action on ink.
+        inverse:
+          "bg-card text-ink hover:bg-secondary hover:shadow-sm active:translate-y-px active:shadow-none focus-visible:ring-tint-sky/60",
+        "inverse-outline":
+          "border border-white/25 bg-transparent text-white hover:bg-white/10 focus-visible:ring-tint-sky/60",
         outline:
           "border border-input bg-card text-foreground hover:bg-muted",
         secondary:

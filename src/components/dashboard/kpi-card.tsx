@@ -45,8 +45,8 @@ const KpiCard = React.forwardRef<HTMLDivElement, KpiCardProps>(
                 <span
                   className={cn(
                     "inline-flex items-center gap-0.5 font-medium",
-                    direction === "up" && "text-emerald-600",
-                    direction === "down" && "text-red-600",
+                    direction === "up" && "text-success",
+                    direction === "down" && "text-danger",
                     direction === "flat" && "text-muted-foreground"
                   )}
                 >

@@ -17,7 +17,6 @@
  *  - Motion on clickable cards only.
  */
 
-import Image from "next/image";
 import {
   BadgeCheck,
   Calendar,
@@ -33,6 +32,7 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { TopBar, TopBarBrand } from "@/components/ui/top-bar";
 import { mockEvaluationConfig } from "@/lib/verification/mock-config";
 
 /* ------------------------------------------------------------------ */
@@ -133,7 +133,7 @@ const SCORE_MIN = Math.min(...scoreValues);
 const SCORE_MAX = Math.max(...scoreValues);
 
 /* ------------------------------------------------------------------ */
-/* Primitives (frozen look: rounded-xl, flat bordered card)           */
+/* Primitives (surface recipe S1/S4: rounded-xl, border, whisper shadow) */
 /* ------------------------------------------------------------------ */
 
 function Panel({
@@ -150,7 +150,7 @@ function Panel({
   className?: string;
 }) {
   return (
-    <section className={`rounded-xl border bg-card p-6 ${className}`}>
+    <section className={`rounded-xl border bg-card p-6 shadow-card ${className}`}>
       {title && (
         <header className="mb-5">
           <div className="flex items-center justify-between gap-3">
@@ -329,36 +329,22 @@ function RadarChart({ data }: { data: { label: string; value: number }[] }) {
 export default function ProfileStudioPreview() {
   return (
     <div className="min-h-screen bg-background text-foreground">
-      {/* Top bar — public-projection chrome (D4): real logo, no app sidebar */}
-      <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b bg-card/90 px-8 backdrop-blur">
+      {/* Top bar — public-projection chrome (D4, S6/S7): ink bar, no sidebar */}
+      <TopBar>
+        <TopBarBrand context="Profile Studio" />
         <div className="flex items-center gap-2.5">
-          <Image
-            src="/pics/logo-mark.png"
-            alt="Talent3X"
-            width={32}
-            height={32}
-            className="size-8"
-          />
-          <span className="text-[15px] font-semibold tracking-tight">
-            Talent3X
-          </span>
-          <span className="ml-1 text-sm font-medium text-muted-foreground/70">
-            Profile Studio
-          </span>
-        </div>
-        <div className="flex items-center gap-2.5">
-          <Button variant="outline">
+          <Button variant="inverse-outline">
             <Pencil /> Edit
           </Button>
-          <Button variant="outline">
+          <Button variant="inverse-outline">
             <Share2 /> Share
           </Button>
-          {/* single ink hero CTA — the one sanctioned navy button (T4) */}
-          <Button variant="ink">
+          {/* single hero CTA — inverse (white) now that the bar itself is ink */}
+          <Button variant="inverse">
             <FileDown /> Export PDF
           </Button>
         </div>
-      </header>
+      </TopBar>
 
       <main className="mx-auto max-w-[1240px] px-8 py-8">
         {/* 260501 layout: identity rail | content column */}
@@ -366,7 +352,7 @@ export default function ProfileStudioPreview() {
           {/* ── Left rail: identity → trust → bio → credentials → actions ── */}
           <div className="flex flex-col gap-6">
             <Panel>
-              <div className="flex size-20 items-center justify-center rounded-2xl bg-ink text-2xl font-bold text-ink-foreground">
+              <div className="flex size-20 items-center justify-center rounded-xl bg-ink text-2xl font-bold text-ink-foreground">
                 {profile.initials}
               </div>
               <div className="mt-4 flex flex-wrap items-center gap-2">
@@ -444,7 +430,7 @@ export default function ProfileStudioPreview() {
           {/* ── Content column ── */}
           <div className="flex min-w-0 flex-col gap-6">
             {/* Rule 4 — headline story banner */}
-            <div className="flex items-center gap-2 rounded-xl bg-success/10 px-4 py-3 text-sm font-medium text-success">
+            <div className="flex items-center gap-2 rounded-xl bg-success-soft px-4 py-3 text-sm font-medium text-success">
               <TrendingUp className="size-4 shrink-0" />
               {profile.headlineStory}
             </div>
