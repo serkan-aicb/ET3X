@@ -180,6 +180,24 @@ export default function DesignLab() {
       {/* Content */}
       <div className="min-w-0 flex-1">
         <main className="mx-auto max-w-7xl px-8 py-8">
+          {/* Orientation strip (13-July review): this page is a theme sample,
+              not a product screen — say so and name what it demonstrates. */}
+          <div className="mb-8 flex flex-wrap items-center gap-3 rounded-lg border border-dashed bg-card px-4 py-3">
+            <span className="rounded-md bg-badge-slate-bg px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-badge-slate-text">
+              Theme sample
+            </span>
+            <p className="text-sm text-muted-foreground">
+              Not a real dashboard — this page demos the{" "}
+              <span className="font-medium text-foreground">workspace archetype</span>:
+              ink sidebar · KPI row · card grid · data table with status pills ·
+              AI band. The rules live in{" "}
+              <a href="/design-system" className="font-medium text-primary hover:underline">
+                /design-system
+              </a>
+              .
+            </p>
+          </div>
+
           {/* Header row: title + subtitle + ONE primary CTA */}
           <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
             <div>

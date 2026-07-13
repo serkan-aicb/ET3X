@@ -41,7 +41,7 @@ import { ScoreScale } from "@/components/evaluation/score-scale";
 import { mockEvaluationConfig } from "@/lib/verification/mock-config";
 
 const COLOR_TOKENS = [
-  { name: "primary", cssVar: "--primary", note: "interactive blue · buttons, links, focus" },
+  { name: "primary", cssVar: "--primary", note: "interactive steel blue (logo-derived) · buttons, links, focus" },
   { name: "primary-soft", cssVar: "--primary-soft", note: "selected rows, subtle fills, AI band" },
   { name: "ink", cssVar: "--ink", note: "brand navy · app chrome (bars/sidebar), ink CTA, auth panel, PDF" },
   { name: "success-soft", cssVar: "--success-soft", note: "success banners/pills bg" },
@@ -50,7 +50,7 @@ const COLOR_TOKENS = [
   { name: "danger-soft", cssVar: "--danger-soft", note: "danger banners/pills bg" },
   { name: "tint-sky", cssVar: "--tint-sky", note: "logo sky · decorative tier only" },
   { name: "tint-steel", cssVar: "--tint-steel", note: "logo steel · decorative tier only" },
-  { name: "background", cssVar: "--background", note: "canvas · light blue-gray, cards sit white on top" },
+  { name: "background", cssVar: "--background", note: "canvas · sky-tinted, cards sit white on top" },
   { name: "foreground", cssVar: "--foreground", note: "headings, body text" },
   { name: "muted-foreground", cssVar: "--muted-foreground", note: "secondary text" },
   { name: "muted / secondary", cssVar: "--muted", note: "subtle surfaces" },

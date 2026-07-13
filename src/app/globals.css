@@ -79,8 +79,9 @@
 
 :root {
   --radius: 0.625rem;
-  /* Canvas: light blue-gray (mockup-true); cards stay pure white on top */
-  --background: #F8FAFC;
+  /* Canvas: sky-tinted (13-July review: cards must visibly sit ON something);
+     cards stay pure white on top */
+  --background: #F1F6FB;
   --foreground: #111827;
 
   /* Cards/Container: white with subtle border */
@@ -89,12 +90,14 @@
   --popover: #FFFFFF;
   --popover-foreground: #111827;
 
-  /* Primary = interactive blue (UI-tuned; the logo blues are tints below) */
-  --primary: #2563EB;
+  /* Primary = interactive steel blue, derived from logo steel #4F7BA9 and
+     darkened until white text passes AA (13-July review: generic Tailwind
+     blue-600 dropped as "common AI decision") */
+  --primary: #3B6EA8;
   --primary-foreground: #FFFFFF;
-  --primary-hover: #1D4ED8;
-  --primary-soft: #EFF4FE;     /* selected rows, subtle fills, AI band base */
-  --primary-border: #BFD3F8;   /* borders on primary-soft surfaces */
+  --primary-hover: #2F5B8F;
+  --primary-soft: #EDF4FB;     /* selected rows, subtle fills, AI band base */
+  --primary-border: #C2D6EA;   /* borders on primary-soft surfaces */
 
   /* Brand ink (exact logo navy #081B30). Allowed in exactly three homes:
      ink button variant, auth/marketing brand panel, PDF export chrome. */
@@ -106,16 +109,16 @@
   --tint-sky: #76AFE2;
   --tint-steel: #4F7BA9;
   
-  /* Secondary = light slate */
-  --secondary: #F1F5F9;
+  /* Secondary = light slate, cooled to match the sky canvas */
+  --secondary: #EEF3F9;
   --secondary-foreground: #111827;
-  
+
   /* Muted colors */
-  --muted: #F1F5F9;
+  --muted: #EEF3F9;
   --muted-foreground: #64748B;
-  
+
   /* Accent colors */
-  --accent: #F1F5F9;
+  --accent: #EEF3F9;
   --accent-foreground: #111827;
   
   /* Destructive = red */
@@ -124,18 +127,19 @@
 
   /* Semantic status tokens (D1 frozen) — components reference these, never hex.
      -soft pairs (theme grill S2, 13 July) back banners/pills; hue meanings unchanged. */
-  --success: #10B981;            /* verified / positive growth */
+  --success: #0D9488;            /* verified / positive growth — bluish green
+                                    (13-July review: plain emerald re-hued) */
   --success-foreground: #FFFFFF;
-  --success-soft: #ECFDF5;
+  --success-soft: #F0FDFA;
   --warning: #F59E0B;            /* pending / attention */
   --warning-foreground: #111827;
   --warning-soft: #FEF5E7;
   --danger: #EF4444;             /* errors / destructive */
   --danger-foreground: #FFFFFF;
   --danger-soft: #FEF2F2;
-  --info: #2563EB;               /* published / neutral highlight */
+  --info: #3B6EA8;               /* published / neutral highlight */
   --info-foreground: #FFFFFF;
-  --info-soft: #EFF6FF;
+  --info-soft: #EDF4FB;
 
   /* Category-badge pairs (decorative tier, P6 + theme grill S2) —
      bg/text tuned for contrast; never on buttons, status badges, or chrome */
@@ -152,14 +156,14 @@
   --shadow-card: 0 1px 2px rgb(15 23 42 / 0.06);
   --shadow-overlay: 0 4px 12px rgb(15 23 42 / 0.08);
 
-  /* Borders: light gray */
-  --border: #E2E8F0;
-  --input: #E2E8F0;
-  --ring: #2563EB;
+  /* Borders: light blue-gray (cooled with the canvas) */
+  --border: #DBE5F0;
+  --input: #DBE5F0;
+  --ring: #3B6EA8;
 
   /* Chart colors — categorical (decorative tier). Purple removed (D1 amended);
      teal ≠ trust-emerald, amber = the warm accent. */
-  --chart-1: #2563EB;
+  --chart-1: #3B6EA8;
   --chart-2: #14B8A6;
   --chart-3: #F59E0B;
   --chart-4: #76AFE2;
@@ -169,7 +173,7 @@
      Workspace rail + top bars share the navy; content stays light. */
   --sidebar: #081B30;
   --sidebar-foreground: #CBD5E1;
-  --sidebar-primary: #2563EB;
+  --sidebar-primary: #3B6EA8;
   --sidebar-primary-foreground: #FFFFFF;
   --sidebar-accent: rgb(255 255 255 / 0.10);
   --sidebar-accent-foreground: #FFFFFF;
