@@ -15,6 +15,7 @@
     "type-check": "npx tsx src/scripts/type-check.ts",
     "db:setup": "node src/scripts/setup-db.js",
     "test": "jest",
+    "test:feature": "npx tsx ai/eval/scripts/run-feature-tests.ts",
     "relayer": "npx tsx src/blockchain/relayer.ts"
   },
   "dependencies": {
