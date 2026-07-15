@@ -691,8 +691,10 @@ function Confirmation() {
             View my Profile <ArrowRight />
           </a>
         </Button>
+        {/* Klenis call (13 July): consumer-facing CTA says Capability —
+            outcome language on the button, Action stays the noun elsewhere. */}
         <Button size="lg" variant="outline">
-          Create my first Action
+          Create my first Capability
         </Button>
       </div>
     </div>
