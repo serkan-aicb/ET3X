@@ -671,7 +671,7 @@ function Confirmation() {
         <h2 className="text-sm font-semibold text-foreground">What happens next</h2>
         <ol className="mt-3 space-y-3">
           {[
-            "Create your first Action (a piece of real work).",
+            "Create your first Action — real work that becomes a verified Capability.",
             "Invite an educator to evaluate it.",
             "Their evaluation turns skills into verified Capabilities.",
           ].map((t, i) => (
@@ -688,7 +688,7 @@ function Confirmation() {
       <div className="mt-8 flex flex-col gap-3 sm:flex-row">
         <Button size="lg" asChild>
           <a href="/profile-studio-preview">
-            View my Profile Studio <ArrowRight />
+            View my Profile <ArrowRight />
           </a>
         </Button>
         <Button size="lg" variant="outline">

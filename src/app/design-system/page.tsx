@@ -133,7 +133,7 @@ export default function DesignSystemPage() {
               {
                 name: "Public projection",
                 spec: "sticky ink top bar h-16 · ≤1240px",
-                use: "Profile Studio — the pride-first public surface. No sidebar; hero CTA = inverse (white-on-ink) button, always reachable; trust footer. Mobile-first at 375px.",
+                use: "Profile — the pride-first public surface (internally: Profile Studio). No sidebar; hero CTA = inverse (white-on-ink) button, always reachable; trust footer. Mobile-first at 375px.",
                 demo: "/profile-studio-preview",
               },
               {
