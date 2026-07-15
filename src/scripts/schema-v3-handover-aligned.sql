@@ -317,6 +317,52 @@ CREATE TRIGGER trg_prevent_self_evaluation
   FOR EACH ROW EXECUTE FUNCTION prevent_self_evaluation();
 
 -- =============================================================================
+-- 6a. EVALUATOR_ASSIGNMENTS (Week 2 addition — NOT specified by the handover)
+-- =============================================================================
+-- The handover describes evaluations happening and evaluator_role/
+-- evaluator_relationship being captured, but does not define an assignment/
+-- invitation entity. This table restores that piece (needed for Week 2's
+-- "evaluator workflow" deliverable: invite, track acceptance, completion)
+-- using the same shape as the pre-handover schema. FLAG FOR REVIEW: confirm
+-- with André this doesn't conflict with anything planned for the
+-- evaluation-request flow he references in section 12 ("request evaluations").
+
+CREATE TABLE IF NOT EXISTS evaluator_assignments (
+  id                   UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  action_id            UUID NOT NULL REFERENCES actions(id) ON DELETE CASCADE,
+  evaluator_profile_id UUID REFERENCES profiles(id) ON DELETE CASCADE,   -- nullable: invitee may not have an account yet
+  evaluator_email      TEXT,                                              -- for invites to non-users
+  evaluator_role       evaluator_role,
+  evaluator_relationship evaluator_relationship,
+  invitation_status    TEXT NOT NULL DEFAULT 'Sent',   -- Sent / Opened / Accepted / Completed / Declined
+  invitation_token     TEXT UNIQUE,
+  invited_at           TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  completed_at         TIMESTAMP WITH TIME ZONE,
+  CONSTRAINT unique_evaluator_assignment UNIQUE (action_id, evaluator_profile_id)
+);
+
+ALTER TABLE evaluator_assignments ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Evaluators can view their own assignments" ON evaluator_assignments;
+CREATE POLICY "Evaluators can view their own assignments" ON evaluator_assignments
+  FOR SELECT USING (auth.uid() = evaluator_profile_id);
+
+DROP POLICY IF EXISTS "Action creators can view assignments on their actions" ON evaluator_assignments;
+CREATE POLICY "Action creators can view assignments on their actions" ON evaluator_assignments
+  FOR SELECT USING (action_id IN (SELECT id FROM actions WHERE creator_profile_id = auth.uid()));
+
+DROP POLICY IF EXISTS "Action creators can create assignments on their actions" ON evaluator_assignments;
+CREATE POLICY "Action creators can create assignments on their actions" ON evaluator_assignments
+  FOR INSERT WITH CHECK (action_id IN (SELECT id FROM actions WHERE creator_profile_id = auth.uid()));
+
+DROP POLICY IF EXISTS "Evaluators can update their own assignment status" ON evaluator_assignments;
+CREATE POLICY "Evaluators can update their own assignment status" ON evaluator_assignments
+  FOR UPDATE USING (auth.uid() = evaluator_profile_id);
+
+CREATE INDEX IF NOT EXISTS idx_evaluator_assignments_action ON evaluator_assignments(action_id);
+CREATE INDEX IF NOT EXISTS idx_evaluator_assignments_evaluator ON evaluator_assignments(evaluator_profile_id);
+
+-- =============================================================================
 -- 7. OBSERVATIONS — unscored, never adjust the evaluated capability score
 -- =============================================================================
 
