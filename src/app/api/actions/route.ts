@@ -3,10 +3,11 @@ import { createServerClient } from '@/lib/supabase/server';
 
 // GET /api/actions — list + filter
 // Supports filters per Week 2 spec: capability, status, contributor, evaluator.
-// FLAG: action_status enum values are unconfirmed by the v1.6 handover (item
-// B) — this route accepts whatever string is passed through and lets the DB
-// CHECK/enum constraint reject invalid values, rather than hardcoding a list
-// here that might be wrong.
+// CONFIRMED status values (feedback received 20 July 2026): Draft, Submitted,
+// Evaluated, Verified. 'Shared' was dropped — sharing is handled via
+// org_visibility consent, not a status value. This route still accepts
+// whatever string is passed through and lets the DB CHECK/enum constraint
+// reject invalid values, rather than hardcoding a duplicate list here.
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const capabilityId = searchParams.get('capability_id');
@@ -119,7 +120,7 @@ export async function POST(request: Request) {
       difficulty_declared: difficulty_declared ?? null,   // creator-declared only; never used in scoring (R9)
       org_visibility,
       due_date: due_date ?? null,
-      status: 'Draft', // FLAG: 'Draft' assumed as initial status; confirm against item B (action_status enum) once resolved
+      status: 'Draft', // Confirmed initial status per resolved action_status enum
     })
     .select()
     .single();

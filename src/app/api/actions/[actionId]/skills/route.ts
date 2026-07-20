@@ -150,10 +150,27 @@ export async function DELETE(request: Request, { params }: RouteParams) {
     return NextResponse.json({ error: 'Only the creator can modify skills on this action' }, { status: 403 });
   }
   if (action.status !== 'Draft') {
-    // FLAG: conservative guard — once an action has been shared/submitted,
-    // changing its skill selection retroactively could be confusing for
-    // evaluators mid-flow. Confirm this restriction is actually desired.
+    // CONFIRMED (feedback received 20 July 2026): lock skill selection after
+    // Draft. This is now the confirmed rule, not an assumption.
     return NextResponse.json({ error: 'Skills can only be modified while the action is in Draft status' }, { status: 400 });
+  }
+
+  // CONFIRMED, additional rule: action_skills is immutable once a first
+  // evaluation exists, independent of status. Given the current lifecycle
+  // (Draft -> Submitted -> Evaluated -> Verified, no path back to Draft),
+  // this is already implied by the status check above, but checked
+  // explicitly here as defense-in-depth in case the lifecycle model changes
+  // later (e.g. a future 'reopen to Draft' transition is added).
+  const { count: evaluationCount, error: evalCheckError } = await supabase
+    .from('evaluations')
+    .select('evaluation_id', { count: 'exact', head: true })
+    .eq('action_id', actionId);
+
+  if (evalCheckError) {
+    return NextResponse.json({ error: evalCheckError.message }, { status: 500 });
+  }
+  if ((evaluationCount ?? 0) > 0) {
+    return NextResponse.json({ error: 'Skills are immutable once a first evaluation exists' }, { status: 400 });
   }
 
   const { error } = await supabase

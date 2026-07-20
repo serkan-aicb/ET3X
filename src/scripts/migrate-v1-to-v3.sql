@@ -136,40 +136,33 @@ BEGIN;
 -- prevent. This step stays unimplemented until that crosswalk exists.
 
 -- =============================================================================
--- 4. task_ratings + task_rating_skills -> evaluations — BLOCKED (same reason)
+-- 4. task_ratings + task_rating_skills — ARCHIVE ONLY, CONFIRMED (not migrated)
 -- =============================================================================
--- Same namespace problem as step 3, plus additional NEW required fields with
--- no legacy source at all:
---   - evaluator_role, evaluator_relationship: NOT NULL on the new
---     `evaluations` table; legacy task_ratings has neither.
---   - evidence_quality: NOT NULL, 0-5; no legacy equivalent.
---   - difficulty_confirmed: NOT NULL; no legacy equivalent (legacy has no
---     evaluator-confirmed difficulty concept at all).
---   - rubric_version / scoring_version: NOT NULL; these are new versioning
---     concepts introduced by this handover. Migrated historical evaluations
---     predate any rubric_version, so there is no honest value to backfill.
---
--- Given FIVE NOT-NULL columns with no legacy source, this is not a
--- reasonable migration to attempt row-by-row. Recommend treating historical
--- task_ratings/task_rating_skills as a SEPARATE READ-ONLY ARCHIVE (e.g. a
--- `legacy_evaluations_archive` table, straight copy, no transformation) —
--- NOT as rows in the new `evaluations` table — until André confirms whether
--- historical evaluations should count toward capability scores at all under
--- the new model. This mirrors the same open question flagged in the prior
--- migration about evaluation_weight defaults, now sharper given the new
--- NOT NULL fields.
+-- RESOLVED (feedback received 20 July 2026): legacy task_ratings and
+-- task_rating_skills are archived read-only and explicitly EXCLUDED from
+-- scoring under the new model. They are NOT migrated into `evaluations`.
+-- Two independent reasons, both confirmed:
+--   1. They carry skill-level scores, which R1 categorically prohibits under
+--      the new model (no score-typed column on skills, ever).
+--   2. They use the old, incompatible legacy taxonomy — there is no valid
+--      mapping into the new fixed capability_id/skill_id namespace.
+-- Kept for reference only. This step now RUNS (previously commented out
+-- pending this decision).
 
--- Suggested (not yet implemented) fallback — a straight archival copy,
--- with no attempt to map into the new evaluations schema:
---
--- CREATE TABLE IF NOT EXISTS legacy_evaluations_archive AS
--- SELECT tr.*, trs.skill_id AS legacy_skill_id, trs.stars AS legacy_stars
--- FROM task_ratings tr
--- LEFT JOIN task_rating_skills trs ON trs.rating_id = tr.id;
---
--- This preserves the historical data losslessly without forcing it into a
--- schema it doesn't fit, and keeps the door open for a proper backfill once
--- the open questions above are answered.
+CREATE TABLE IF NOT EXISTS legacy_evaluations_archive AS
+SELECT
+  tr.*,
+  trs.skill_id AS legacy_skill_id,
+  trs.stars AS legacy_stars
+FROM task_ratings tr
+LEFT JOIN task_rating_skills trs ON trs.rating_id = tr.id;
+
+COMMENT ON TABLE legacy_evaluations_archive IS
+  'Read-only historical archive of pre-handover task_ratings/task_rating_skills. Excluded from scoring under the new model (R1: legacy data carries skill-level scores; also uses the incompatible old taxonomy). Reference only — never join this into profile_capability_scores or any live scoring path.';
+
+-- No RLS policies are added here deliberately — this table is not intended
+-- to be queried by the application at all, only kept for historical
+-- reference/audit. Restrict access at the database role level if needed.
 
 -- =============================================================================
 -- 5. Not migrated (unchanged reasoning from prior migration)
@@ -187,13 +180,17 @@ COMMIT;
 -- =============================================================================
 -- 6. What is actually safe to run right now
 -- =============================================================================
--- Given the blocks above, the ONLY safe, unblocked step in this entire
--- migration file, without further input, is:
---   - none of the INSERT statements above should run yet.
--- Practically: this migration should not be executed at all until
--- (a) the ai_involvement/org_visibility defaults for migrated actions are
---     confirmed, and (b) a decision is made on how (or whether) to migrate
---     historical task_ratings/task_rating_skills given the five new NOT
---     NULL fields with no legacy source.
--- Flag this file's status explicitly in the PR: schema is ready for review,
--- migration is NOT ready to run.
+-- UPDATED per feedback received 20 July 2026:
+--   - Step 4 (legacy_evaluations_archive) is now CONFIRMED and safe to run —
+--     it's a straight read-only copy, no transformation, no NOT NULL
+--     conflicts, since it doesn't write into the new `evaluations` table.
+--   - Steps 1-3 (capabilities/skills ingestion, actions migration, and the
+--     tasks.skills -> action_skills mapping) remain BLOCKED for the same
+--     reasons as before: capabilities/skills must come from the ingestion
+--     .xlsx only, and the ai_involvement/org_visibility defaults for
+--     migrated actions are still unconfirmed, as is the legacy skill_id ->
+--     new skill_id/capability_id crosswalk needed for action_skills.
+-- Practical order: run step 4 (archive) whenever convenient — it's isolated
+-- and low-risk. Do not run steps 1-3 until their respective open items are
+-- resolved. Flag this file's status explicitly in the PR: archive step is
+-- ready to run; actions/action_skills migration is still not ready.

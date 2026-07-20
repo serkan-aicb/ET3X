@@ -31,14 +31,11 @@ export async function GET(request: Request, { params }: RouteParams) {
 }
 
 // PATCH /api/actions/[actionId] — update fields and/or transition status
-// FLAG (item B): action_status values are unconfirmed. Lifecycle transition
-// rules below (which status can move to which) are a REASONABLE PLACEHOLDER
-// based on the pre-handover Draft/Shared/Submitted/Evaluated/Verified set —
-// confirm with André before relying on this in production. Once confirmed,
-// update ALLOWED_TRANSITIONS below rather than removing the check entirely.
+// CONFIRMED (feedback received 20 July 2026): Draft -> Submitted -> Evaluated
+// -> Verified. 'Shared' is dropped entirely — sharing/visibility is handled
+// separately via org_visibility consent, not via a status value or transition.
 const ALLOWED_TRANSITIONS: Record<string, string[]> = {
-  Draft: ['Shared'],
-  Shared: ['Submitted', 'Draft'],
+  Draft: ['Submitted'],
   Submitted: ['Evaluated'],
   Evaluated: ['Verified'],
   Verified: [],
@@ -110,11 +107,11 @@ export async function PATCH(request: Request, { params }: RouteParams) {
 }
 
 // DELETE /api/actions/[actionId]
-// FLAG: the handover doesn't specify delete semantics (soft vs hard delete).
-// This does a hard delete via the FK cascade already defined in the schema.
-// Consider whether actions with existing evaluations should be deletable at
-// all once evaluations start being attached — worth confirming rather than
-// assuming cascading delete is acceptable once real evidence exists.
+// CONFIRMED (feedback received 20 July 2026): hard-delete is only allowed
+// for Draft-only actions. This was a conservative guard before confirmation
+// and is now the confirmed rule, not an assumption. Since evaluations can
+// only exist once an action has moved past Draft, the Draft-only guard
+// below already prevents deleting an action that has any evaluations.
 export async function DELETE(request: Request, { params }: RouteParams) {
   const { actionId } = await params;
   const supabase = await createServerClient();

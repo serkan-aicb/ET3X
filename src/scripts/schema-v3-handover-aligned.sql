@@ -7,25 +7,36 @@
 -- binding rules R1-R11.
 --
 -- ==================== STATUS OF THIS REVISION ====================
--- CONFIRMED / fixed now: everything the handover states explicitly.
--- FLAGGED / open with André (do not treat as resolved):
---   (A) evaluations vs evaluation_scores — this revision collapses them into
---       ONE capability-scoped `evaluations` table, matching the handover's
---       section 4 entity list literally (evaluation_id, ..., capability_id,
---       score, evidence_quality, ... all on one row). This REMOVES the
---       earlier verification-layer fields (evaluation_weight,
---       difficulty_multiplier, verification_reference) since R9 gives a
---       fully self-contained formula computed from evidence_quality and
---       evaluator-confirmed difficulty — but whether the verification layer
---       still contributes something separate is unconfirmed. Flagged.
---   (B) actions.status enum values — not specified by the handover. Existing
---       Draft/Shared/Submitted/Evaluated/Verified retained as a placeholder;
---       confirm before relying on it.
---   (C) Multi-skill/multi-capability evaluation assignment model (one
---       evaluator per capability vs one session covering all) — not
---       resolved; schema below assumes one evaluation row per
---       (action, evaluator, capability), which is compatible with either
---       answer but should be revisited once confirmed.
+-- All 4 blocking items from the prior review are RESOLVED (feedback received
+-- 20 July 2026). This revision applies those decisions directly rather than
+-- leaving them flagged:
+--   (A) RESOLVED — R9 is the sole, authoritative scoring mechanism. The
+--       earlier verification-layer weighting inputs (evaluation_weight,
+--       difficulty_multiplier as separate scoring factors) are the
+--       DEPRECATED model and must not be implemented. evaluator_verification_tier
+--       is still stored on every evaluation, but is explicitly weight-neutral —
+--       it does not feed into the score.
+--   (B) RESOLVED — actions.status is Draft -> Submitted -> Evaluated -> Verified.
+--       'Shared' is dropped entirely; sharing/visibility is handled separately
+--       via org_visibility consent, not via a status value.
+--   (C) RESOLVED — one action can span multiple capabilities. Evaluation is
+--       per capability: one evaluation row per (action, evaluator, capability).
+--       This matches what was already built — no structural change needed here.
+--
+-- Non-blocking items also addressed:
+--   - evaluator_role and evaluator_relationship enum values are CONFIRMED
+--     directly from handover section 12 (not placeholders): evaluator_role
+--     describes standing (PROFESSOR/COMPANY/MENTOR/CLIENT/PEER),
+--     evaluator_relationship is MANAGER/PEER/DIRECT_REPORT/EXTERNAL/OTHER.
+--   - Remaining enums (ai_involvement, evaluator_verification_tier, tier,
+--     activation_scope) still need the actual `enums` sheet from the
+--     ingestion .xlsx — counts/prose in the handover text are not sufficient
+--     to finalize these. Still marked PLACEHOLDER below.
+--   - Delete/edit conservative assumptions CONFIRMED correct: lock skill
+--     selection after Draft, action_skills immutable once a first evaluation
+--     exists, hard-delete only allowed for Draft-only actions.
+--   - Share link / QR generation: confirmed OUT OF SCOPE for now. Invite
+--     record + token is sufficient.
 -- =============================================================================
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
@@ -50,11 +61,13 @@ BEGIN
     CREATE TYPE action_difficulty AS ENUM ('Foundational', 'Intermediate', 'Advanced', 'Exceptional');
   END IF;
 
-  -- PLACEHOLDER — confirm exact 5 values against the enums sheet.
+  -- CONFIRMED from handover section 12 (not a placeholder): describes the
+  -- evaluator's standing.
   IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'evaluator_role') THEN
     CREATE TYPE evaluator_role AS ENUM ('PROFESSOR', 'COMPANY', 'MENTOR', 'CLIENT', 'PEER');
   END IF;
 
+  -- CONFIRMED from handover section 12 (not a placeholder).
   IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'evaluator_relationship') THEN
     CREATE TYPE evaluator_relationship AS ENUM ('MANAGER', 'PEER', 'DIRECT_REPORT', 'EXTERNAL', 'OTHER');
   END IF;
@@ -81,9 +94,10 @@ BEGIN
     CREATE TYPE org_visibility AS ENUM ('yes', 'no');
   END IF;
 
-  -- STATUS OPEN (B) — placeholder only, not confirmed by handover.
+  -- CONFIRMED: Draft -> Submitted -> Evaluated -> Verified. 'Shared' dropped —
+  -- sharing/visibility is handled by org_visibility consent, not by status.
   IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'action_status') THEN
-    CREATE TYPE action_status AS ENUM ('Draft', 'Shared', 'Submitted', 'Evaluated', 'Verified');
+    CREATE TYPE action_status AS ENUM ('Draft', 'Submitted', 'Evaluated', 'Verified');
   END IF;
 END $$;
 
@@ -255,7 +269,7 @@ CREATE TABLE IF NOT EXISTS submissions (
 );
 
 -- =============================================================================
--- 6. EVALUATIONS (FLAGGED — see item A at top of file)
+-- 6. EVALUATIONS (RESOLVED — R9 confirmed as sole scoring mechanism, see top of file)
 -- =============================================================================
 -- Collapses the earlier two-table (evaluations + evaluation_scores) design
 -- into one capability-scoped table, matching section 4's entity list
@@ -292,7 +306,7 @@ CREATE TABLE IF NOT EXISTS evaluations (
 );
 
 COMMENT ON TABLE evaluations IS
-  'FLAGGED (A): this table now stores one row per (action, evaluator, capability) directly, replacing the earlier evaluations+evaluation_scores split and removing evaluation_weight/difficulty_multiplier/verification_reference from the prior verification-layer design. R9''s formula (capability_score = sum(score*w)/sum(w), w = difficulty_weight * confidence_weight) is computed from evidence_quality and difficulty_confirmed at aggregation time using scoring_policy parameters — it does not require a separately-stored weight on this table. Confirm with André whether the verification layer still contributes anything beyond evaluator_verification_tier (which is explicitly weight-neutral in v1.1).';
+  'CONFIRMED: one row per (action, evaluator, capability) — this is the sole model, not a placeholder pending a decision. R9 is the sole, authoritative scoring mechanism (capability_score = sum(score*w)/sum(w), w = difficulty_weight * confidence_weight, computed from evidence_quality and evaluator-confirmed difficulty). The earlier verification-layer weighting inputs (evaluation_weight, difficulty_multiplier as separate scoring factors) are the DEPRECATED model and must not be implemented. evaluator_verification_tier is stored on every evaluation but is explicitly weight-neutral — it never feeds into the score.';
 COMMENT ON COLUMN evaluations.difficulty_confirmed IS
   'R9: the difficulty value that DRIVES THE SCORING WEIGHT. Always the evaluator-confirmed value, never actions.difficulty_declared — this is an explicit anti-gaming measure.';
 
@@ -326,6 +340,12 @@ CREATE TRIGGER trg_prevent_self_evaluation
 -- using the same shape as the pre-handover schema. FLAG FOR REVIEW: confirm
 -- with André this doesn't conflict with anything planned for the
 -- evaluation-request flow he references in section 12 ("request evaluations").
+-- STILL OPEN — not addressed by the 20 July feedback round.
+--
+-- Compatible with the confirmed multi-capability model: one assignment per
+-- (action, evaluator) here, with the evaluator then submitting one
+-- evaluation row per capability under that single assignment (see the
+-- evaluations table above). No change needed to this table for that item.
 
 CREATE TABLE IF NOT EXISTS evaluator_assignments (
   id                   UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
