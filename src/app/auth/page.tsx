@@ -179,7 +179,9 @@ function AuthContent() {
         if (data.session) {
           // Auto-confirmed (email confirmation disabled) — redirect immediately
           setMessage("Account created successfully. Redirecting...");
-          const dest = redirectTo || (role === "student" ? "/s/dashboard" : "/e/dashboard");
+          // New students land in onboarding (Week 2); an explicit redirect_to
+          // (e.g. from a task invite link) still wins.
+          const dest = redirectTo || (role === "student" ? "/s/onboarding" : "/e/dashboard");
           router.push(dest);
         } else {
           // Fallback: session not returned (email confirmation enabled)

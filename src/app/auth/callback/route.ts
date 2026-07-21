@@ -164,10 +164,10 @@ export async function GET(request: Request) {
           }
           
           // Use service client data
-          const redirectPath = serviceUserData.role === 'student' 
-            ? '/s/collect-matriculation' 
-            : serviceUserData.role === 'educator' 
-              ? '/e/dashboard' 
+          const redirectPath = serviceUserData.role === 'student'
+            ? '/s/onboarding'
+            : serviceUserData.role === 'educator'
+              ? '/e/dashboard'
               : '/admin/overview'
               
           console.log('Redirecting user to:', redirectPath)
@@ -178,12 +178,12 @@ export async function GET(request: Request) {
         }
       }
       
-      const redirectPath = userData.role === 'student' 
-        // NOTE: Changed from /s/collect-matriculation to /s/dashboard
-        // Student number collection is now optional
-        ? '/s/dashboard' 
-        : userData.role === 'educator' 
-          ? '/e/dashboard' 
+      const redirectPath = userData.role === 'student'
+        // New students land in onboarding (Week 2); matriculation collection
+        // is optional and no longer the post-signup interstitial.
+        ? '/s/onboarding'
+        : userData.role === 'educator'
+          ? '/e/dashboard'
           : '/admin/overview'
           
       console.log('Redirecting user to:', redirectPath)

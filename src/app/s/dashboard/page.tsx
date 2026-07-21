@@ -4,9 +4,11 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ArrowRight, Sparkles } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { AppLayout } from "@/components/app-layout";
 import { SharedCard } from "@/components/shared-card";
+import { DRAFT_KEYS, useLocalDraft } from "@/lib/local-draft";
 
 type UserWithProfile = {
   id: string;
@@ -30,6 +32,10 @@ export default function StudentDashboard() {
   });
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+
+  // Soft onboarding prompt (Week 2): localStorage-only completeness signal.
+  const onboardingComplete = useLocalDraft<boolean>(DRAFT_KEYS.onboardingComplete, false);
+  const needsOnboarding = !onboardingComplete;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -191,7 +197,30 @@ export default function StudentDashboard() {
             Welcome back, <span className="font-semibold text-foreground">{user?.real_name || (user?.email ? user?.email.split('@')[0] : `@${user?.username}`)}</span>
           </p>
         </div>
-        
+
+        {/* Soft onboarding prompt (Week 2) — shown until the flow is completed;
+            no hard gate. Uses the localStorage completeness flag. */}
+        {needsOnboarding && (
+          <button
+            onClick={() => router.push("/s/onboarding")}
+            className="card-interactive flex w-full items-center gap-4 rounded-xl border border-primary-border bg-primary-soft px-5 py-4 text-left"
+          >
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              <Sparkles className="size-5" />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-sm font-semibold text-foreground">
+                Finish your profile
+              </span>
+              <span className="block text-sm text-muted-foreground">
+                Import your CV or LinkedIn and turn your skills into verified capabilities.
+              </span>
+            </span>
+            <ArrowRight className="size-5 shrink-0 text-primary" />
+          </button>
+        )}
+
+
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           <SharedCard>
             <h3 className="text-lg font-semibold text-foreground">Total Tasks</h3>
