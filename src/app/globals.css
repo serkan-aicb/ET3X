@@ -79,9 +79,10 @@
 
 :root {
   --radius: 0.625rem;
-  /* Canvas: sky-tinted (13-July review: cards must visibly sit ON something);
-     cards stay pure white on top */
-  --background: #F1F6FB;
+  /* Canvas: WARM PAPER (grill 5, reopened palette — "too cold/too blue
+     overall"). Warm greige field so navy chrome reads as premium contrast
+     and the app stops whispering blue; cards stay pure white on top. */
+  --background: #F6F5F1;
   --foreground: #111827;
 
   /* Cards/Container: white with subtle border */
@@ -109,16 +110,16 @@
   --tint-sky: #76AFE2;
   --tint-steel: #4F7BA9;
   
-  /* Secondary = light slate, cooled to match the sky canvas */
-  --secondary: #EEF3F9;
+  /* Secondary = warm light greige (grill 5: matched to the paper canvas) */
+  --secondary: #F0EDE7;
   --secondary-foreground: #111827;
 
-  /* Muted colors */
-  --muted: #EEF3F9;
-  --muted-foreground: #64748B;
+  /* Muted colors — warm-neutral field + warm-gray secondary text */
+  --muted: #F0EDE7;
+  --muted-foreground: #6B6862;
 
   /* Accent colors */
-  --accent: #EEF3F9;
+  --accent: #F0EDE7;
   --accent-foreground: #111827;
   
   /* Destructive = red */
@@ -156,9 +157,9 @@
   --shadow-card: 0 1px 2px rgb(15 23 42 / 0.06);
   --shadow-overlay: 0 4px 12px rgb(15 23 42 / 0.08);
 
-  /* Borders: light blue-gray (cooled with the canvas) */
-  --border: #DBE5F0;
-  --input: #DBE5F0;
+  /* Borders: warm greige (grill 5: warmed with the paper canvas) */
+  --border: #E6E2DA;
+  --input: #E6E2DA;
   --ring: #3B6EA8;
 
   /* Chart colors — categorical (decorative tier). Purple removed (D1 amended);
