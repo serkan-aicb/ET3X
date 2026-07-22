@@ -1,7 +1,7 @@
 import * as React from "react"
 
 import { cn } from "@/lib/utils"
-import type { ScoreStep } from "@/lib/verification/mock-config"
+import type { ScoreStep } from "@/lib/catalogue"
 
 // Renders the evaluation score scale exactly as supplied by the verification
 // layer. The steps are never hardcoded here; pass config.scoreScale.
@@ -36,7 +36,9 @@ const ScoreScale = React.forwardRef<HTMLDivElement, ScoreScaleProps>(
             >
               {step.value}
             </span>
-            <span className="font-medium text-foreground">{step.label}</span>
+            {step.label && (
+              <span className="font-medium text-foreground">{step.label}</span>
+            )}
             {step.requiresComment && (
               <span className="ml-auto text-xs text-muted-foreground">
                 comment required

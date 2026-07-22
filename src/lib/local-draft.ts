@@ -17,7 +17,10 @@ import { useSyncExternalStore } from "react";
 export const DRAFT_KEYS = {
   onboardingDraft: "t3x.onboarding.draft",
   onboardingComplete: "t3x.onboarding.complete",
-  actionsDrafts: "t3x.actions.drafts",
+  actionInProgress: "t3x.action.inProgress", // the wizard's working draft
+  actionsDrafts: "t3x.actions.drafts", // submitted actions (My Actions list)
+  evaluationInvites: "t3x.evaluation.invites", // single-use invite tokens (stub)
+  evaluations: "t3x.evaluations", // submitted evaluations (stub)
 } as const;
 
 /* ---- plain read/write (use outside React or in event handlers) -------- */

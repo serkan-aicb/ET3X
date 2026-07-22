@@ -34,7 +34,7 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { TopBar, TopBarBrand } from "@/components/ui/top-bar";
-import { mockEvaluationConfig } from "@/lib/verification/mock-config";
+import { SCORE_MIN, SCORE_MAX } from "@/lib/catalogue";
 
 /* ------------------------------------------------------------------ */
 /* Mock data                                                          */
@@ -131,10 +131,7 @@ const experience = [
   },
 ];
 
-// Score bounds derive from the verification-layer config — never hardcoded.
-const scoreValues = mockEvaluationConfig.scoreScale.map((s) => s.value);
-const SCORE_MIN = Math.min(...scoreValues);
-const SCORE_MAX = Math.max(...scoreValues);
+// Score bounds come from the catalogue (scoring_policy) — never hardcoded.
 
 const rankedCapabilities = [...capabilities].sort((a, b) => b.value - a.value);
 

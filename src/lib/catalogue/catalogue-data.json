@@ -4771,5 +4771,4291 @@
    "package_id": "E7",
    "capability_id": "T3X-D-DDA-06"
   }
+ ],
+ "rubrics": [
+  {
+   "capability_id": "T3X-ACT-01",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ACT-01",
+   "level": 1,
+   "anchor_text": "Accepts claims at face value; conclusions restate sources without examination.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ACT-01",
+   "level": 2,
+   "anchor_text": "Questions some claims but inconsistently; reasoning gaps go unnoticed.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ACT-01",
+   "level": 3,
+   "anchor_text": "Examines key claims and evidence; reasoning is mostly sound with minor gaps.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ACT-01",
+   "level": 4,
+   "anchor_text": "Systematically tests assumptions and evidence; anticipates counterarguments unprompted.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ACT-01",
+   "level": 5,
+   "anchor_text": "Dissects complex claims rigorously; exposes hidden premises others missed and reframes the question.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ACT-02",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ACT-02",
+   "level": 1,
+   "anchor_text": "Analysis is unstructured; conclusions do not follow from the material.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ACT-02",
+   "level": 2,
+   "anchor_text": "Applies basic structure but misses relationships between parts.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ACT-02",
+   "level": 3,
+   "anchor_text": "Breaks problems into sound components; conclusions follow from the analysis.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ACT-02",
+   "level": 4,
+   "anchor_text": "Analysis is systematic and complete; connects components into a coherent explanation.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ACT-02",
+   "level": 5,
+   "anchor_text": "Handles high-complexity material with precise structure; analysis generates non-obvious insight.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ACT-03",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ACT-03",
+   "level": 1,
+   "anchor_text": "Addresses symptoms only; proposed fix does not resolve the problem.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ACT-03",
+   "level": 2,
+   "anchor_text": "Reaches a workable fix for simple problems; complex ones stall.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ACT-03",
+   "level": 3,
+   "anchor_text": "Defines the problem correctly and delivers a working solution.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ACT-03",
+   "level": 4,
+   "anchor_text": "Solves non-routine problems; solution addresses cause and considers side effects.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ACT-03",
+   "level": 5,
+   "anchor_text": "Cracks problems others abandoned; solution is durable, elegant and transferable.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ACT-04",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ACT-04",
+   "level": 1,
+   "anchor_text": "Uses sources indiscriminately; credibility never assessed.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ACT-04",
+   "level": 2,
+   "anchor_text": "Distinguishes obviously weak sources but misses subtler quality issues.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ACT-04",
+   "level": 3,
+   "anchor_text": "Assesses source credibility and relevance; selection is defensible.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ACT-04",
+   "level": 4,
+   "anchor_text": "Weighs source quality systematically; triangulates across independent sources.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ACT-04",
+   "level": 5,
+   "anchor_text": "Evaluates evidence at expert level, including methods and limitations; judgments hold under scrutiny.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ACT-05",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ACT-05",
+   "level": 1,
+   "anchor_text": "Assertions lack support; position shifts without acknowledgment.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ACT-05",
+   "level": 2,
+   "anchor_text": "Provides some support but arguments have logical gaps.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ACT-05",
+   "level": 3,
+   "anchor_text": "Builds coherent, supported arguments; engages obvious objections.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ACT-05",
+   "level": 4,
+   "anchor_text": "Arguments are tight and well-evidenced; strongest counterarguments addressed directly.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ACT-05",
+   "level": 5,
+   "anchor_text": "Argumentation is compelling and complete; opposing positions represented at their strongest and answered.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ACT-06",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ACT-06",
+   "level": 1,
+   "anchor_text": "Treats elements in isolation; interactions ignored.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ACT-06",
+   "level": 2,
+   "anchor_text": "Notices some connections but misses feedback and delay effects.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ACT-06",
+   "level": 3,
+   "anchor_text": "Maps the main interdependencies; anticipates first-order knock-on effects.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ACT-06",
+   "level": 4,
+   "anchor_text": "Models feedback loops and second-order effects; intervenes at leverage points.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ACT-06",
+   "level": 5,
+   "anchor_text": "Reasons fluently about complex dynamics; predictions about system behaviour prove out.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ACT-07",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ACT-07",
+   "level": 1,
+   "anchor_text": "Follows existing process without noticing its defects.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ACT-07",
+   "level": 2,
+   "anchor_text": "Spots obvious inefficiencies; fixes are local and unmeasured.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ACT-07",
+   "level": 3,
+   "anchor_text": "Identifies and removes real bottlenecks; improvement is measurable.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ACT-07",
+   "level": 4,
+   "anchor_text": "Redesigns processes end-to-end; gains are quantified and sustained.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ACT-07",
+   "level": 5,
+   "anchor_text": "Improvement work transforms how the unit operates; methods adopted by others.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-CRI-01",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-CRI-01",
+   "level": 1,
+   "anchor_text": "Reproduces existing ideas; no original options generated.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-CRI-01",
+   "level": 2,
+   "anchor_text": "Generates few options, close to the obvious.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-CRI-01",
+   "level": 3,
+   "anchor_text": "Produces a genuine range of usable ideas for the brief.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-CRI-01",
+   "level": 4,
+   "anchor_text": "Ideas are original and workable; explores unexpected directions productively.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-CRI-01",
+   "level": 5,
+   "anchor_text": "Output is strikingly original yet feasible; ideas open directions others build on.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-CRI-02",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-CRI-02",
+   "level": 1,
+   "anchor_text": "Stays within one discipline's frame; other perspectives absent.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-CRI-02",
+   "level": 2,
+   "anchor_text": "References other fields superficially; no real integration.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-CRI-02",
+   "level": 3,
+   "anchor_text": "Combines two or more disciplinary perspectives into a coherent result.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-CRI-02",
+   "level": 4,
+   "anchor_text": "Integrates methods across fields fluently; synthesis adds clear value.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-CRI-02",
+   "level": 5,
+   "anchor_text": "Creates genuinely new approaches from cross-disciplinary synthesis.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-CRI-03",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-CRI-03",
+   "level": 1,
+   "anchor_text": "Oversimplifies complex problems to a single cause or actor.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-CRI-03",
+   "level": 2,
+   "anchor_text": "Recognises complexity but analysis remains one-dimensional.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-CRI-03",
+   "level": 3,
+   "anchor_text": "Frames multi-actor, multi-cause problems adequately; proposals acknowledge constraints.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-CRI-03",
+   "level": 4,
+   "anchor_text": "Navigates competing stakes and uncertainty; proposals are actionable across contexts.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-CRI-03",
+   "level": 5,
+   "anchor_text": "Structures society-scale problems credibly; work informs real multi-party action.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-CRI-04",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-CRI-04",
+   "level": 1,
+   "anchor_text": "Performance collapses when conditions change.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-CRI-04",
+   "level": 2,
+   "anchor_text": "Adapts slowly and reluctantly; needs external push.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-CRI-04",
+   "level": 3,
+   "anchor_text": "Adjusts approach effectively when circumstances shift.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-CRI-04",
+   "level": 4,
+   "anchor_text": "Adapts quickly and deliberately; helps others through the change.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-CRI-04",
+   "level": 5,
+   "anchor_text": "Thrives in sustained ambiguity; turns disruption into advantage.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COM-01",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COM-01",
+   "level": 1,
+   "anchor_text": "Writing obscures the message; structure and errors impede reading.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COM-01",
+   "level": 2,
+   "anchor_text": "Message discernible but writing is disorganised or imprecise.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COM-01",
+   "level": 3,
+   "anchor_text": "Clear, organised writing appropriate to purpose and reader.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COM-01",
+   "level": 4,
+   "anchor_text": "Writing is precise and efficient; complex content made easy to follow.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COM-01",
+   "level": 5,
+   "anchor_text": "Writing achieves its purpose with distinction; handles high-stakes documents flawlessly.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COM-02",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COM-02",
+   "level": 1,
+   "anchor_text": "Delivery prevents the audience from following the content.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COM-02",
+   "level": 2,
+   "anchor_text": "Content comes across but delivery is halting or unstructured.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COM-02",
+   "level": 3,
+   "anchor_text": "Speaks clearly and in order; audience follows without effort.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COM-02",
+   "level": 4,
+   "anchor_text": "Engaging, well-paced delivery; adapts live to audience reaction.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COM-02",
+   "level": 5,
+   "anchor_text": "Commands the room; delivery measurably moves the audience to understanding or action.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COM-03",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COM-03",
+   "level": 1,
+   "anchor_text": "Interrupts or misses what was said; feedback vague or absent.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COM-03",
+   "level": 2,
+   "anchor_text": "Hears the words but misses meaning; feedback is generic.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COM-03",
+   "level": 3,
+   "anchor_text": "Confirms understanding before responding; feedback is specific and usable.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COM-03",
+   "level": 4,
+   "anchor_text": "Surfaces what was left unsaid; feedback changes behaviour constructively.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COM-03",
+   "level": 5,
+   "anchor_text": "Listening and feedback visibly raise the performance of those around them.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COM-04",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COM-04",
+   "level": 1,
+   "anchor_text": "Same message regardless of audience; frequent mismatch of tone or detail.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COM-04",
+   "level": 2,
+   "anchor_text": "Some adjustment, but key audience needs unaddressed.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COM-04",
+   "level": 3,
+   "anchor_text": "Tailors content, tone and detail to the audience adequately.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COM-04",
+   "level": 4,
+   "anchor_text": "Reads audiences accurately; reframes on the fly to land the message.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COM-04",
+   "level": 5,
+   "anchor_text": "Pitch-perfect across hostile, expert and lay audiences alike.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COM-05",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COM-05",
+   "level": 1,
+   "anchor_text": "Sessions drift; participation uneven; no outcome.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COM-05",
+   "level": 2,
+   "anchor_text": "Keeps basic order but discussion underdelivers on its goal.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COM-05",
+   "level": 3,
+   "anchor_text": "Runs structured sessions that reach their stated outcome.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COM-05",
+   "level": 4,
+   "anchor_text": "Draws out quiet voices, manages dominators, lands decisions on time.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COM-05",
+   "level": 5,
+   "anchor_text": "Facilitates high-conflict or high-stakes groups to results they own.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COM-06",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COM-06",
+   "level": 1,
+   "anchor_text": "Cannot conduct work tasks in the second language.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COM-06",
+   "level": 2,
+   "anchor_text": "Manages routine exchanges; complex content breaks down.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COM-06",
+   "level": 3,
+   "anchor_text": "Works effectively in the second language on standard professional tasks.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COM-06",
+   "level": 4,
+   "anchor_text": "Handles nuanced, high-stakes communication across languages.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COM-06",
+   "level": 5,
+   "anchor_text": "Operates at professional native-equivalent level; bridges language groups for others.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COM-07",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COM-07",
+   "level": 1,
+   "anchor_text": "Misreads media messages; channel choices undermine the content.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COM-07",
+   "level": 2,
+   "anchor_text": "Basic use of common formats; visual and media judgment weak.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COM-07",
+   "level": 3,
+   "anchor_text": "Communicates competently across text, visual and online formats.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COM-07",
+   "level": 4,
+   "anchor_text": "Chooses and combines media strategically; interprets media critically.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COM-07",
+   "level": 5,
+   "anchor_text": "Sets the standard for multi-format communication; work is reused as exemplar.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COM-08",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COM-08",
+   "level": 1,
+   "anchor_text": "Avoids or inflames conflict; disputes persist or escalate.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COM-08",
+   "level": 2,
+   "anchor_text": "Contains conflict temporarily; underlying issue unresolved.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COM-08",
+   "level": 3,
+   "anchor_text": "Resolves everyday disputes; parties accept the outcome.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COM-08",
+   "level": 4,
+   "anchor_text": "De-escalates entrenched conflict; agreements hold over time.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COM-08",
+   "level": 5,
+   "anchor_text": "Resolves high-stakes conflict others could not; relationships emerge stronger.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COL-01",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COL-01",
+   "level": 1,
+   "anchor_text": "Works in isolation; commitments to the team unreliable.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COL-01",
+   "level": 2,
+   "anchor_text": "Cooperates when asked; contribution passive.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COL-01",
+   "level": 3,
+   "anchor_text": "Reliable contributor; communicates, shares and delivers as agreed.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COL-01",
+   "level": 4,
+   "anchor_text": "Strengthens the team's work actively; unblocks others.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COL-01",
+   "level": 5,
+   "anchor_text": "Raises the whole team's output; collaboration pattern others copy.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COL-02",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COL-02",
+   "level": 1,
+   "anchor_text": "No professional network activity evident.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COL-02",
+   "level": 2,
+   "anchor_text": "Sporadic contacts without follow-through.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COL-02",
+   "level": 3,
+   "anchor_text": "Maintains an active, relevant network; uses it appropriately.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COL-02",
+   "level": 4,
+   "anchor_text": "Network produces concrete opportunities; reciprocity evident.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COL-02",
+   "level": 5,
+   "anchor_text": "Network is a strategic asset; connects others at scale.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COL-03",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COL-03",
+   "level": 1,
+   "anchor_text": "Behaviour causes avoidable cross-cultural friction.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COL-03",
+   "level": 2,
+   "anchor_text": "Aware of differences but adapts inconsistently.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COL-03",
+   "level": 3,
+   "anchor_text": "Works respectfully and effectively across cultural contexts.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COL-03",
+   "level": 4,
+   "anchor_text": "Adapts style skilfully; mediates cross-cultural misunderstanding.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COL-03",
+   "level": 5,
+   "anchor_text": "Trusted across cultural contexts; builds bridges others rely on.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COL-04",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COL-04",
+   "level": 1,
+   "anchor_text": "Behaviour excludes; participation gaps ignored.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COL-04",
+   "level": 2,
+   "anchor_text": "Passively inclusive; takes no action on imbalance.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COL-04",
+   "level": 3,
+   "anchor_text": "Ensures all members can contribute; distributes voice fairly.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COL-04",
+   "level": 4,
+   "anchor_text": "Actively designs for inclusion; measurably widens participation.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COL-04",
+   "level": 5,
+   "anchor_text": "Changes structures that exclude; impact extends beyond own team.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COL-05",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COL-05",
+   "level": 1,
+   "anchor_text": "Distributed collaboration fails: time zones, tools or norms mishandled.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COL-05",
+   "level": 2,
+   "anchor_text": "Functions in global teams with frequent friction.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COL-05",
+   "level": 3,
+   "anchor_text": "Collaborates reliably across locations and time zones.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COL-05",
+   "level": 4,
+   "anchor_text": "Makes distributed teams work: async discipline, clear handoffs.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-COL-05",
+   "level": 5,
+   "anchor_text": "Leads international collaboration; distributed team performs like co-located.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-SELF-01",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-SELF-01",
+   "level": 1,
+   "anchor_text": "Impulses and moods routinely derail work and interactions.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-SELF-01",
+   "level": 2,
+   "anchor_text": "Self-control lapses under pressure; recovery slow.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-SELF-01",
+   "level": 3,
+   "anchor_text": "Maintains composure and consistent work habits under normal load.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-SELF-01",
+   "level": 4,
+   "anchor_text": "Stays deliberate under high pressure; habits robust.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-SELF-01",
+   "level": 5,
+   "anchor_text": "Composure under extreme conditions; a stabilising presence for others.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-SELF-02",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-SELF-02",
+   "level": 1,
+   "anchor_text": "Deadlines missed regularly; effort spread without ranking.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-SELF-02",
+   "level": 2,
+   "anchor_text": "Meets deadlines only with rescue effort; priorities drift.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-SELF-02",
+   "level": 3,
+   "anchor_text": "Ranks work sensibly; delivers commitments on time.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-SELF-02",
+   "level": 4,
+   "anchor_text": "Consistently protects the important from the urgent; renegotiates load early.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-SELF-02",
+   "level": 5,
+   "anchor_text": "Delivers exceptional volume without quality loss; time allocation is strategic.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-SELF-03",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-SELF-03",
+   "level": 1,
+   "anchor_text": "No goals evident; activity without direction.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-SELF-03",
+   "level": 2,
+   "anchor_text": "Goals vague or abandoned; no tracking.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-SELF-03",
+   "level": 3,
+   "anchor_text": "Sets specific goals and tracks progress against them.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-SELF-03",
+   "level": 4,
+   "anchor_text": "Goals are ambitious, structured and largely achieved; adjusts intelligently.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-SELF-03",
+   "level": 5,
+   "anchor_text": "Long-horizon planning with compounding results; goal discipline exemplary.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-SELF-04",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-SELF-04",
+   "level": 1,
+   "anchor_text": "Repeats mistakes; self-assessment absent or defensive.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-SELF-04",
+   "level": 2,
+   "anchor_text": "Reflects when prompted; insights rarely change behaviour.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-SELF-04",
+   "level": 3,
+   "anchor_text": "Reviews own performance honestly; visible corrections follow.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-SELF-04",
+   "level": 4,
+   "anchor_text": "Systematic reflection; accurately names own strengths and limits.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-SELF-04",
+   "level": 5,
+   "anchor_text": "Self-assessment matches external assessment; growth loop is continuous and fast.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-SELF-05",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-SELF-05",
+   "level": 1,
+   "anchor_text": "Skills static; no learning activity evident.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-SELF-05",
+   "level": 2,
+   "anchor_text": "Learns only when forced by circumstances.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-SELF-05",
+   "level": 3,
+   "anchor_text": "Maintains steady, self-directed learning relevant to goals.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-SELF-05",
+   "level": 4,
+   "anchor_text": "Learns new domains quickly and applies them; learning is planned.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-SELF-05",
+   "level": 5,
+   "anchor_text": "Learning velocity is a distinguishing asset; repeatedly masters new fields.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-SELF-06",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-SELF-06",
+   "level": 1,
+   "anchor_text": "Setbacks halt work for extended periods; well-being neglected.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-SELF-06",
+   "level": 2,
+   "anchor_text": "Recovers from setbacks slowly; performance dips deep.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-SELF-06",
+   "level": 3,
+   "anchor_text": "Absorbs normal setbacks and returns to effectiveness quickly.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-SELF-06",
+   "level": 4,
+   "anchor_text": "Sustains performance through serious adversity; maintains healthy practices.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-SELF-06",
+   "level": 5,
+   "anchor_text": "Recovers from major blows stronger; models sustainable high performance.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-SELF-07",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-SELF-07",
+   "level": 1,
+   "anchor_text": "Misreads emotions; responses regularly inappropriate.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-SELF-07",
+   "level": 2,
+   "anchor_text": "Reads obvious signals; nuance missed.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-SELF-07",
+   "level": 3,
+   "anchor_text": "Perceives own and others' states accurately; responds appropriately.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-SELF-07",
+   "level": 4,
+   "anchor_text": "Navigates charged situations skilfully; others feel understood.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-SELF-07",
+   "level": 5,
+   "anchor_text": "Exceptional emotional acuity; transforms difficult dynamics.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-SELF-08",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-SELF-08",
+   "level": 1,
+   "anchor_text": "Deflects responsibility; conduct breaches norms.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-SELF-08",
+   "level": 2,
+   "anchor_text": "Owns success, disowns failure; conduct inconsistent.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-SELF-08",
+   "level": 3,
+   "anchor_text": "Owns outcomes including failures; conduct professional.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-SELF-08",
+   "level": 4,
+   "anchor_text": "Accountability proactive: flags own errors early, fixes them.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-SELF-08",
+   "level": 5,
+   "anchor_text": "Integrity under cost; accountability standard others are held to.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ETH-01",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ETH-01",
+   "level": 1,
+   "anchor_text": "Ethical dimensions of work unrecognised or ignored.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ETH-01",
+   "level": 2,
+   "anchor_text": "Recognises issues when pointed out; reasoning shallow.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ETH-01",
+   "level": 3,
+   "anchor_text": "Identifies ethical implications; acts within professional standards.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ETH-01",
+   "level": 4,
+   "anchor_text": "Reasons through genuine dilemmas rigorously; acts at personal cost when required.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ETH-01",
+   "level": 5,
+   "anchor_text": "Ethical judgment sought by others; shapes standards of practice.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ETH-02",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ETH-02",
+   "level": 1,
+   "anchor_text": "Environmental impact absent from work decisions.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ETH-02",
+   "level": 2,
+   "anchor_text": "Mentions sustainability without consequence for decisions.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ETH-02",
+   "level": 3,
+   "anchor_text": "Factors environmental impact into relevant decisions.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ETH-02",
+   "level": 4,
+   "anchor_text": "Quantifies impact; designs measurably less harmful alternatives.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ETH-02",
+   "level": 5,
+   "anchor_text": "Embeds sustainability into systems and decisions at scale.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ETH-03",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ETH-03",
+   "level": 1,
+   "anchor_text": "Effects on others and communities disregarded.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ETH-03",
+   "level": 2,
+   "anchor_text": "Acknowledges social effects; no action follows.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ETH-03",
+   "level": 3,
+   "anchor_text": "Considers affected communities; acts on obligations.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ETH-03",
+   "level": 4,
+   "anchor_text": "Takes initiative on social responsibility with concrete outcomes.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ETH-03",
+   "level": 5,
+   "anchor_text": "Creates lasting social value; mobilises others to do the same.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ETH-04",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ETH-04",
+   "level": 1,
+   "anchor_text": "Cannot connect work to sustainable development goals.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ETH-04",
+   "level": 2,
+   "anchor_text": "Names goals; linkage to work superficial.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ETH-04",
+   "level": 3,
+   "anchor_text": "Maps work to relevant SDGs correctly.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ETH-04",
+   "level": 4,
+   "anchor_text": "Designs work around SDG targets with measurable alignment.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ETH-04",
+   "level": 5,
+   "anchor_text": "SDG integration is rigorous and audited; informs strategy.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ETH-05",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ETH-05",
+   "level": 1,
+   "anchor_text": "Decisions ignore affected parties.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ETH-05",
+   "level": 2,
+   "anchor_text": "Identifies stakeholders; interests weighed inconsistently.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ETH-05",
+   "level": 3,
+   "anchor_text": "Assesses impacts on affected parties; balances interests defensibly.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ETH-05",
+   "level": 4,
+   "anchor_text": "Engages stakeholders early; decisions withstand their scrutiny.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-ETH-05",
+   "level": 5,
+   "anchor_text": "Trusted by conflicting stakeholders simultaneously; balancing acts hold long-term.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-LEAD-01",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-LEAD-01",
+   "level": 1,
+   "anchor_text": "Team lacks direction; delegation absent or chaotic.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-LEAD-01",
+   "level": 2,
+   "anchor_text": "Directs task-by-task; team dependent on constant instruction.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-LEAD-01",
+   "level": 3,
+   "anchor_text": "Sets clear direction; delegates with appropriate autonomy; team delivers.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-LEAD-01",
+   "level": 4,
+   "anchor_text": "Team performs above expectation; develops members while delivering.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-LEAD-01",
+   "level": 5,
+   "anchor_text": "Builds teams that outperform sustainably and run without the leader present.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-LEAD-02",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-LEAD-02",
+   "level": 1,
+   "anchor_text": "No evidence of supporting others' development.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-LEAD-02",
+   "level": 2,
+   "anchor_text": "Helps when asked; support superficial.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-LEAD-02",
+   "level": 3,
+   "anchor_text": "Mentors consistently; mentee progress is visible.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-LEAD-02",
+   "level": 4,
+   "anchor_text": "Development of others is deliberate and effective across multiple people.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-LEAD-02",
+   "level": 5,
+   "anchor_text": "Creates mentors: people they developed now develop others.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-LEAD-03",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-LEAD-03",
+   "level": 1,
+   "anchor_text": "No influence beyond assigned tasks.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-LEAD-03",
+   "level": 2,
+   "anchor_text": "Shares views locally; little uptake.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-LEAD-03",
+   "level": 3,
+   "anchor_text": "Ideas gain adoption within own function or community.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-LEAD-03",
+   "level": 4,
+   "anchor_text": "Shapes thinking across functions or organisations; sought out for perspective.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-LEAD-03",
+   "level": 5,
+   "anchor_text": "Recognised voice in the field; reframes how a domain approaches a problem.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-DAI-01",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-DAI-01",
+   "level": 1,
+   "anchor_text": "Standard digital tools block rather than enable work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-DAI-01",
+   "level": 2,
+   "anchor_text": "Basic use of common tools; unfamiliar tools cause failure.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-DAI-01",
+   "level": 3,
+   "anchor_text": "Fluent with standard tools; adopts new ones with modest ramp.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-DAI-01",
+   "level": 4,
+   "anchor_text": "Highly productive tool use; configures and combines tools deliberately.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-DAI-01",
+   "level": 5,
+   "anchor_text": "Digital fluency multiplies output; sets up tooling others adopt.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-DAI-02",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-DAI-02",
+   "level": 1,
+   "anchor_text": "Cannot describe what AI tools do or where they fail.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-DAI-02",
+   "level": 2,
+   "anchor_text": "Uses AI naively; capabilities and limits misjudged.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-DAI-02",
+   "level": 3,
+   "anchor_text": "Understands strengths and failure modes of common AI systems; judges use cases sensibly.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-DAI-02",
+   "level": 4,
+   "anchor_text": "Assesses AI fit, risk and limitation accurately across contexts.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-DAI-02",
+   "level": 5,
+   "anchor_text": "Deep, current understanding; guides organisational AI judgment.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-DAI-03",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-DAI-03",
+   "level": 1,
+   "anchor_text": "Uses AI output unchecked; policy and risk ignored.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-DAI-03",
+   "level": 2,
+   "anchor_text": "Applies AI with sporadic verification; responsibility gaps.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-DAI-03",
+   "level": 3,
+   "anchor_text": "Applies AI productively with consistent verification and appropriate disclosure.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-DAI-03",
+   "level": 4,
+   "anchor_text": "Integrates AI into work with systematic quality control and risk handling.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-DAI-03",
+   "level": 5,
+   "anchor_text": "Exemplary responsible use at scale; defines practice others follow.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-DAI-04",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-DAI-04",
+   "level": 1,
+   "anchor_text": "AI output pasted unread; no direction or review evident.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-DAI-04",
+   "level": 2,
+   "anchor_text": "Uses AI assistants for simple tasks; direction vague, review superficial.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-DAI-04",
+   "level": 3,
+   "anchor_text": "Directs AI tools effectively on routine work; reviews and corrects output before use.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-DAI-04",
+   "level": 4,
+   "anchor_text": "Designs multi-step AI workflows; divides labour between human and AI deliberately; quality control systematic.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-DAI-04",
+   "level": 5,
+   "anchor_text": "Human-AI working pattern multiplies output measurably; approach adopted by others.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-DAI-05",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-DAI-05",
+   "level": 1,
+   "anchor_text": "Repetitive work done manually despite available tooling.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-DAI-05",
+   "level": 2,
+   "anchor_text": "Uses existing automations; cannot build or adapt them.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-DAI-05",
+   "level": 3,
+   "anchor_text": "Builds working automations for own recurring tasks (no-code or scripts).",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-DAI-05",
+   "level": 4,
+   "anchor_text": "Automates team-level workflows reliably; handles errors and edge cases.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-DAI-05",
+   "level": 5,
+   "anchor_text": "Automation eliminates entire categories of manual work; tooling reused across teams.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-DAT-01",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-DAT-01",
+   "level": 1,
+   "anchor_text": "Conclusions contradict or ignore the data at hand.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-DAT-01",
+   "level": 2,
+   "anchor_text": "Performs basic analysis; errors or misreadings present.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-DAT-01",
+   "level": 3,
+   "anchor_text": "Analyses datasets correctly and answers the question asked.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-DAT-01",
+   "level": 4,
+   "anchor_text": "Analysis is thorough and self-checked; surfaces insights beyond the question asked.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-DAT-01",
+   "level": 5,
+   "anchor_text": "Analysis of complex/messy data is authoritative; findings drive significant decisions.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-DAT-02",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-DAT-02",
+   "level": 1,
+   "anchor_text": "Numerical errors invalidate the work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-DAT-02",
+   "level": 2,
+   "anchor_text": "Handles simple figures; struggles with rates, ratios or scale.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-DAT-02",
+   "level": 3,
+   "anchor_text": "Works accurately with quantities, percentages and estimates.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-DAT-02",
+   "level": 4,
+   "anchor_text": "Reasons fluently with statistics and uncertainty; estimates are reliably close.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-DAT-02",
+   "level": 5,
+   "anchor_text": "Quantitative reasoning is a visible strength; spots numerical nonsense others accept.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-DAT-03",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-DAT-03",
+   "level": 1,
+   "anchor_text": "Charts obscure or misrepresent the data.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-DAT-03",
+   "level": 2,
+   "anchor_text": "Basic charts, poorly chosen forms; message unclear.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-DAT-03",
+   "level": 3,
+   "anchor_text": "Chooses appropriate chart forms; visuals communicate the finding clearly.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-DAT-03",
+   "level": 4,
+   "anchor_text": "Visualisations make complex data immediately graspable; design choices deliberate and honest.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-DAT-03",
+   "level": 5,
+   "anchor_text": "Visual work sets the standard; reused as exemplar across the organisation.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-DAT-04",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-DAT-04",
+   "level": 1,
+   "anchor_text": "Decisions ignore available evidence.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-DAT-04",
+   "level": 2,
+   "anchor_text": "Cites data selectively to support pre-made decisions.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-DAT-04",
+   "level": 3,
+   "anchor_text": "Grounds decisions in relevant metrics and evidence.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-DAT-04",
+   "level": 4,
+   "anchor_text": "Weighs data quality and limits; changes course when evidence demands it.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-DAT-04",
+   "level": 5,
+   "anchor_text": "Builds decision processes around evidence; others' decisions improve because of them.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-DAT-05",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-DAT-05",
+   "level": 1,
+   "anchor_text": "Misreads tables, charts or basic metrics.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-DAT-05",
+   "level": 2,
+   "anchor_text": "Reads simple presentations of data; misses caveats and traps.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-DAT-05",
+   "level": 3,
+   "anchor_text": "Interprets standard metrics and dashboards correctly, including their limits.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-DAT-05",
+   "level": 4,
+   "anchor_text": "Spots misleading averages, scales and cherry-picking; asks the right follow-up questions.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-DAT-05",
+   "level": 5,
+   "anchor_text": "Reads any data presentation critically and precisely; educates others on data pitfalls.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-EXE-01",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-EXE-01",
+   "level": 1,
+   "anchor_text": "Project drifts without plan, tracking or ownership.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-EXE-01",
+   "level": 2,
+   "anchor_text": "Plans exist but slip unnoticed; coordination reactive.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-EXE-01",
+   "level": 3,
+   "anchor_text": "Plans, tracks and delivers projects of moderate scope on time.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-EXE-01",
+   "level": 4,
+   "anchor_text": "Manages complex projects with dependencies and risk; delivers despite changes.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-EXE-01",
+   "level": 5,
+   "anchor_text": "Delivers high-stakes projects others considered undeliverable; method exemplary.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-EXE-02",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-EXE-02",
+   "level": 1,
+   "anchor_text": "Work is disorganised; steps missed, materials lost.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-EXE-02",
+   "level": 2,
+   "anchor_text": "Basic organisation; plans incomplete or unrealistic.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-EXE-02",
+   "level": 3,
+   "anchor_text": "Structures work sensibly; realistic sequencing and resourcing.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-EXE-02",
+   "level": 4,
+   "anchor_text": "Plans are thorough and resilient; organisation visibly accelerates the work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-EXE-02",
+   "level": 5,
+   "anchor_text": "Organisational systems handle high complexity effortlessly; adopted by others.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-EXE-03",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-EXE-03",
+   "level": 1,
+   "anchor_text": "Work ships with defects a basic check would catch.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-EXE-03",
+   "level": 2,
+   "anchor_text": "Quality inconsistent; standards applied selectively.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-EXE-03",
+   "level": 3,
+   "anchor_text": "Checks work against defined standards; output reliably meets them.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-EXE-03",
+   "level": 4,
+   "anchor_text": "Quality control is systematic; catches subtle defects; raises the bar for the team.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-EXE-03",
+   "level": 5,
+   "anchor_text": "Output is reference quality; defines the standards others follow.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-EXE-04",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-EXE-04",
+   "level": 1,
+   "anchor_text": "Foreseeable risks materialise unaddressed.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-EXE-04",
+   "level": 2,
+   "anchor_text": "Names risks but takes no mitigating action.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-EXE-04",
+   "level": 3,
+   "anchor_text": "Identifies key risks and prepares workable mitigations.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-EXE-04",
+   "level": 4,
+   "anchor_text": "Risk assessment systematic; contingencies tested; early-warning signals monitored.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-EXE-04",
+   "level": 5,
+   "anchor_text": "Anticipates non-obvious risks; risk work demonstrably prevented major failures.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-EXE-05",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-EXE-05",
+   "level": 1,
+   "anchor_text": "Stalls when requirements are unclear.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-EXE-05",
+   "level": 2,
+   "anchor_text": "Progresses only after seeking full clarity; slow under ambiguity.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-EXE-05",
+   "level": 3,
+   "anchor_text": "Delivers useful results despite incomplete information.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-EXE-05",
+   "level": 4,
+   "anchor_text": "Moves decisively in ambiguity; sequences work to resolve uncertainty fastest.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-EXE-05",
+   "level": 5,
+   "anchor_text": "Consistently ships valuable outcomes where others freeze; ambiguity is an advantage.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-BM-02",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-BM-02",
+   "level": 1,
+   "anchor_text": "Change announced, not managed; adoption fails.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-BM-02",
+   "level": 2,
+   "anchor_text": "Follows a change plan mechanically; resistance unaddressed.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-BM-02",
+   "level": 3,
+   "anchor_text": "Plans and executes change with communication and training; adoption adequate.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-BM-02",
+   "level": 4,
+   "anchor_text": "Anticipates resistance, builds coalitions, adapts the approach; adoption strong and lasting.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-BM-02",
+   "level": 5,
+   "anchor_text": "Leads organisation-level change that sticks; approach becomes the house method.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-BM-05",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-BM-05",
+   "level": 1,
+   "anchor_text": "Stakeholders surprised, ignored or inflamed.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-BM-05",
+   "level": 2,
+   "anchor_text": "Informs stakeholders irregularly; expectations drift.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-BM-05",
+   "level": 3,
+   "anchor_text": "Keeps stakeholders informed and aligned; expectations managed.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-BM-05",
+   "level": 4,
+   "anchor_text": "Anticipates stakeholder concerns; converts sceptics; alignment survives setbacks.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-BM-05",
+   "level": 5,
+   "anchor_text": "Trusted by conflicting stakeholders simultaneously; manages the unmanageable ones.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-BM-09",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-BM-09",
+   "level": 1,
+   "anchor_text": "Same defects recur; no improvement activity.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-BM-09",
+   "level": 2,
+   "anchor_text": "Occasional fixes; improvements not sustained.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-BM-09",
+   "level": 3,
+   "anchor_text": "Improves ways of working regularly; gains are measurable.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-BM-09",
+   "level": 4,
+   "anchor_text": "Runs a disciplined improvement loop; compounding measurable gains.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-BM-09",
+   "level": 5,
+   "anchor_text": "Builds improvement culture; systems improve without their direct involvement.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-DDA-04",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-DDA-04",
+   "level": 1,
+   "anchor_text": "Prompts produce unusable output; no iteration.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-DDA-04",
+   "level": 2,
+   "anchor_text": "Basic prompts for simple tasks; results inconsistent.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-DDA-04",
+   "level": 3,
+   "anchor_text": "Writes structured prompts that produce reliable output for defined tasks.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-DDA-04",
+   "level": 4,
+   "anchor_text": "Designs reusable prompt patterns with context handling and failure checks.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-DDA-04",
+   "level": 5,
+   "anchor_text": "Prompt systems power production use; measurably outperform naive approaches.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-DDA-05",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-DDA-05",
+   "level": 1,
+   "anchor_text": "Reports absent, wrong or unread.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-DDA-05",
+   "level": 2,
+   "anchor_text": "Produces static reports; insight thin, data trust issues.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-DDA-05",
+   "level": 3,
+   "anchor_text": "Delivers accurate BI reporting that stakeholders use for decisions.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-DDA-05",
+   "level": 4,
+   "anchor_text": "Builds self-serve dashboards on governed data; adoption across functions.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-DDA-05",
+   "level": 5,
+   "anchor_text": "BI work changes how the organisation steers; single source of truth established.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-DDA-07",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-DDA-07",
+   "level": 1,
+   "anchor_text": "Behaviour creates security incidents (credentials shared, phishing clicked).",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-DDA-07",
+   "level": 2,
+   "anchor_text": "Knows basic rules; applies them inconsistently.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-DDA-07",
+   "level": 3,
+   "anchor_text": "Follows security practice reliably; handles data appropriately.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-DDA-07",
+   "level": 4,
+   "anchor_text": "Spots and reports threats proactively; improves team security behaviour.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-DDA-07",
+   "level": 5,
+   "anchor_text": "Security thinking embedded in all work; prevented or contained real incidents.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-DDA-08",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-DDA-08",
+   "level": 1,
+   "anchor_text": "AI features shipped without evaluation or guardrails.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-DDA-08",
+   "level": 2,
+   "anchor_text": "Prototype-level AI features; reliability and cost unmanaged.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-DDA-08",
+   "level": 3,
+   "anchor_text": "Ships working AI features with basic evaluation and fallbacks.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-DDA-08",
+   "level": 4,
+   "anchor_text": "Builds robust AI products: evals, monitoring, cost control, guardrails.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-DDA-08",
+   "level": 5,
+   "anchor_text": "AI products perform reliably at scale; architecture others copy.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-DDA-09",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-DDA-09",
+   "level": 1,
+   "anchor_text": "Automation attempts break existing processes.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-DDA-09",
+   "level": 2,
+   "anchor_text": "Automates simple flows; brittle, unmonitored.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-DDA-09",
+   "level": 3,
+   "anchor_text": "Builds reliable process automations with error handling.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-DDA-09",
+   "level": 4,
+   "anchor_text": "Automates complex end-to-end processes; monitored, documented, maintainable.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-DDA-09",
+   "level": 5,
+   "anchor_text": "Automation platform-level work; large measurable capacity gains across units.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-DDA-10",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-DDA-10",
+   "level": 1,
+   "anchor_text": "Data handled without ownership, definitions or controls.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-DDA-10",
+   "level": 2,
+   "anchor_text": "Aware of governance needs; practices ad hoc.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-DDA-10",
+   "level": 3,
+   "anchor_text": "Maintains definitions, ownership and quality checks for key data.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-DDA-10",
+   "level": 4,
+   "anchor_text": "Runs effective governance: lineage, access control, quality metrics improving.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-DDA-10",
+   "level": 5,
+   "anchor_text": "Governance framework organisation-wide; data trusted by default.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-EI-01",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-EI-01",
+   "level": 1,
+   "anchor_text": "Claims opportunities without any validation.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-EI-01",
+   "level": 2,
+   "anchor_text": "Spots ideas; viability checks superficial.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-EI-01",
+   "level": 3,
+   "anchor_text": "Identifies opportunities and validates demand with real evidence.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-EI-01",
+   "level": 4,
+   "anchor_text": "Validation rigorous: market size, willingness to pay, competition tested.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-EI-01",
+   "level": 5,
+   "anchor_text": "Track record of validated opportunities others pursued successfully.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-EI-02",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-EI-02",
+   "level": 1,
+   "anchor_text": "No coherent account of how the venture creates or captures value.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-EI-02",
+   "level": 2,
+   "anchor_text": "Sketches a model; key assumptions untested.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-EI-02",
+   "level": 3,
+   "anchor_text": "Designs a complete, internally consistent business model.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-EI-02",
+   "level": 4,
+   "anchor_text": "Model stress-tested: unit economics, channels and pricing evidence-based.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-EI-02",
+   "level": 5,
+   "anchor_text": "Business models designed have survived market contact and scaled.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-EI-03",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-EI-03",
+   "level": 1,
+   "anchor_text": "Venture activity stalls at the idea stage.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-EI-03",
+   "level": 2,
+   "anchor_text": "Starts building; execution fragmentary.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-EI-03",
+   "level": 3,
+   "anchor_text": "Takes a venture from concept to functioning operation.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-EI-03",
+   "level": 4,
+   "anchor_text": "Builds ventures through launch and early traction with discipline.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-EI-03",
+   "level": 5,
+   "anchor_text": "Repeatedly builds ventures reaching sustainable operation or funding.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-EI-04",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-EI-04",
+   "level": 1,
+   "anchor_text": "Pitch fails to convey the venture; materials unusable.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-EI-04",
+   "level": 2,
+   "anchor_text": "Pitch covers basics; unconvincing under questioning.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-EI-04",
+   "level": 3,
+   "anchor_text": "Delivers a clear, credible pitch with sound materials.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-EI-04",
+   "level": 4,
+   "anchor_text": "Pitch compelling under hostile questioning; adapts to investor type.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-EI-04",
+   "level": 5,
+   "anchor_text": "Raises funding or wins competitions; pitch craft exemplary.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-EI-05",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-EI-05",
+   "level": 1,
+   "anchor_text": "Talks to no customers before building.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-EI-05",
+   "level": 2,
+   "anchor_text": "Some customer contact; questions leading, insights thin.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-EI-05",
+   "level": 3,
+   "anchor_text": "Runs structured discovery interviews; findings shape the product.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-EI-05",
+   "level": 4,
+   "anchor_text": "Discovery systematic; problem-solution fit demonstrated with evidence.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-EI-05",
+   "level": 5,
+   "anchor_text": "Discovery practice repeatedly redirected ventures away from dead ends.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-EI-06",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-EI-06",
+   "level": 1,
+   "anchor_text": "No plan for reaching customers.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-EI-06",
+   "level": 2,
+   "anchor_text": "Channel ideas vague; sequencing unrealistic.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-EI-06",
+   "level": 3,
+   "anchor_text": "Produces a credible go-to-market plan with channels and milestones.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-EI-06",
+   "level": 4,
+   "anchor_text": "GTM plan validated by early execution; adjusts on evidence.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-EI-06",
+   "level": 5,
+   "anchor_text": "GTM plans executed have won real markets; method transferable.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-EI-07",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-EI-07",
+   "level": 1,
+   "anchor_text": "Builds without testing assumptions.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-EI-07",
+   "level": 2,
+   "anchor_text": "Runs occasional tests; results ignored or misread.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-EI-07",
+   "level": 3,
+   "anchor_text": "Designs cheap experiments that answer defined riskiest assumptions.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-EI-07",
+   "level": 4,
+   "anchor_text": "Experiment cadence disciplined; kill/pivot decisions follow the data.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-EI-07",
+   "level": 5,
+   "anchor_text": "Experimentation culture; validated learning at exceptional speed.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-EI-08",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-EI-08",
+   "level": 1,
+   "anchor_text": "No path from invention to use or revenue.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-EI-08",
+   "level": 2,
+   "anchor_text": "Understands commercialisation steps; execution stalls.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-EI-08",
+   "level": 3,
+   "anchor_text": "Moves an invention or result into paying use.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-EI-08",
+   "level": 4,
+   "anchor_text": "Manages IP, licensing or productisation to recurring revenue.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-EI-08",
+   "level": 5,
+   "anchor_text": "Commercialised research/inventions at significant scale.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-EI-09",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-EI-09",
+   "level": 1,
+   "anchor_text": "Innovation activity ad hoc; ideas die undocumented.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-EI-09",
+   "level": 2,
+   "anchor_text": "Collects ideas; selection and follow-through weak.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-EI-09",
+   "level": 3,
+   "anchor_text": "Runs a working idea-to-adoption process.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-EI-09",
+   "level": 4,
+   "anchor_text": "Manages an innovation portfolio with stage gates and measurable output.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-EI-09",
+   "level": 5,
+   "anchor_text": "Innovation system produces adopted innovations year over year.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-EI-10",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-EI-10",
+   "level": 1,
+   "anchor_text": "Blocked immediately by missing resources.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-EI-10",
+   "level": 2,
+   "anchor_text": "Finds workarounds occasionally; often waits for resources.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-EI-10",
+   "level": 3,
+   "anchor_text": "Makes real progress with limited money, people and time.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-EI-10",
+   "level": 4,
+   "anchor_text": "Consistently converts scarcity into creative, effective solutions.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-EI-10",
+   "level": 5,
+   "anchor_text": "Delivers outcomes with resource levels others consider impossible.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-LEAD-04",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-LEAD-04",
+   "level": 1,
+   "anchor_text": "Avoids decisions; choices default to circumstance.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-LEAD-04",
+   "level": 2,
+   "anchor_text": "Decides slowly; reasoning opaque or inconsistent.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-LEAD-04",
+   "level": 3,
+   "anchor_text": "Makes timely, reasoned decisions and stands by them.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-LEAD-04",
+   "level": 4,
+   "anchor_text": "Decides well under uncertainty and pressure; reasoning explicit; outcomes reviewed.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-LEAD-04",
+   "level": 5,
+   "anchor_text": "Decision quality visibly superior on high-stakes calls; sought out for them.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-LEAD-05",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-LEAD-05",
+   "level": 1,
+   "anchor_text": "Concedes everything or blocks everything.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-LEAD-05",
+   "level": 2,
+   "anchor_text": "Negotiates simple matters; loses ground on complex ones.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-LEAD-05",
+   "level": 3,
+   "anchor_text": "Prepares and conducts negotiations reaching workable agreements.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-LEAD-05",
+   "level": 4,
+   "anchor_text": "Reaches durable agreements in adversarial settings; expands the pie before dividing it.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-LEAD-05",
+   "level": 5,
+   "anchor_text": "Closes negotiations others abandoned; both sides return for more.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-BM-03",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-BM-03",
+   "level": 1,
+   "anchor_text": "No goals or measurement in place.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-BM-03",
+   "level": 2,
+   "anchor_text": "Sets targets; follow-up sporadic.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-BM-03",
+   "level": 3,
+   "anchor_text": "Runs a working goal and KPI cycle with regular review.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-BM-03",
+   "level": 4,
+   "anchor_text": "Performance system drives real improvement; underperformance addressed early.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-BM-03",
+   "level": 5,
+   "anchor_text": "Performance management lifts whole units; model copied elsewhere.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-BM-08",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-BM-08",
+   "level": 1,
+   "anchor_text": "Structure changes made without design or rationale.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-BM-08",
+   "level": 2,
+   "anchor_text": "Adjusts boxes and lines; interfaces and incentives ignored.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-BM-08",
+   "level": 3,
+   "anchor_text": "Designs role structures that fit strategy and workload.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-BM-08",
+   "level": 4,
+   "anchor_text": "Org designs improve flow and accountability measurably.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-BM-08",
+   "level": 5,
+   "anchor_text": "Redesigned organisations at scale with lasting performance gains.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-BM-10",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-BM-10",
+   "level": 1,
+   "anchor_text": "No strategic direction discernible.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-BM-10",
+   "level": 2,
+   "anchor_text": "Produces strategy documents; choices avoid trade-offs.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-BM-10",
+   "level": 3,
+   "anchor_text": "Formulates clear strategy with explicit choices and resourcing.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-BM-10",
+   "level": 4,
+   "anchor_text": "Strategy links analysis to committed action; portfolio decisions follow it.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-BM-10",
+   "level": 5,
+   "anchor_text": "Corporate strategies authored have redirected companies successfully.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-FA-01",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-FA-01",
+   "level": 1,
+   "anchor_text": "Financial statements misread; conclusions wrong.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-FA-01",
+   "level": 2,
+   "anchor_text": "Reads statements; drivers and ratios beyond reach.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-FA-01",
+   "level": 3,
+   "anchor_text": "Analyses statements and performance drivers correctly.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-FA-01",
+   "level": 4,
+   "anchor_text": "Analysis penetrating: quality of earnings, trends, red flags surfaced.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-FA-01",
+   "level": 5,
+   "anchor_text": "Financial analysis at professional standard; findings move decisions and money.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-FA-02",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-FA-02",
+   "level": 1,
+   "anchor_text": "Budgets absent or disconnected from operations.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-FA-02",
+   "level": 2,
+   "anchor_text": "Assembles budgets; assumptions weak, variances unexplained.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-FA-02",
+   "level": 3,
+   "anchor_text": "Produces sound budgets and forecasts; explains variances.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-FA-02",
+   "level": 4,
+   "anchor_text": "Rolling forecasts accurate and decision-useful; scenario-ready.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-FA-02",
+   "level": 5,
+   "anchor_text": "FP&A work steers the organisation; forecast accuracy exceptional.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-FA-03",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-FA-03",
+   "level": 1,
+   "anchor_text": "Records incomplete or non-compliant.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-FA-03",
+   "level": 2,
+   "anchor_text": "Bookkeeping adequate; reporting standards shaky.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-FA-03",
+   "level": 3,
+   "anchor_text": "Maintains accurate records; reports meet applicable standards.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-FA-03",
+   "level": 4,
+   "anchor_text": "Close process fast and clean; reporting audit-ready.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-FA-03",
+   "level": 5,
+   "anchor_text": "Reporting quality passes external audit without findings; process exemplary.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-FA-04",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-FA-04",
+   "level": 1,
+   "anchor_text": "Models broken: hardcoded, circular, wrong.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-FA-04",
+   "level": 2,
+   "anchor_text": "Builds simple models; structure fragile.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-FA-04",
+   "level": 3,
+   "anchor_text": "Builds clear, correct, assumption-driven financial models.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-FA-04",
+   "level": 4,
+   "anchor_text": "Models are robust, auditable, scenario-capable; others rely on them.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-FA-04",
+   "level": 5,
+   "anchor_text": "Modeling at transaction grade; models supported real deals or funding.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-FA-05",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-FA-05",
+   "level": 1,
+   "anchor_text": "Investment claims without analysis.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-FA-05",
+   "level": 2,
+   "anchor_text": "Applies metrics mechanically; risk ignored.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-FA-05",
+   "level": 3,
+   "anchor_text": "Evaluates investments with sound return and risk analysis.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-FA-05",
+   "level": 4,
+   "anchor_text": "Valuation and risk work rigorous; recommendations well-calibrated.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-FA-05",
+   "level": 5,
+   "anchor_text": "Investment judgment proven by outcomes across cycles.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-FA-06",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-FA-06",
+   "level": 1,
+   "anchor_text": "Costs unknown or untracked.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-FA-06",
+   "level": 2,
+   "anchor_text": "Tracks costs; allocation crude, insights absent.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-FA-06",
+   "level": 3,
+   "anchor_text": "Maintains meaningful cost accounting; supports pricing and decisions.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-FA-06",
+   "level": 4,
+   "anchor_text": "Cost transparency drives real savings and better pricing.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-FA-06",
+   "level": 5,
+   "anchor_text": "Cost systems designed changed the economics of the operation.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-FA-07",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-FA-07",
+   "level": 1,
+   "anchor_text": "Investor communication absent or damaging.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-FA-07",
+   "level": 2,
+   "anchor_text": "Communicates with funders irregularly; materials weak.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-FA-07",
+   "level": 3,
+   "anchor_text": "Maintains credible, consistent investor communication and materials.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-FA-07",
+   "level": 4,
+   "anchor_text": "Runs funding processes competently; investor trust visible.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-FA-07",
+   "level": 5,
+   "anchor_text": "Raised significant capital; investor relations a strategic asset.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-FA-08",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-FA-08",
+   "level": 1,
+   "anchor_text": "Regulatory obligations missed.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-FA-08",
+   "level": 2,
+   "anchor_text": "Aware of obligations; filings late or error-prone.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-FA-08",
+   "level": 3,
+   "anchor_text": "Meets financial compliance and reporting obligations reliably.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-FA-08",
+   "level": 4,
+   "anchor_text": "Compliance proactive: controls, monitoring, clean regulator interactions.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-FA-08",
+   "level": 5,
+   "anchor_text": "Compliance framework robust at scale; zero material findings.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-MSC-01",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-MSC-01",
+   "level": 1,
+   "anchor_text": "Marketing activity without strategy or targeting.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-MSC-01",
+   "level": 2,
+   "anchor_text": "Plans exist; segmentation and positioning weak.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-MSC-01",
+   "level": 3,
+   "anchor_text": "Formulates coherent marketing strategy with targets and channels.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-MSC-01",
+   "level": 4,
+   "anchor_text": "Strategy evidence-based; positioning sharp; budget allocation justified.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-MSC-01",
+   "level": 5,
+   "anchor_text": "Marketing strategies delivered measurable market-share or pipeline growth.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-MSC-02",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-MSC-02",
+   "level": 1,
+   "anchor_text": "Digital channels unused or mismanaged.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-MSC-02",
+   "level": 2,
+   "anchor_text": "Runs basic campaigns; measurement absent.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-MSC-02",
+   "level": 3,
+   "anchor_text": "Executes digital campaigns competently with tracked performance.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-MSC-02",
+   "level": 4,
+   "anchor_text": "Optimises across channels; CAC/ROAS managed deliberately.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-MSC-02",
+   "level": 5,
+   "anchor_text": "Digital programmes scale efficiently; performance top-quartile.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-MSC-03",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-MSC-03",
+   "level": 1,
+   "anchor_text": "Copy unusable: unclear, off-brand, error-ridden.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-MSC-03",
+   "level": 2,
+   "anchor_text": "Produces serviceable copy; persuasion weak.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-MSC-03",
+   "level": 3,
+   "anchor_text": "Writes clear, on-brand copy that serves its goal.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-MSC-03",
+   "level": 4,
+   "anchor_text": "Copy measurably converts; adapts voice across formats and audiences.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-MSC-03",
+   "level": 5,
+   "anchor_text": "Copy and content define the brand voice; conversion benchmarks beaten.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-MSC-04",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-MSC-04",
+   "level": 1,
+   "anchor_text": "Brand incoherent across touchpoints.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-MSC-04",
+   "level": 2,
+   "anchor_text": "Maintains basic consistency; no brand direction.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-MSC-04",
+   "level": 3,
+   "anchor_text": "Manages brand identity consistently across channels.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-MSC-04",
+   "level": 4,
+   "anchor_text": "Builds brand equity deliberately; perception tracked and improving.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-MSC-04",
+   "level": 5,
+   "anchor_text": "Brand work created recognisable, valued brands.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-MSC-05",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-MSC-05",
+   "level": 1,
+   "anchor_text": "Prospects lost through neglect or pressure.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-MSC-05",
+   "level": 2,
+   "anchor_text": "Sells transactionally; pipeline unmanaged.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-MSC-05",
+   "level": 3,
+   "anchor_text": "Manages a pipeline and closes deals at credible rates.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-MSC-05",
+   "level": 4,
+   "anchor_text": "Consultative selling; forecasts accurate; win rates above peer level.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-MSC-05",
+   "level": 5,
+   "anchor_text": "Consistently lands deals others could not; sales method exemplary.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-MSC-06",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-MSC-06",
+   "level": 1,
+   "anchor_text": "Key accounts churn unnoticed.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-MSC-06",
+   "level": 2,
+   "anchor_text": "Services accounts reactively.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-MSC-06",
+   "level": 3,
+   "anchor_text": "Retains and grows accounts through structured management.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-MSC-06",
+   "level": 4,
+   "anchor_text": "Accounts expand year over year; relationships institutional, not personal.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-MSC-06",
+   "level": 5,
+   "anchor_text": "Account portfolio is a growth engine; net revenue retention outstanding.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-MSC-07",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-MSC-07",
+   "level": 1,
+   "anchor_text": "Campaign results unmeasured or misread.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-MSC-07",
+   "level": 2,
+   "anchor_text": "Reports vanity metrics; causation confused.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-MSC-07",
+   "level": 3,
+   "anchor_text": "Measures campaign performance correctly; insights actionable.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-MSC-07",
+   "level": 4,
+   "anchor_text": "Attribution and funnel analysis drive reallocation that improves results.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-MSC-07",
+   "level": 5,
+   "anchor_text": "Analytics practice transformed marketing efficiency.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-MSC-08",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-MSC-08",
+   "level": 1,
+   "anchor_text": "Social presence dormant or damaging.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-MSC-08",
+   "level": 2,
+   "anchor_text": "Posts regularly; engagement and strategy absent.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-MSC-08",
+   "level": 3,
+   "anchor_text": "Runs a consistent, on-brand social presence with engagement.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-MSC-08",
+   "level": 4,
+   "anchor_text": "Grows engaged communities; content strategy data-informed.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-MSC-08",
+   "level": 5,
+   "anchor_text": "Social channels built into significant audience and demand assets.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-MSC-09",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-MSC-09",
+   "level": 1,
+   "anchor_text": "Media contact absent or harmful.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-MSC-09",
+   "level": 2,
+   "anchor_text": "Sends releases; coverage rare.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-MSC-09",
+   "level": 3,
+   "anchor_text": "Secures relevant coverage; media relationships maintained.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-MSC-09",
+   "level": 4,
+   "anchor_text": "Proactive PR shapes the narrative; crisis handling composed.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-MSC-09",
+   "level": 5,
+   "anchor_text": "PR delivered reputation-defining coverage; crisis navigation exemplary.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-MSC-10",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-MSC-10",
+   "level": 1,
+   "anchor_text": "Product launched without positioning or enablement.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-MSC-10",
+   "level": 2,
+   "anchor_text": "Positions by feature list; differentiation unclear.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-MSC-10",
+   "level": 3,
+   "anchor_text": "Positions products clearly against alternatives; launches organised.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-MSC-10",
+   "level": 4,
+   "anchor_text": "Positioning wins competitive deals; launches hit adoption targets.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-MSC-10",
+   "level": 5,
+   "anchor_text": "Product marketing created category leadership.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-PHT-01",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-PHT-01",
+   "level": 1,
+   "anchor_text": "Hiring unstructured; bad hires frequent.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-PHT-01",
+   "level": 2,
+   "anchor_text": "Fills roles; assessment ad hoc.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-PHT-01",
+   "level": 3,
+   "anchor_text": "Runs structured hiring with criteria-based assessment.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-PHT-01",
+   "level": 4,
+   "anchor_text": "Hiring funnel efficient; quality-of-hire measured and high.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-PHT-01",
+   "level": 5,
+   "anchor_text": "Talent acquisition is a competitive advantage; hiring system copied.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-PHT-02",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-PHT-02",
+   "level": 1,
+   "anchor_text": "Training absent or without effect.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-PHT-02",
+   "level": 2,
+   "anchor_text": "Delivers training; transfer to work unmeasured.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-PHT-02",
+   "level": 3,
+   "anchor_text": "Designs learning that measurably changes what people can do.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-PHT-02",
+   "level": 4,
+   "anchor_text": "L&D tied to capability gaps; effectiveness evaluated and improving.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-PHT-02",
+   "level": 5,
+   "anchor_text": "Learning architecture lifted workforce capability at scale.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-PHT-03",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-PHT-03",
+   "level": 1,
+   "anchor_text": "Reviews skipped, biased or destructive.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-PHT-03",
+   "level": 2,
+   "anchor_text": "Conducts reviews; evidence thin, calibration absent.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-PHT-03",
+   "level": 3,
+   "anchor_text": "Runs fair, evidence-based reviews with calibration.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-PHT-03",
+   "level": 4,
+   "anchor_text": "Review system trusted; ratings consistent across raters and units.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-PHT-03",
+   "level": 5,
+   "anchor_text": "Performance evaluation regarded as exemplary; disputes rare, development real.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-PHT-04",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-PHT-04",
+   "level": 1,
+   "anchor_text": "Workforce decisions made blind to data.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-PHT-04",
+   "level": 2,
+   "anchor_text": "Reports headcount basics; no analysis.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-PHT-04",
+   "level": 3,
+   "anchor_text": "Analyses people data to answer real workforce questions.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-PHT-04",
+   "level": 4,
+   "anchor_text": "Predictive people analytics inform retention, hiring and development.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-PHT-04",
+   "level": 5,
+   "anchor_text": "People analytics changed workforce strategy with proven results.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-PHT-05",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-PHT-05",
+   "level": 1,
+   "anchor_text": "No view of future workforce needs.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-PHT-05",
+   "level": 2,
+   "anchor_text": "Plans headcount short-term; capability blind.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-PHT-05",
+   "level": 3,
+   "anchor_text": "Plans workforce size and capability mix against business needs.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-PHT-05",
+   "level": 4,
+   "anchor_text": "Scenario-based workforce plans steer hiring and reskilling.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-PHT-05",
+   "level": 5,
+   "anchor_text": "Workforce planning anticipated shifts competitors missed.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-PHT-06",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-PHT-06",
+   "level": 1,
+   "anchor_text": "Culture toxic or unmanaged; engagement unknown.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-PHT-06",
+   "level": 2,
+   "anchor_text": "Measures engagement; action absent.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-PHT-06",
+   "level": 3,
+   "anchor_text": "Measures and acts on engagement; culture deliberately shaped.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-PHT-06",
+   "level": 4,
+   "anchor_text": "Engagement improving sustainably; culture initiatives stick.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-PHT-06",
+   "level": 5,
+   "anchor_text": "Built cultures people join for; engagement top-decile.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-PHT-07",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-PHT-07",
+   "level": 1,
+   "anchor_text": "Key-person risk everywhere; development ad hoc.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-PHT-07",
+   "level": 2,
+   "anchor_text": "Identifies talent; development informal.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-PHT-07",
+   "level": 3,
+   "anchor_text": "Runs succession and development for critical roles.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-PHT-07",
+   "level": 4,
+   "anchor_text": "Talent pipeline robust; internal mobility works; successors ready.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-PHT-07",
+   "level": 5,
+   "anchor_text": "Talent system produces leaders; bench strength exceptional.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-PHT-08",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-PHT-08",
+   "level": 1,
+   "anchor_text": "Exclusionary practices unaddressed.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-PHT-08",
+   "level": 2,
+   "anchor_text": "States DEI intent; practice unchanged.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-PHT-08",
+   "level": 3,
+   "anchor_text": "Implements inclusive processes with measurable participation.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-PHT-08",
+   "level": 4,
+   "anchor_text": "Bias systematically reduced in hiring, pay and promotion; data transparent.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-PHT-08",
+   "level": 5,
+   "anchor_text": "Inclusion outcomes demonstrably changed workforce composition and equity.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-DDA-01",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-DDA-01",
+   "level": 1,
+   "anchor_text": "Code does not work or is unreadable.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-DDA-01",
+   "level": 2,
+   "anchor_text": "Writes working code for small tasks; quality inconsistent.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-DDA-01",
+   "level": 3,
+   "anchor_text": "Delivers working, readable, tested code of moderate complexity.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-DDA-01",
+   "level": 4,
+   "anchor_text": "Code robust and maintainable; reviews others effectively; sound architecture choices.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-DDA-01",
+   "level": 5,
+   "anchor_text": "Engineering work of reference quality; systems scale and endure.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-DDA-02",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-DDA-02",
+   "level": 1,
+   "anchor_text": "Data flows manual, undocumented, breaking.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-DDA-02",
+   "level": 2,
+   "anchor_text": "Builds simple pipelines; fragile, unmonitored.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-DDA-02",
+   "level": 3,
+   "anchor_text": "Builds reliable pipelines with documented transformations.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-DDA-02",
+   "level": 4,
+   "anchor_text": "Pipelines robust at scale: tested, monitored, recoverable.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-DDA-02",
+   "level": 5,
+   "anchor_text": "Data platform work enables the organisation; throughput and reliability exemplary.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-DDA-03",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-DDA-03",
+   "level": 1,
+   "anchor_text": "Models misapplied; results invalid.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-DDA-03",
+   "level": 2,
+   "anchor_text": "Trains models; evaluation and leakage handling weak.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-DDA-03",
+   "level": 3,
+   "anchor_text": "Builds and evaluates models correctly for the problem at hand.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-DDA-03",
+   "level": 4,
+   "anchor_text": "Modeling rigorous: validation, robustness, deployment-ready.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-DDA-03",
+   "level": 5,
+   "anchor_text": "ML work delivers production value; methodology exemplary.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-DDA-06",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-DDA-06",
+   "level": 1,
+   "anchor_text": "Deployments manual, fragile, undocumented.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-DDA-06",
+   "level": 2,
+   "anchor_text": "Deploys to cloud; reliability and cost unmanaged.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-DDA-06",
+   "level": 3,
+   "anchor_text": "Runs cloud deployments with CI/CD and monitoring.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-DDA-06",
+   "level": 4,
+   "anchor_text": "Infrastructure as code; reliability, security and cost engineered.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-DDA-06",
+   "level": 5,
+   "anchor_text": "Platform engineering enables teams; uptime and velocity exceptional.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-STR-01",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-STR-01",
+   "level": 1,
+   "anchor_text": "Thinking horizon is the current task only.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-STR-01",
+   "level": 2,
+   "anchor_text": "Considers the longer term; analysis shallow.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-STR-01",
+   "level": 3,
+   "anchor_text": "Frames decisions in multi-year context with sound scenarios.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-STR-01",
+   "level": 4,
+   "anchor_text": "Strategic analysis shapes plans; anticipates second-order market moves.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-STR-01",
+   "level": 5,
+   "anchor_text": "Strategic foresight repeatedly proven right; others plan on their map.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-STR-02",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-STR-02",
+   "level": 1,
+   "anchor_text": "Business mechanics misunderstood; proposals ignore economics.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-STR-02",
+   "level": 2,
+   "anchor_text": "Grasps basics; misses drivers of profit and cash.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-STR-02",
+   "level": 3,
+   "anchor_text": "Understands how the business earns money; proposals economically sound.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-STR-02",
+   "level": 4,
+   "anchor_text": "Reads P&L, market and competition fluently; judgment commercially sharp.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-STR-02",
+   "level": 5,
+   "anchor_text": "Commercial instinct consistently identifies value others miss.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-STR-03",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-STR-03",
+   "level": 1,
+   "anchor_text": "No initiative beyond assigned work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-STR-03",
+   "level": 2,
+   "anchor_text": "Starts things; ownership fades under friction.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-STR-03",
+   "level": 3,
+   "anchor_text": "Initiates and carries ventures or initiatives to results.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-STR-03",
+   "level": 4,
+   "anchor_text": "Builds new activities end-to-end against resistance; resourceful and accountable.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-STR-03",
+   "level": 5,
+   "anchor_text": "Serial builder; created ventures or units of lasting significance.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-STR-04",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-STR-04",
+   "level": 1,
+   "anchor_text": "Product decisions ignore users entirely.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-STR-04",
+   "level": 2,
+   "anchor_text": "Considers users; evidence anecdotal.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-STR-04",
+   "level": 3,
+   "anchor_text": "Grounds product choices in user needs and feasibility.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-STR-04",
+   "level": 4,
+   "anchor_text": "Product judgment balances user value, business and technology; prioritisation sharp.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-STR-04",
+   "level": 5,
+   "anchor_text": "Product sense repeatedly produced winners; taste trusted org-wide.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-STR-05",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-STR-05",
+   "level": 1,
+   "anchor_text": "No market or customer evidence in decisions.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-STR-05",
+   "level": 2,
+   "anchor_text": "Collects some market data; analysis superficial.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-STR-05",
+   "level": 3,
+   "anchor_text": "Researches markets and customers systematically; insights actionable.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-STR-05",
+   "level": 4,
+   "anchor_text": "Insight work uncovers non-obvious segments, needs and dynamics.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-STR-05",
+   "level": 5,
+   "anchor_text": "Market understanding is a competitive weapon; predictions verified.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-STR-06",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-STR-06",
+   "level": 1,
+   "anchor_text": "Innovation direction absent; efforts scattershot.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-STR-06",
+   "level": 2,
+   "anchor_text": "Names innovation priorities; no resourcing or focus follows.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-STR-06",
+   "level": 3,
+   "anchor_text": "Sets innovation priorities aligned with strategy and resources them.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-STR-06",
+   "level": 4,
+   "anchor_text": "Innovation strategy concentrates bets; portfolio logic explicit and working.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-STR-06",
+   "level": 5,
+   "anchor_text": "Innovation direction created durable new business for the organisation.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-BM-01",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-BM-01",
+   "level": 1,
+   "anchor_text": "Operations chaotic; service levels unmanaged.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-BM-01",
+   "level": 2,
+   "anchor_text": "Keeps operations running; firefighting dominates.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-BM-01",
+   "level": 3,
+   "anchor_text": "Runs stable operations with managed capacity and service levels.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-BM-01",
+   "level": 4,
+   "anchor_text": "Operations efficient and improving; metrics-driven management.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-BM-01",
+   "level": 5,
+   "anchor_text": "Operational excellence at scale; benchmark performance.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-BM-04",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-BM-04",
+   "level": 1,
+   "anchor_text": "Advice generic; client problem misdiagnosed.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-BM-04",
+   "level": 2,
+   "anchor_text": "Executes advisory tasks; diagnosis shallow.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-BM-04",
+   "level": 3,
+   "anchor_text": "Diagnoses client problems correctly; recommendations actionable.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-BM-04",
+   "level": 4,
+   "anchor_text": "Advisory work reframes the client's problem; recommendations adopted.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-BM-04",
+   "level": 5,
+   "anchor_text": "Trusted advisor at senior level; engagements repeatedly renewed.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-BM-06",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-BM-06",
+   "level": 1,
+   "anchor_text": "Reports absent, wrong or unread.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-BM-06",
+   "level": 2,
+   "anchor_text": "Reports assembled; insight and timeliness lacking.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-BM-06",
+   "level": 3,
+   "anchor_text": "Delivers accurate, timely management reporting.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-BM-06",
+   "level": 4,
+   "anchor_text": "Reporting concise and decision-oriented; leadership relies on it.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-BM-06",
+   "level": 5,
+   "anchor_text": "Reporting architecture became the organisation's single source of truth.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-BM-07",
+   "level": 0,
+   "anchor_text": "No evidence of this capability in the evaluated work.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-BM-07",
+   "level": 1,
+   "anchor_text": "Vendor commitments unmanaged; terms unknown.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-BM-07",
+   "level": 2,
+   "anchor_text": "Manages contracts reactively; renewals surprise.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-BM-07",
+   "level": 3,
+   "anchor_text": "Manages vendors and contracts with clear terms and reviews.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-BM-07",
+   "level": 4,
+   "anchor_text": "Negotiates strong terms; vendor performance managed to SLA.",
+   "rubric_version": "0.9-draft"
+  },
+  {
+   "capability_id": "T3X-D-BM-07",
+   "level": 5,
+   "anchor_text": "Vendor portfolio strategically managed; substantial value captured.",
+   "rubric_version": "0.9-draft"
+  }
  ]
 }

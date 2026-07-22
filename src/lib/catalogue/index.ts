@@ -38,6 +38,12 @@ export type Skill = {
 
 export type EnumOption = { value: string; meaning: string };
 export type ScoringParam = { parameter: string; value: string; notes: string };
+export type Rubric = {
+  capability_id: string;
+  level: number;
+  anchor_text: string;
+  rubric_version: string;
+};
 export type Package = {
   package_id: string;
   name: string;
@@ -52,6 +58,7 @@ const data = raw as {
   scoringPolicy: ScoringParam[];
   packages: Package[];
   packageCapabilities: { package_id: string; capability_id: string }[];
+  rubrics: Rubric[];
 };
 
 /* ---- indexes ---------------------------------------------------------- */
@@ -124,6 +131,86 @@ export function getEnum(name: string): EnumOption[] {
 
 export function getScoringParam(parameter: string): string | undefined {
   return data.scoringPolicy.find((p) => p.parameter === parameter)?.value;
+}
+
+/* ---- rubrics (the 6 anchors per capability, for the evaluator view) --- */
+
+const rubricsByCapability = (() => {
+  const m = new Map<string, Rubric[]>();
+  for (const r of data.rubrics) {
+    const arr = m.get(r.capability_id) ?? [];
+    arr.push(r);
+    m.set(r.capability_id, arr);
+  }
+  for (const arr of m.values()) arr.sort((a, b) => a.level - b.level);
+  return m;
+})();
+
+/**
+ * The six rubric anchors (levels 0–5) for a capability, sorted by level, at the
+ * stored rubric_version (§7). Empty array if the capability has no rubrics yet.
+ */
+export function getRubric(capabilityId: string): Rubric[] {
+  return rubricsByCapability.get(capabilityId) ?? [];
+}
+
+/* ---- display helpers derived from enums / scoring_policy -------------- */
+
+const titleCase = (s: string) => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+
+/** Human label for an enum value: snake_case → words, "ai" → "AI". */
+export function prettyEnum(value: string): string {
+  return value
+    .split("_")
+    .map((w) => (w === "ai" ? "AI" : w))
+    .join(" ")
+    .replace(/^\w/, (c) => c.toUpperCase());
+}
+
+/** Difficulty options with title-cased labels (enum values are UPPERCASE). */
+export function getDifficultyLevels(): { value: string; label: string }[] {
+  return getEnum("difficulty").map((o) => ({ value: o.value, label: titleCase(o.value) }));
+}
+
+/** Evaluator roles with title-cased labels. */
+export function getEvaluatorRoles(): { value: string; label: string }[] {
+  return getEnum("evaluator_role").map((o) => ({ value: o.value, label: titleCase(o.value) }));
+}
+
+/** Capabilities grouped by family (non-dormant), for catalogue displays. */
+export function getCapabilityFamilies(): { family: string; capabilities: Capability[] }[] {
+  const groups = new Map<string, Capability[]>();
+  for (const c of getCapabilities()) {
+    const arr = groups.get(c.family) ?? [];
+    arr.push(c);
+    groups.set(c.family, arr);
+  }
+  return [...groups.entries()].map(([family, capabilities]) => ({ family, capabilities }));
+}
+
+// Score bounds from scoring_policy (e.g. "integer 0-5") — never hardcoded.
+const scoreBounds = (getScoringParam("score_scale") ?? "0-5").match(/(\d+)\D+(\d+)/);
+export const SCORE_MIN = scoreBounds ? Number(scoreBounds[1]) : 0;
+export const SCORE_MAX = scoreBounds ? Number(scoreBounds[2]) : 5;
+
+export type ScoreStep = { value: number; requiresComment: boolean; label?: string };
+
+/**
+ * The 0–5 score scale as data (v1.6): holistic integers against the capability's
+ * rubric anchors, comment mandatory at the scores in `comment_required_scores`.
+ * No generic quality labels — quality language lives only in rubric anchors.
+ */
+export function getScoreScale(): ScoreStep[] {
+  const required = new Set(
+    (getScoringParam("comment_required_scores") ?? "0;1;5")
+      .split(";")
+      .map((n) => Number(n.trim()))
+  );
+  const steps: ScoreStep[] = [];
+  for (let v = SCORE_MIN; v <= SCORE_MAX; v++) {
+    steps.push({ value: v, requiresComment: required.has(v) });
+  }
+  return steps;
 }
 
 export const catalogueCounts = {

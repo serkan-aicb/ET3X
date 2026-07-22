@@ -26,6 +26,10 @@ const PUBLIC_PREFIXES = [
   '/design-lab',
   '/profile-studio-preview',
   '/onboarding-preview',
+  // Evaluator reaches the scoring flow via a single-use token link, not an
+  // account (Week 4 assumption — pending André on whether evaluators must log
+  // in; see workspace doc 15). Token validation is Cyprian's in production.
+  '/evaluate',
 ]
 
 export async function proxy(request: NextRequest) {

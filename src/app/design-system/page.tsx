@@ -38,7 +38,13 @@ import { KpiCard } from "@/components/dashboard/kpi-card";
 import { SectionHeader } from "@/components/dashboard/section-header";
 import { CapabilityScore } from "@/components/evaluation/capability-score";
 import { ScoreScale } from "@/components/evaluation/score-scale";
-import { mockEvaluationConfig } from "@/lib/verification/mock-config";
+import {
+  getCapabilityFamilies,
+  getDifficultyLevels,
+  getEvaluatorRoles,
+  getScoreScale,
+  catalogueCounts,
+} from "@/lib/catalogue";
 
 const COLOR_TOKENS = [
   { name: "primary", cssVar: "--primary", note: "interactive steel blue (logo-derived) · buttons, links, focus" },
@@ -90,7 +96,10 @@ function DesignSystemSection({
 }
 
 export default function DesignSystemPage() {
-  const config = mockEvaluationConfig;
+  const difficultyLevels = getDifficultyLevels();
+  const evaluatorRoles = getEvaluatorRoles();
+  const scoreScale = getScoreScale();
+  const capabilityFamilies = getCapabilityFamilies();
 
   return (
     <div className="min-h-screen bg-background">
@@ -475,8 +484,8 @@ export default function DesignSystemPage() {
                     <SelectValue placeholder="Select difficulty" />
                   </SelectTrigger>
                   <SelectContent>
-                    {config.difficultyLevels.map((level) => (
-                      <SelectItem key={level.id} value={level.id}>
+                    {difficultyLevels.map((level) => (
+                      <SelectItem key={level.value} value={level.value}>
                         {level.label}
                       </SelectItem>
                     ))}
@@ -603,9 +612,7 @@ export default function DesignSystemPage() {
                     <TableCell className="font-medium">Sarah Johnson</TableCell>
                     <TableCell>Market Analysis Project</TableCell>
                     <TableCell>
-                      <StatusBadge tone="success">
-                        {config.verificationTiers[0].label}
-                      </StatusBadge>
+                      <StatusBadge tone="success">Verified</StatusBadge>
                     </TableCell>
                     <TableCell className="text-right tabular-nums">4.3</TableCell>
                   </TableRow>
@@ -626,25 +633,25 @@ export default function DesignSystemPage() {
         {/* ── Product patterns from verification-layer config ────── */}
         <DesignSystemSection
           title="Evaluation score scale (from config)"
-          description="Fixed 0–5 scale rendered from the verification-layer stub. Scores 1 and 5 auto-require a comment."
+          description="Holistic 0–5, scored against each capability's rubric anchors (handover v1.6) — never a global label set. Comment mandatory at 0, 1 and 5, from scoring_policy."
         >
           <div className="grid gap-6 lg:grid-cols-2">
             <Card>
               <CardHeader>
                 <CardTitle className="text-base">Scale reference</CardTitle>
-                <CardDescription>config.scoreScale, unselected</CardDescription>
+                <CardDescription>getScoreScale(), unselected</CardDescription>
               </CardHeader>
               <CardContent>
-                <ScoreScale steps={config.scoreScale} />
+                <ScoreScale steps={scoreScale} />
               </CardContent>
             </Card>
             <Card>
               <CardHeader>
                 <CardTitle className="text-base">With a selection</CardTitle>
-                <CardDescription>display-only selected state (4 · Strong)</CardDescription>
+                <CardDescription>display-only selected state (score 4)</CardDescription>
               </CardHeader>
               <CardContent>
-                <ScoreScale steps={config.scoreScale} selected={4} />
+                <ScoreScale steps={scoreScale} selected={4} />
               </CardContent>
             </Card>
           </div>
@@ -674,7 +681,7 @@ export default function DesignSystemPage() {
               <CapabilityScore
                 label="Leadership"
                 score={2.9}
-                caption="based on 1 evaluation · low familiarity"
+                caption="based on 1 evaluation · provisional"
               />
             </CardContent>
           </Card>
@@ -682,17 +689,17 @@ export default function DesignSystemPage() {
 
         <DesignSystemSection
           title="Config-driven lists (verification-layer stub)"
-          description="Everything below renders from mock-config.ts and will switch to the live API without UI changes."
+          description="Everything below renders from src/lib/catalogue (the ingested handover v1.6 framework) and will switch to Cyprian's live API without UI changes."
         >
           <div className="grid gap-6 lg:grid-cols-3">
             <Card>
               <CardHeader>
                 <CardTitle className="text-base">Evaluator roles</CardTitle>
-                <CardDescription>context: {config.context}</CardDescription>
+                <CardDescription>supplied per context; declared per evaluation</CardDescription>
               </CardHeader>
               <CardContent className="flex flex-wrap gap-2">
-                {config.evaluatorRoles.map((role) => (
-                  <Badge key={role.id} variant="secondary">
+                {evaluatorRoles.map((role) => (
+                  <Badge key={role.value} variant="secondary">
                     {role.label}
                   </Badge>
                 ))}
@@ -704,8 +711,8 @@ export default function DesignSystemPage() {
                 <CardDescription>fixed in every context</CardDescription>
               </CardHeader>
               <CardContent className="flex flex-wrap gap-2">
-                {config.difficultyLevels.map((level) => (
-                  <Badge key={level.id} variant="outline">
+                {difficultyLevels.map((level) => (
+                  <Badge key={level.value} variant="outline">
                     {level.label}
                   </Badge>
                 ))}
@@ -714,21 +721,22 @@ export default function DesignSystemPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-base">Capability catalogue</CardTitle>
-                <CardDescription>families → capabilities</CardDescription>
+                <CardDescription>
+                  {catalogueCounts.capabilities} capabilities · {catalogueCounts.skills} skills
+                </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-3">
-                {config.capabilityCatalogue.map((family) => (
-                  <div key={family.id}>
-                    <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                      {family.label}
-                    </p>
-                    <div className="mt-1 flex flex-wrap gap-1.5">
-                      {family.capabilities.map((capability) => (
-                        <Badge key={capability.id} variant="secondary">
-                          {capability.label}
-                        </Badge>
-                      ))}
-                    </div>
+              <CardContent className="space-y-1.5">
+                {capabilityFamilies.map((family) => (
+                  <div
+                    key={family.family}
+                    className="flex items-center justify-between gap-2 border-b border-muted pb-1.5 last:border-0"
+                  >
+                    <span className="min-w-0 truncate text-sm text-foreground">
+                      {family.family}
+                    </span>
+                    <Badge variant="secondary" className="shrink-0 tabular-nums">
+                      {family.capabilities.length}
+                    </Badge>
                   </div>
                 ))}
               </CardContent>
