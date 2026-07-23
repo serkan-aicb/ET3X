@@ -39,23 +39,16 @@ import { Button } from "@/components/ui/button";
 import { FocusedFlowShell } from "@/components/layout/focused-flow-shell";
 import { SkillPicker } from "@/components/catalogue/skill-picker";
 import { DRAFT_KEYS, useLocalDraft, writeDraft } from "@/lib/local-draft";
+import type {
+  EduRow,
+  ExpRow,
+  Method,
+  OnboardingDraft,
+} from "@/lib/profile/profile-types";
 
-type Method = "cv" | "linkedin";
 type Status = "idle" | "uploading" | "done";
-type EduRow = { school: string; degree: string; year: string };
-type ExpRow = { role: string; org: string; period: string };
 // Skills are the governed catalogue (v1.6): store skill_ids, not free text.
 type Extraction = { education: EduRow[]; experience: ExpRow[]; skillIds: string[] };
-
-type OnboardingDraft = {
-  step: number;
-  method: Method;
-  name: string;
-  headline: string;
-  education: EduRow[];
-  experience: ExpRow[];
-  skillIds: string[];
-};
 
 const STEPS = ["Welcome", "Import", "Review", "Done"];
 
