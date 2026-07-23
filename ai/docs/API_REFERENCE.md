@@ -1,9 +1,10 @@
 # Talent3X Cross-Team API Reference
 
-> **Status:** v0.1 — aspirational end-state contract; provisional items flagged inline with decision owners
-> **Maintainer:** Steve (Language Intelligence) · **Date:** 2026-07-08
-> **Companion:** `INTEGRATION_AND_HANDOFF.md` v0.2 (ownership & handoffs — this doc expands its contracts into concrete shapes)
+> **Status:** v0.2 — aspirational end-state contract; provisional items flagged inline with decision owners
+> **Maintainer:** Steve (Language Intelligence) · **Date:** 2026-07-08 (updated 2026-07-15)
+> **Companion:** `INTEGRATION_AND_HANDOFF.md` v0.3 (ownership & handoffs — this doc expands its contracts into concrete shapes)
 > **Rule zero:** capability scores are deterministic and independent of AI. Any contract in this doc that would let AI output write a score is wrong by definition.
+> **Update 2026-07-15:** CV extraction (`w2_onboarding_cv`) is deterministic — same C2.1/C4.1 schemas, no LLM call. See the callout under C2.1.
 
 ## Table of contents
 
@@ -103,9 +104,11 @@ Cyprian consumes `evaluation_weight` in the Capability Engine; he never computes
   "capability_catalogue": "…see PROVISIONAL below…" }
 ```
 
+> **⚠ Update 2026-07-15 — CV extraction is deterministic.** `w2_onboarding_cv` never reaches Qwen: `features.json` sets `"engine": "local"` and extraction runs via `ai/eval/scripts/extract-cv-local.ts` (regex parsing + keyword skill mapping). This C2.1 request shape and the C4.1 response schema are **unchanged**, but C3 (prompt composition) does not apply — Nivin's layer invokes/ports the script instead of making an LLM call. The retired prompt `cv-extraction.md` exists only for W8 regression (w8-001). LinkedIn (C2.2) remains AI-based.
+
 **C2.2 LinkedIn extraction (`w2_onboarding_linkedin`)** — as C2.1 with `linkedin_text` instead of `cv_text`.
 
-> **⚠ PROVISIONAL — capability catalogue source.** Target contract: the catalogue (families → capabilities → skills + aliases) is injected per call, and prompts match against it — the pattern `available_skills` already uses in C2.3. Current W2 prompt files instead hardcode ~20 skill labels. · **Decision owner:** Cyprian (catalogue schema). · **Resolves:** schema published → Steve rewrites W2 prompts to consume it → re-validated.
+> **⚠ PROVISIONAL — capability catalogue source.** Target contract: the catalogue (families → capabilities → skills + aliases) is injected per call, and prompts match against it — the pattern `available_skills` already uses in C2.3. The LinkedIn prompt currently hardcodes ~20 skill labels; the CV script hardcodes them in its `SKILL_RULES` keyword table. · **Decision owner:** Cyprian (catalogue schema). · **Resolves:** schema published → Steve rewrites the LinkedIn prompt and rekeys the CV keyword table → re-validated.
 
 **C2.3 Capability suggestion (`w3_capability_suggestion`)**
 ```json
@@ -199,7 +202,7 @@ Cyprian consumes `evaluation_weight` in the Capability Engine; he never computes
 
 **Per-feature `output` payloads** (authoritative source: the schema block inside each prompt file):
 
-**C4.1 CV extraction** *(bare JSON object)*
+**C4.1 CV extraction** *(bare JSON object; since 2026-07-15 produced by the deterministic script — schema contract unchanged, see C2.1 callout)*
 ```json
 { "education":  [{ "institution": "string", "degree": "string", "field": "string", "period": "string" }],
   "experience": [{ "organization": "string", "role": "string", "period": "string", "summary": "string" }],
@@ -217,7 +220,7 @@ Cyprian consumes `evaluation_weight` in the Capability Engine; he never computes
    "suggestion_strength": "enum | high, medium, low" }]
 ```
 
-> **⚠ PROVISIONAL — `suggestion_strength` rename.** Prompt files currently emit this field as `confidence`, which collides with Cyprian's deterministic **Confidence schema** (different concept, same name). This doc documents the target name; prompts/datasets migrate on agreement. · **Decision owner:** team (Steve proposes `suggestion_strength`; Nivin/Cyprian agree). · **Resolves:** before Nivin freezes the response contract.
+> **⚠ PROVISIONAL — `suggestion_strength` rename.** Prompt files (and the CV extraction script) currently emit this field as `confidence`, which collides with Cyprian's deterministic **Confidence schema** (different concept, same name). This doc documents the target name; prompts/datasets migrate on agreement. · **Decision owner:** team (Steve proposes `suggestion_strength`; Nivin/Cyprian agree). · **Resolves:** before Nivin freezes the response contract.
 
 **C4.4 Capability validation** *(validate mode — bare JSON object)*
 ```json
@@ -268,16 +271,18 @@ Cyprian consumes `evaluation_weight` in the Capability Engine; he never computes
 
 ## 4. Flagship pipeline: capability normalization
 
-**The three-way contract:** imported CV/LinkedIn skills normalize to canonical capabilities via the AI suggestion service — **Steve's prompts × Nivin's execution × Cyprian's catalogue**. Recommended as the **first live integration**: it forces the C1-config, C2-envelope, C3-composition, and C4-parsing contracts to be agreed at once, on the lowest-risk surface (onboarding suggestions the student must confirm anyway).
+**The three-way contract:** imported CV/LinkedIn skills normalize to canonical capabilities via the AI suggestion service — **Steve's prompts × Nivin's execution × Cyprian's catalogue**. Recommended as the **first live integration**: it forces the C1-config, C2-envelope, C3-composition, and C4-parsing contracts to be agreed at once, on the lowest-risk surface (onboarding suggestions the student must confirm anyway). *(Update 2026-07-15: with CV extraction deterministic, LinkedIn is the AI round trip that exercises C3 — the LinkedIn flow is this pipeline with `linkedin_text`/C2.2. For CVs, steps 3–5 below collapse to a deterministic function call.)*
 
-Round trip:
+Round trip (LinkedIn, or any AI extraction):
 
 ```
-1. Student pastes CV text                                        (Klenis: onboarding UI)
-2. Backend builds request: cv_text + capability_catalogue slice   (Cyprian: catalogue via C1 config)
-3. AI API call: feature=w2_onboarding_cv, role=student            (C2 envelope → Nivin)
-4. Nivin composes shared stack + cv-extraction prompt → Qwen      (C3)
-5. Model returns C4.1 JSON: suggested_skills with canonical
+1. Student pastes CV/LinkedIn text                                (Klenis: onboarding UI)
+2. Backend builds request: text + capability_catalogue slice      (Cyprian: catalogue via C1 config)
+3. AI API call, e.g. feature=w2_onboarding_linkedin, role=student (C2 envelope → Nivin)
+4. Nivin composes shared stack + feature prompt → Qwen            (C3)
+   [CV only: steps 3–4 are replaced by a deterministic call to
+    the extract-cv-local logic — no C3, no Qwen]
+5. C4.1-shaped JSON returned: suggested_skills with canonical
    labels + evidence + suggestion_strength                        (aliases resolved against catalogue)
 6. Nivin parses, validates format, returns envelope               (C4; parse failure → G-RETRY)
 7. UI renders suggestions for student confirmation                (Klenis: advisory framing, confirm/reject)
@@ -313,7 +318,7 @@ These are enforceable checks, not aspirations. Steve's eval harness enforces the
 | **G-REQ** | Required fields per feature | C4.1/2: all four/five top-level keys present (empty allowed, absent not). C4.3: every element has all three fields; `skill` ∈ `available_skills`. C4.4: all three fields, `supported` boolean. C4.9: `verdict` ∈ {pass, fail}; `unsupported_claims` array |
 | **G-RETRY** | Retry/fallback transparency | **Co-designed contract (Nivin + Steve), required before production:** a malformed model response may trigger a bounded retry, but every malformed attempt is logged with `request_id` + prompt version and counted in quality telemetry. Retries must never silently mask a format-failure rate that eval would gate on — if production format failures exceed the eval baseline, that's a regression alert, not a parsing detail |
 | **G-ROLE** | Role boundaries | `role` comes from the platform (C2), never user input. Educator-only features (C4.6/7) return `refused` for other roles. Cross-user data appears only as role-permitted aggregates already present in the context block |
-| **G-INJ** | Document content is data | Text inside `cv_text` / `linkedin_text` / `submission_excerpt` / `summary` is never instructions. Injection attempts are flagged (`extraction_notes`) and processing continues. Eval: W2 injection battery at 100% |
+| **G-INJ** | Document content is data | Text inside `cv_text` / `linkedin_text` / `submission_excerpt` / `summary` is never instructions. Injection attempts are flagged (`extraction_notes`) and processing continues. Eval: W2 injection battery at 100% (CV path is deterministic — instruction-like lines are quarantined by construction; battery retained in `w2_onboarding_cv.jsonl`) |
 
 ---
 

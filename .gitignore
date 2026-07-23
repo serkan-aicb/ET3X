@@ -47,6 +47,9 @@ yarn-error.log*
 # AI workstream — scratch iteration outputs (commit only ai/eval/results/reports/)
 ai/eval/results/runs/
 
+# AI workstream — CV inbox: personal files, never committed
+ai/eval/inbox/
+
 # generated blockchain deployment artifacts
 contracts/*.json
 

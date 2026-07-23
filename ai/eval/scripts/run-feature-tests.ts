@@ -3,11 +3,21 @@
  *
  * Usage:
  *   npm run test:feature -- <feature_key> [--force] [--dry-run] [--model <id>] [--report]
+ *   npm run test:feature -- <feature_key> --file <path> [--key <context_key>] [--force] [--model <id>]
+ *   npm run test:feature -- w2_onboarding_cv [--file <path>]   (local engine: no key, no --force)
  *   npm run test:feature -- --list
  *
  * - Respects feature flags in ai/config/features.json (disabled → refuses; --force overrides
  *   for local iteration on dormant features).
  * - --dry-run validates dataset + prompt extraction without API calls (no key needed).
+ * - --file smoke-tests the feature's prompt stack against a real local text file instead of
+ *   the dataset: the file contents go into the context block under --key (default cv_text,
+ *   use linkedin_text for w2_onboarding_linkedin), the model output is printed in full, and
+ *   only the bare-JSON format contract is checked. Not a validation run; --report is ignored.
+ * - Features with `"engine": "local"` in features.json (currently w2_onboarding_cv, whose AI
+ *   prompt was retired 2026-07-15) never call a model: extraction runs via the deterministic
+ *   script in extract-cv-local.ts — no key, no network, no dormancy gate. --report is ignored
+ *   for these so the committed AI-era validation reports stay untouched.
  * - Live runs call a Qwen model over the OpenAI-compatible chat completions API.
  *   Requires DASHSCOPE_API_KEY (Alibaba Cloud Model Studio), or set QWEN_BASE_URL to a
  *   self-hosted endpoint (vLLM/Ollama), in which case the key is optional.
@@ -17,6 +27,7 @@
  */
 import * as fs from 'fs';
 import * as path from 'path';
+import { extractCv } from './extract-cv-local';
 
 const REPO_ROOT = path.resolve(__dirname, '../../..');
 const FEATURES_PATH = path.join(REPO_ROOT, 'ai/config/features.json');
@@ -49,6 +60,7 @@ interface FeatureConfig {
   description: string;
   week: number;
   status: string;
+  engine?: 'local';
   prompts: string[];
   dataset: string;
 }
@@ -111,6 +123,20 @@ function loadDataset(relPath: string): TestCase[] {
         throw new Error(`${relPath}:${i + 1} is not valid JSON: ${(e as Error).message}`);
       }
     });
+}
+
+/** One-off smoke case from a local text file — format contract only, output is eyeballed. */
+function makeFileCase(filePath: string, contextKey: string): TestCase {
+  const text = fs.readFileSync(filePath, 'utf-8');
+  return {
+    id: 'local-file',
+    description: `Local file smoke test (${path.basename(filePath)})`,
+    prompt: null,
+    context_block: { role: 'student', [contextKey]: text },
+    user_turn: 'Extract my profile data from the provided text.',
+    expected: { must_contain: [], must_not_contain: [], format: 'json' },
+    tags: ['smoke'],
+  };
 }
 
 function checkOutput(tc: TestCase, output: string): string[] {
@@ -181,6 +207,22 @@ async function runCase(model: string, system: string, tc: TestCase): Promise<Cas
   };
 }
 
+/** Local-engine features: run the deterministic extractor instead of a model. No tokens, no cost. */
+function runLocalCase(tc: TestCase): CaseResult {
+  const output = JSON.stringify(extractCv(String(tc.context_block.cv_text ?? '')), null, 2);
+  const failures = checkOutput(tc, output);
+  return {
+    id: tc.id,
+    description: tc.description,
+    tags: tc.tags,
+    passed: failures.length === 0,
+    failures,
+    output,
+    usage: { input_tokens: 0, output_tokens: 0 },
+    cost_usd: 0,
+  };
+}
+
 function writeReport(feature: string, model: string, results: CaseResult[], promptFiles: string[]) {
   const passed = results.filter((r) => r.passed).length;
   const totalCost = results.reduce((s, r) => s + r.cost_usd, 0);
@@ -242,25 +284,39 @@ async function main() {
     return;
   }
 
-  const featureKey = args.find((a) => !a.startsWith('--'));
+  // Skip values consumed by flags so e.g. a --file path isn't mistaken for the feature key.
+  const valueFlags = ['--model', '--file', '--key'];
+  const consumed = new Set(valueFlags.map((f) => args.indexOf(f) + 1).filter((i) => i > 0));
+  const featureKey = args.find((a, i) => !a.startsWith('--') && !consumed.has(i));
   if (!featureKey || !features[featureKey]) {
     console.error(`Feature "${featureKey}" not found. Use --list to see available features.`);
     process.exit(1);
   }
   const feature = features[featureKey];
+  const localEngine = feature.engine === 'local';
   const force = args.includes('--force');
   const dryRun = args.includes('--dry-run');
   const report = args.includes('--report');
   const modelIdx = args.indexOf('--model');
-  const model = modelIdx >= 0 ? args[modelIdx + 1] : DEFAULT_MODEL;
-
-  if (!feature.enabled && !force) {
+  const model = localEngine ? 'local-heuristic' : modelIdx >= 0 ? args[modelIdx + 1] : DEFAULT_MODEL;
+  const fileIdx = args.indexOf('--file');
+  const filePath = fileIdx >= 0 ? args[fileIdx + 1] : null;
+  if (fileIdx >= 0 && (!filePath || filePath.startsWith('--'))) {
+    console.error('--file requires a path to a plain-text file.');
+    process.exit(1);
+  }
+  const keyIdx = args.indexOf('--key');
+  const contextKey = keyIdx >= 0 ? args[keyIdx + 1] : 'cv_text';
+  // Dormancy gates model spend and premature promotion; local-engine runs risk neither.
+  if (!feature.enabled && !force && !localEngine) {
     console.log(`Feature ${featureKey} is dormant. Enable it in features.json to test, or pass --force for local iteration.`);
     return;
   }
 
-  const cases = loadDataset(feature.dataset);
-  console.log(`${featureKey}: ${cases.length} cases, model ${model}${dryRun ? ' (dry run)' : ''}`);
+  const cases = filePath ? [makeFileCase(filePath, contextKey)] : loadDataset(feature.dataset);
+  console.log(
+    `${featureKey}: ${cases.length} case${cases.length === 1 ? '' : 's'}${filePath ? ` from ${filePath}` : ''}, model ${model}${dryRun ? ' (dry run)' : ''}`,
+  );
 
   if (dryRun) {
     // Validate prompt extraction for every prompt the run would touch.
@@ -270,7 +326,7 @@ async function main() {
     return;
   }
 
-  if (!API_KEY && !process.env.QWEN_BASE_URL) {
+  if (!localEngine && !API_KEY && !process.env.QWEN_BASE_URL) {
     console.error(
       'DASHSCOPE_API_KEY is not set. Set it for DashScope, or set QWEN_BASE_URL for a self-hosted endpoint. Use --dry-run for structural checks without a key.',
     );
@@ -279,15 +335,15 @@ async function main() {
 
   const results: CaseResult[] = [];
   for (const tc of cases) {
-    const system = composeSystem(feature.prompts, tc.prompt);
     process.stdout.write(`  ${tc.id} ... `);
     try {
-      const r = await runCase(model, system, tc);
+      const r = localEngine ? runLocalCase(tc) : await runCase(model, composeSystem(feature.prompts, tc.prompt), tc);
       results.push(r);
       console.log(
         `${r.passed ? 'PASS' : 'FAIL'}  (${r.usage.input_tokens}in/${r.usage.output_tokens}out $${r.cost_usd.toFixed(4)})`,
       );
       for (const f of r.failures) console.log(`         ↳ ${f}`);
+      if (filePath) console.log(`\n${r.output}\n`);
     } catch (e) {
       results.push({
         id: tc.id, description: tc.description, tags: tc.tags, passed: false,
@@ -306,10 +362,15 @@ async function main() {
 
   fs.mkdirSync(RUNS_DIR, { recursive: true });
   const runFile = path.join(RUNS_DIR, `${featureKey}-${Date.now()}.json`);
-  fs.writeFileSync(runFile, JSON.stringify({ feature: featureKey, model, when: new Date().toISOString(), results }, null, 2));
+  fs.writeFileSync(
+    runFile,
+    JSON.stringify({ feature: featureKey, model, source: filePath ?? feature.dataset, when: new Date().toISOString(), results }, null, 2),
+  );
   console.log(`run log → ${path.relative(REPO_ROOT, runFile)}`);
 
-  if (report) writeReport(featureKey, model, results, feature.prompts);
+  if (report && (filePath || localEngine))
+    console.log('--report ignored: smoke/local-engine runs do not update validation reports.');
+  else if (report) writeReport(featureKey, model, results, feature.prompts);
   if (passed < results.length) process.exit(1);
 }
 

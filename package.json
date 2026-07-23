@@ -16,6 +16,8 @@
     "db:setup": "node src/scripts/setup-db.js",
     "test": "jest",
     "test:feature": "npx tsx ai/eval/scripts/run-feature-tests.ts",
+    "extract:cv": "npx tsx ai/eval/scripts/extract-cv-local.ts",
+    "extract:inbox": "npx tsx ai/eval/scripts/process-inbox.ts",
     "relayer": "npx tsx src/blockchain/relayer.ts"
   },
   "dependencies": {

@@ -1,8 +1,12 @@
-# CV Extraction Prompt — v0.1
+# CV Extraction Prompt — v0.1 [RETIRED]
 
 **Feature flag:** `w2_onboarding_cv`
-**Status:** dormant (`enabled: false` in `ai/config/features.json`)
-**Last updated:** 2026-07-05
+**Status:** RETIRED (2026-07-15) — CV extraction is now deterministic, implemented in
+`ai/eval/scripts/extract-cv-local.ts` (`"engine": "local"` in `ai/config/features.json`).
+This prompt is no longer part of the feature's stack and must not be integrated. It is kept
+in the repo only because the W8 regression suite (`w8_e2e_regression.jsonl`, case w8-001)
+references it, and as historical record of the AI approach.
+**Last updated:** 2026-07-15
 **Optimized by:** Steve
 
 Extracts structured profile data from CV text pasted during student onboarding. Composed after the shared stack (system-prompt + behavior-rules + guardrails).
