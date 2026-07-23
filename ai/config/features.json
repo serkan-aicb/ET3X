@@ -10,10 +10,11 @@
     },
     "w2_onboarding_cv": {
       "enabled": false,
-      "description": "CV extraction validation",
+      "description": "CV extraction — deterministic local script (AI prompt retired 2026-07-15, kept for W8 regression)",
       "week": 2,
-      "status": "pending",
-      "prompts": ["ai/prompts/onboarding/cv-extraction.md"],
+      "status": "deterministic",
+      "engine": "local",
+      "prompts": [],
       "dataset": "ai/eval/datasets/w2_onboarding_cv.jsonl"
     },
     "w2_onboarding_linkedin": {

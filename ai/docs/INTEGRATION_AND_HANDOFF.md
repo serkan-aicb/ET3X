@@ -1,8 +1,10 @@
 # AI Behavior Workstream — Integration & Handoff
 
 > **Owner:** Steve (Language Intelligence)
-> **Date:** 2026-07-08 · **Status:** v0.2 — reconciled against teammates' confirmed task scopes (see §8 for discrepancies this surfaced)
+> **Date:** 2026-07-08 · **Status:** v0.3 — reconciled against teammates' confirmed task scopes (see §8 for discrepancies this surfaced)
 > **Companion docs:** `workstream-status-report.md` (full status), `validation-strategy.md` (quality gates), `behavior-framework.md` (behavior rules)
+
+> **⚠ Update 2026-07-15 — CV extraction is no longer an AI feature.** `w2_onboarding_cv` runs on a deterministic script (`ai/eval/scripts/extract-cv-local.ts`; `"engine": "local"` in `features.json`) — no prompt, no Qwen call. The request/response JSON schemas are **unchanged**; only the engine behind them changed. The AI prompt `cv-extraction.md` is retired (kept solely for W8 regression case w8-001). LinkedIn extraction remains AI-based. CV-specific statements below are annotated where superseded.
 
 ---
 
@@ -54,14 +56,15 @@ Validation runs the same composition offline: dataset case → composed stack �
 
 | Feature (flag) | Needs from Cyprian | Needs from Nivin | Delivers to Klenis |
 |---|---|---|---|
-| W2 CV / LinkedIn extraction (`w2_*`) | **Capability catalogue schema incl. aliases** (extraction normalizes imported skills to canonical capabilities — see three-way dependency below) | Request/response contract; raw pasted text in context block; input size caps | Extraction JSON schema for onboarding UI, incl. empty/`extraction_notes` states |
+| W2 LinkedIn extraction (`w2_onboarding_linkedin`) | **Capability catalogue schema incl. aliases** (extraction normalizes imported skills to canonical capabilities — see three-way dependency below) | Request/response contract; raw pasted text in context block; input size caps | Extraction JSON schema for onboarding UI, incl. empty/`extraction_notes` states |
+| W2 CV extraction (`w2_onboarding_cv`) — **deterministic since 2026-07-15** | Catalogue schema still needed: the script's skill keyword table must map to canonical capabilities when it lands | No AI call — extraction runs as a deterministic function (port/invoke `extract-cv-local.ts`); same input size caps apply | Same extraction JSON schema as LinkedIn, incl. empty/`extraction_notes` states |
 | W3 capability suggestion (`w3_capability_suggestion`) | Catalogue supplied per call (canonical labels + aliases) | Context block = action/submission text + catalogue slice | JSON array `{skill, evidence, confidence}`, ordered strongest-first, may be `[]` — always advisory |
 | W3/W5 capability explanation & growth (`w3_capability_validation`, `w5_*`) | Capability Engine semantics (score × evaluation_weight aggregation) frozen, so narration matches displayed numbers | Context block = per-capability scores + evidence, pre-computed | Markdown ≤150 words; explicit "no evidence yet" states to design for |
 | W4 evaluation interpretation & feedback (`w4_*`) | Evaluation Engine output shape | Context block = submission + evaluator's own evaluations only | Markdown feedback drafts; educator-only surfaces; must read as *suggestion*, never verdict |
 | W6 analytics insights (`w6_*`) | **Analytics Calculation Engine payloads + small-N suppression** (hard dependency — AI narrates, never computes) | Context block = Cyprian's aggregates only — never raw rows | Markdown with one-line headline finding first |
 | W7 reporting (`w7_reporting`) | Analytics + Benchmarking payloads (same contract as W6) | Same as W6, admin role asserted | Executive-summary markdown structure |
 
-**The flagship three-way dependency — capability normalization:** imported LinkedIn/CV skills "normalise to a canonical capability via the AI suggestion service." That service is **Steve's W2/W3 prompt work, executed through Nivin's layer, consuming Cyprian's catalogue schema**. It cannot ship until: Cyprian's catalogue schema (families → capabilities → skills + aliases) is final → Steve's extraction/suggestion prompts consume it via the context block → Nivin's service injects it per call. This is the first feature where all three layers must agree, and the natural pilot for the request/response contract.
+**The flagship three-way dependency — capability normalization:** imported LinkedIn/CV skills "normalise to a canonical capability via the AI suggestion service." That service is **Steve's W2/W3 prompt work, executed through Nivin's layer, consuming Cyprian's catalogue schema**. It cannot ship until: Cyprian's catalogue schema (families → capabilities → skills + aliases) is final → Steve's extraction/suggestion prompts consume it via the context block → Nivin's service injects it per call. This is the first feature where all three layers must agree, and the natural pilot for the request/response contract. *(Update 2026-07-15: the AI leg of this dependency now applies to LinkedIn extraction and W3 suggestion only — CV extraction is deterministic, but its keyword table has the same catalogue dependency: it must key on canonical capabilities once the schema lands.)*
 
 **What happens after handoff:** Nivin wires each enabled feature into his AI APIs and his parser consumes outputs matching Steve's format spec; Klenis builds panels against the response shapes above (validation reports carry real sample outputs to design from); Cyprian's numbers appear verbatim in narration — never recomputed, never overwritten.
 
@@ -86,7 +89,7 @@ Validation runs the same composition offline: dataset case → composed stack �
 | A3 | **Superseded — see §8.1** | ~~20 stable skill labels~~ → catalogue is families → capabilities → skills with aliases, supplied centrally per call | Steve: prompts must consume the catalogue from the context block, not hardcode labels |
 | A4 | Assumed | Production composes prompts byte-identically to the harness, same Qwen deployment | Nivin: any deviation voids validation results |
 | A5 | **Confirmed** | AI outputs stored as regenerable, advisory, non-canonical content; never written to capability scores | Nivin: storage schema (AI_INTERACTIONS separate); Klenis: never render AI text as evidence/score |
-| A6 | Assumed | Users can paste attacker-controlled text (CVs, submissions) | Nivin: cap input sizes; Steve: G4 injection battery mandatory at 100% |
+| A6 | Assumed | Users can paste attacker-controlled text (CVs, submissions) | Nivin: cap input sizes; Steve: G4 injection battery mandatory at 100% (CV path: the deterministic script quarantines instruction-like lines by construction; its battery stays in `w2_onboarding_cv.jsonl`) |
 | A7 | **Confirmed** | Humans issue evaluations; scores come only from the deterministic engine | Klenis: no affordance presenting AI output as rating/decision; Steve: advisory framing in every prompt |
 
 ## 7. Handoff checklist — "validated" → "production", per feature area
@@ -98,11 +101,13 @@ Validation runs the same composition offline: dataset case → composed stack �
 - [ ] Shared stack validated: `w1_system_prompt` green at gate — *Steve*
 - [ ] Prompt-version logging wired in the service layer — *Nivin*
 
-**Onboarding (W2) — the three-way pilot:**
+**Onboarding (W2) — the three-way pilot** *(2026-07-15: prompt items apply to LinkedIn only; CV extraction is the deterministic script)*:
 - [ ] Catalogue + aliases injected into extraction context block — *Cyprian → Nivin*
-- [ ] Extraction prompts updated to consume catalogue from context (remove hardcoded labels, §8.1) and re-validated — *Steve*
+- [ ] LinkedIn extraction prompt updated to consume catalogue from context (remove hardcoded labels, §8.1) and re-validated — *Steve*
+- [ ] CV script's skill keyword table rekeyed to canonical capabilities from the catalogue — *Steve*
+- [ ] CV extraction script ported to / invoked from the service layer (no LLM call) — *Nivin + Steve*
 - [ ] Input size caps agreed — *Nivin*
-- [ ] Injection battery (G4) 100% on Qwen — *Steve*
+- [ ] Injection battery (G4) 100% — LinkedIn on Qwen; CV against the local script — *Steve*
 - [ ] Onboarding UI built against extraction JSON, incl. empty/`extraction_notes` states — *Klenis*
 
 **Capability (W3, W5):**
@@ -130,7 +135,7 @@ Validation runs the same composition offline: dataset case → composed stack �
 
 ## 8. Reconciliation notes — discrepancies surfaced by the confirmed scopes
 
-**8.1 Capability catalogue vs the hardcoded 20-skill list (action required, W2 prompts).** My current prompts assume a flat list of 20 skills; `cv-extraction.md` *hardcodes all 20 labels*, and `system-prompt.md` summarizes them. The confirmed model is a centrally supplied catalogue (families → capabilities → skills, with **aliases** for normalization). Action: once Cyprian publishes the catalogue schema, the W2 extraction prompts and the system prompt move to consuming it from the context block (`available_skills` in the W3 suggestion prompt already works this way and is the pattern to follow). Until then, W2 validation results are provisional.
+**8.1 Capability catalogue vs the hardcoded 20-skill list (action required, W2).** My current prompts assume a flat list of 20 skills; `system-prompt.md` summarizes them, and the LinkedIn extraction prompt hardcodes them. The confirmed model is a centrally supplied catalogue (families → capabilities → skills, with **aliases** for normalization). Action: once Cyprian publishes the catalogue schema, the LinkedIn extraction prompt and the system prompt move to consuming it from the context block (`available_skills` in the W3 suggestion prompt already works this way and is the pattern to follow). *(2026-07-15: for CV extraction the hardcoded list now lives in `extract-cv-local.ts`'s `SKILL_RULES` keyword table instead of a prompt — same action applies: rekey it to the catalogue when the schema lands. The retired `cv-extraction.md` needs no migration.)* Until then, W2 validation results are provisional.
 
 **8.2 `confidence` naming collision.** Cyprian owns a **Confidence schema** (deterministic). My suggestion outputs carry a `confidence: high|medium|low` field (AI judgment about evidence strength). These are different concepts with the same name and will be conflated in UI and storage. Action: agree a rename (e.g. `suggestion_strength` on my side) or explicit namespacing before Nivin freezes the response contract.
 
