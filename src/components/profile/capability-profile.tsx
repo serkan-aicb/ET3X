@@ -76,20 +76,22 @@ export function CapabilityProfile({ mode }: { mode: "owner" | "public" }) {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <TopBar>
+      {/* print:hidden — Export PDF should render the portfolio, not the app chrome. */}
+      <TopBar className="print:hidden">
         <TopBarBrand context="Profile" />
-        <div className="flex items-center gap-2.5">
+        {/* Labels collapse to icon-only below sm so the bar never overflows on phones. */}
+        <div className="flex items-center gap-2">
           {isOwner && (
-            <Button variant="inverse-outline" onClick={() => setEditing((v) => !v)}>
-              <Pencil /> {editing ? "Done" : "Edit"}
+            <Button variant="inverse-outline" onClick={() => setEditing((v) => !v)} aria-label={editing ? "Done editing" : "Edit profile"}>
+              <Pencil /> <span className="hidden sm:inline">{editing ? "Done" : "Edit"}</span>
             </Button>
           )}
-          <Button variant="inverse-outline" onClick={share}>
-            {copied ? <Check /> : <Share2 />} {copied ? "Copied" : "Share"}
+          <Button variant="inverse-outline" onClick={share} aria-label="Share profile link">
+            {copied ? <Check /> : <Share2 />} <span className="hidden sm:inline">{copied ? "Copied" : "Share"}</span>
           </Button>
           {isOwner && (
-            <Button variant="inverse" onClick={() => window.print()}>
-              <FileDown /> Export PDF
+            <Button variant="inverse" onClick={() => window.print()} aria-label="Export as PDF">
+              <FileDown /> <span className="hidden sm:inline">Export PDF</span>
             </Button>
           )}
         </div>
