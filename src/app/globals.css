@@ -6,7 +6,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-inter);
+  --font-sans: var(--font-app);
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -25,14 +25,48 @@
   --color-input: var(--input);
   --color-border: var(--border);
   --color-destructive: var(--destructive);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-danger: var(--danger);
+  --color-danger-foreground: var(--danger-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
+  --color-primary-soft: var(--primary-soft);
+  --color-primary-border: var(--primary-border);
+  --color-success-soft: var(--success-soft);
+  --color-warning-soft: var(--warning-soft);
+  --color-info-soft: var(--info-soft);
+  --color-danger-soft: var(--danger-soft);
+  --color-badge-blue-bg: var(--badge-blue-bg);
+  --color-badge-blue-text: var(--badge-blue-text);
+  --color-badge-teal-bg: var(--badge-teal-bg);
+  --color-badge-teal-text: var(--badge-teal-text);
+  --color-badge-amber-bg: var(--badge-amber-bg);
+  --color-badge-amber-text: var(--badge-amber-text);
+  --color-badge-sky-bg: var(--badge-sky-bg);
+  --color-badge-sky-text: var(--badge-sky-text);
+  --color-badge-slate-bg: var(--badge-slate-bg);
+  --color-badge-slate-text: var(--badge-slate-text);
+  --color-badge-steel-bg: var(--badge-steel-bg);
+  --color-badge-steel-text: var(--badge-steel-text);
+  --shadow-card: var(--shadow-card);
+  --shadow-overlay: var(--shadow-overlay);
   --color-muted-foreground: var(--muted-foreground);
   --color-muted: var(--muted);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-secondary: var(--secondary);
   --color-primary-foreground: var(--primary-foreground);
   --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-ink: var(--ink);
+  --color-ink-foreground: var(--ink-foreground);
+  --color-ink-hover: var(--ink-hover);
+  --color-tint-sky: var(--tint-sky);
+  --color-tint-steel: var(--tint-steel);
   --color-popover-foreground: var(--popover-foreground);
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
@@ -45,103 +79,112 @@
 
 :root {
   --radius: 0.625rem;
-  /* Background: clean white */
-  --background: #FFFFFF;
+  /* Canvas: WARM PAPER (grill 5, reopened palette — "too cold/too blue
+     overall"). Warm greige field so navy chrome reads as premium contrast
+     and the app stops whispering blue; cards stay pure white on top. */
+  --background: #F6F5F1;
   --foreground: #111827;
-  
+
   /* Cards/Container: white with subtle border */
   --card: #FFFFFF;
   --card-foreground: #111827;
   --popover: #FFFFFF;
   --popover-foreground: #111827;
-  
-  /* Primary = professional blue */
-  --primary: #2563EB;
+
+  /* Primary = interactive steel blue, derived from logo steel #4F7BA9 and
+     darkened until white text passes AA (13-July review: generic Tailwind
+     blue-600 dropped as "common AI decision") */
+  --primary: #3B6EA8;
   --primary-foreground: #FFFFFF;
+  --primary-hover: #2F5B8F;
+  --primary-soft: #EDF4FB;     /* selected rows, subtle fills, AI band base */
+  --primary-border: #C2D6EA;   /* borders on primary-soft surfaces */
+
+  /* Brand ink (exact logo navy #081B30). Allowed in exactly three homes:
+     ink button variant, auth/marketing brand panel, PDF export chrome. */
+  --ink: #081B30;
+  --ink-foreground: #FFFFFF;
+  --ink-hover: #0D2A4A;
+
+  /* Logo support tints — decorative tier only (chips, avatars, charts) */
+  --tint-sky: #76AFE2;
+  --tint-steel: #4F7BA9;
   
-  /* Secondary = light slate */
-  --secondary: #F1F5F9;
+  /* Secondary = warm light greige (grill 5: matched to the paper canvas) */
+  --secondary: #F0EDE7;
   --secondary-foreground: #111827;
-  
-  /* Muted colors */
-  --muted: #F1F5F9;
-  --muted-foreground: #64748B;
-  
+
+  /* Muted colors — warm-neutral field + warm-gray secondary text */
+  --muted: #F0EDE7;
+  --muted-foreground: #6B6862;
+
   /* Accent colors */
-  --accent: #F1F5F9;
+  --accent: #F0EDE7;
   --accent-foreground: #111827;
   
   /* Destructive = red */
   --destructive: #EF4444;
   --destructive-foreground: #FFFFFF;
-  
-  /* Borders: light gray */
-  --border: #E2E8F0;
-  --input: #E2E8F0;
-  --ring: #2563EB;
-  
-  /* Chart colors */
-  --chart-1: #2563EB;
-  --chart-2: #F97316;
-  --chart-3: #8B5CF6;
-  --chart-4: #10B981;
+
+  /* Semantic status tokens (D1 frozen) — components reference these, never hex.
+     -soft pairs (theme grill S2, 13 July) back banners/pills; hue meanings unchanged. */
+  --success: #0D9488;            /* verified / positive growth — bluish green
+                                    (13-July review: plain emerald re-hued) */
+  --success-foreground: #FFFFFF;
+  --success-soft: #F0FDFA;
+  --warning: #F59E0B;            /* pending / attention */
+  --warning-foreground: #111827;
+  --warning-soft: #FEF5E7;
+  --danger: #EF4444;             /* errors / destructive */
+  --danger-foreground: #FFFFFF;
+  --danger-soft: #FEF2F2;
+  --info: #3B6EA8;               /* published / neutral highlight */
+  --info-foreground: #FFFFFF;
+  --info-soft: #EDF4FB;
+
+  /* Category-badge pairs (decorative tier, P6 + theme grill S2) —
+     bg/text tuned for contrast; never on buttons, status badges, or chrome */
+  --badge-blue-bg:  #EFF4FE;  --badge-blue-text:  #1D4ED8;
+  --badge-teal-bg:  #E6F9F6;  --badge-teal-text:  #0F766E;
+  --badge-amber-bg: #FEF5E7;  --badge-amber-text: #B45309;
+  --badge-sky-bg:   #EFF6FC;  --badge-sky-text:   #3B6EA8;
+  --badge-slate-bg: #F1F5F9;  --badge-slate-text: #475569;
+  --badge-steel-bg: #EDF2F7;  --badge-steel-text: #3D6084;
+
+  /* Elevation (theme grill S1): border-led hybrid. shadow-card = whisper
+     resting shadow on every card; shadow-overlay = earned elevation for
+     popovers/dialogs. Hover lift stays the T9 motion utility. */
+  --shadow-card: 0 1px 2px rgb(15 23 42 / 0.06);
+  --shadow-overlay: 0 4px 12px rgb(15 23 42 / 0.08);
+
+  /* Borders: warm greige (grill 5: warmed with the paper canvas) */
+  --border: #E6E2DA;
+  --input: #E6E2DA;
+  --ring: #3B6EA8;
+
+  /* Chart colors — categorical (decorative tier). Purple removed (D1 amended);
+     teal ≠ trust-emerald, amber = the warm accent. */
+  --chart-1: #3B6EA8;
+  --chart-2: #14B8A6;
+  --chart-3: #F59E0B;
+  --chart-4: #76AFE2;
   --chart-5: #64748B;
-  
-  /* Sidebar colors */
-  --sidebar: #F8FAFC;
-  --sidebar-foreground: #111827;
-  --sidebar-primary: #2563EB;
+
+  /* Sidebar = ink chrome (T1 amended 13 July: app chrome is ink home #4).
+     Workspace rail + top bars share the navy; content stays light. */
+  --sidebar: #081B30;
+  --sidebar-foreground: #CBD5E1;
+  --sidebar-primary: #3B6EA8;
   --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #F1F5F9;
-  --sidebar-accent-foreground: #111827;
-  --sidebar-border: #E2E8F0;
-  --sidebar-ring: #2563EB;
+  --sidebar-accent: rgb(255 255 255 / 0.10);
+  --sidebar-accent-foreground: #FFFFFF;
+  --sidebar-border: rgb(255 255 255 / 0.10);
+  --sidebar-ring: #76AFE2;
 }
 
-.dark {
-  /* Light theme overrides - we keep dark class for compatibility but use light values */
-  --background: #FFFFFF;
-  --foreground: #111827;
-  
-  --card: #FFFFFF;
-  --card-foreground: #111827;
-  --popover: #FFFFFF;
-  --popover-foreground: #111827;
-  
-  --primary: #2563EB;
-  --primary-foreground: #FFFFFF;
-  
-  --secondary: #F1F5F9;
-  --secondary-foreground: #111827;
-  
-  --muted: #F1F5F9;
-  --muted-foreground: #64748B;
-  
-  --accent: #F1F5F9;
-  --accent-foreground: #111827;
-  
-  --destructive: #EF4444;
-  --destructive-foreground: #FFFFFF;
-  
-  --border: #E2E8F0;
-  --input: #E2E8F0;
-  --ring: #2563EB;
-  
-  --chart-1: #2563EB;
-  --chart-2: #F97316;
-  --chart-3: #8B5CF6;
-  --chart-4: #10B981;
-  --chart-5: #64748B;
-  
-  --sidebar: #F8FAFC;
-  --sidebar-foreground: #111827;
-  --sidebar-primary: #2563EB;
-  --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #F1F5F9;
-  --sidebar-accent-foreground: #111827;
-  --sidebar-border: #E2E8F0;
-  --sidebar-ring: #2563EB;
-}
+/* D2: light-only. The .dark mirror block was removed 2026-07-08; the
+   class-based dark variant stays declared so stray `dark:` utilities in
+   vendored components can never activate via OS preference. */
 
 /* Skill checkbox styling */
 .skill-checkbox input[type='checkbox'] {
@@ -154,8 +197,38 @@
 }
 
 .skill-checkbox input[type='checkbox']:checked {
-  background-color: #2563EB;
-  border-color: #2563EB;
+  background-color: var(--primary);
+  border-color: var(--primary);
+}
+
+/* Motion utilities — the one lift taken from /design-lab, toned to product
+   calm. Only interactive elements may move (motion = affordance signal). */
+@layer components {
+  .card-interactive {
+    transition:
+      transform 200ms cubic-bezier(0.2, 0.7, 0.2, 1),
+      box-shadow 200ms cubic-bezier(0.2, 0.7, 0.2, 1),
+      border-color 150ms ease-out;
+  }
+  .card-interactive:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px -12px rgb(8 27 48 / 0.18);
+    border-color: color-mix(in srgb, var(--primary) 40%, transparent);
+  }
+  .row-interactive {
+    transition: background-color 150ms ease-out;
+  }
+  .row-interactive:hover {
+    background-color: var(--muted);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card-interactive,
+  .card-interactive:hover {
+    transition: none;
+    transform: none;
+  }
 }
 
 @layer base {
