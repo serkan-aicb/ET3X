@@ -34,12 +34,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid task details' }, { status: 400 });
     }
 
-    const aiServiceUrl = process.env.T3X_AI_SERVICE_URL;
-    const aiServiceApiKey = process.env.T3X_AI_SERVICE_API_KEY;
-    if (!aiServiceUrl || !aiServiceApiKey) {
-      return NextResponse.json({ error: 'Action assist is not configured' }, { status: 503 });
-    }
-
     const supabase = await createServerClient();
     const {
       data: { user },
@@ -48,6 +42,12 @@ export async function POST(request: Request) {
 
     if (authError || !user) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+    }
+
+    const aiServiceUrl = process.env.T3X_AI_SERVICE_URL;
+    const aiServiceApiKey = process.env.T3X_AI_SERVICE_API_KEY;
+    if (!aiServiceUrl || !aiServiceApiKey) {
+      return NextResponse.json({ error: 'Action assist is not configured' }, { status: 503 });
     }
 
     const { data: skills, error: skillsError } = await supabase
