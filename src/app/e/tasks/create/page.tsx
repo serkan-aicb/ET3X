@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,6 +22,11 @@ import { SharedCard } from "@/components/shared-card";
 
 type Skill = Tables<'skills'>;
 
+type ActionAssistResponse = {
+  titleSuggestions: string[];
+  skillSuggestions: { id: number; label: string; reason: string }[];
+};
+
 function generateShareCode(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   let code = '';
@@ -39,7 +45,11 @@ export default function CreateTask() {
   const [skills, setSkills] = useState<number[]>([]);
   const [dueDate, setDueDate] = useState("");
   const [loading, setLoading] = useState(false);
+  const [assistLoading, setAssistLoading] = useState<"title" | "skills" | null>(null);
   const [message, setMessage] = useState("");
+  const [assistMessage, setAssistMessage] = useState("");
+  const [titleSuggestions, setTitleSuggestions] = useState<string[]>([]);
+  const [skillSuggestions, setSkillSuggestions] = useState<ActionAssistResponse["skillSuggestions"]>([]);
   const [availableSkills, setAvailableSkills] = useState<Skill[]>([]);
   const router = useRouter();
 
@@ -73,6 +83,49 @@ export default function CreateTask() {
         return [...prev, skillId];
       }
     });
+  };
+
+  const requestActionAssist = async (mode: "title" | "skills") => {
+    setAssistLoading(mode);
+    setAssistMessage("");
+    setMessage("");
+
+    try {
+      const response = await fetch("/api/tasks/action-assist", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          title: title || undefined,
+          module: module || undefined,
+          description,
+          skillLevel,
+        }),
+      });
+      const payload = await response.json();
+
+      if (!response.ok) {
+        throw new Error(payload.error || "Action assist failed");
+      }
+
+      const assist = payload as ActionAssistResponse;
+      setTitleSuggestions(assist.titleSuggestions || []);
+      setSkillSuggestions(assist.skillSuggestions || []);
+
+      if (mode === "title" && assist.titleSuggestions[0]) {
+        setTitle(assist.titleSuggestions[0]);
+        setAssistMessage("Title suggestion applied.");
+      } else if (mode === "skills") {
+        const suggestedIds = (assist.skillSuggestions || []).map((skill) => skill.id);
+        setSkills((prev) => Array.from(new Set([...prev, ...suggestedIds])).slice(0, 12));
+        setAssistMessage(
+          suggestedIds.length > 0 ? "Skill suggestions applied." : "No matching existing skills found.",
+        );
+      }
+    } catch (error: unknown) {
+      setAssistMessage(error instanceof Error ? error.message : "Action assist failed");
+    } finally {
+      setAssistLoading(null);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -167,7 +220,19 @@ export default function CreateTask() {
         <SharedCard>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="title">Task Title</Label>
+              <div className="flex items-center justify-between gap-3">
+                <Label htmlFor="title">Task Title</Label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => requestActionAssist("title")}
+                  disabled={assistLoading !== null || description.trim().length < 20}
+                >
+                  <Sparkles className="mr-2 h-4 w-4" />
+                  {assistLoading === "title" ? "Generating..." : "Generate"}
+                </Button>
+              </div>
               <Input
                 id="title"
                 value={title}
@@ -175,6 +240,21 @@ export default function CreateTask() {
                 placeholder="Enter task title"
                 required
               />
+              {titleSuggestions.length > 1 && (
+                <div className="flex flex-wrap gap-2">
+                  {titleSuggestions.slice(1).map((suggestion) => (
+                    <Button
+                      key={suggestion}
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setTitle(suggestion)}
+                    >
+                      {suggestion}
+                    </Button>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -240,11 +320,34 @@ export default function CreateTask() {
 
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label>Skills (Select up to 12)</Label>
+                <div className="flex items-center justify-between gap-3">
+                  <Label>Skills (Select up to 12)</Label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => requestActionAssist("skills")}
+                    disabled={assistLoading !== null || description.trim().length < 20}
+                  >
+                    <Sparkles className="mr-2 h-4 w-4" />
+                    {assistLoading === "skills" ? "Suggesting..." : "Suggest"}
+                  </Button>
+                </div>
                 <div className="text-sm text-muted-foreground">
                   Selected: {skills.length}/12
                 </div>
               </div>
+
+              {skillSuggestions.length > 0 && (
+                <div className="space-y-2 rounded-lg border border-border bg-muted p-3">
+                  {skillSuggestions.map((skill) => (
+                    <div key={skill.id} className="text-sm">
+                      <span className="font-medium text-foreground">{skill.label}</span>
+                      <span className="text-muted-foreground"> - {skill.reason}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-48 overflow-y-auto p-3 border rounded-lg border-border bg-muted">
                 {availableSkills.map((skill) => (
@@ -282,6 +385,12 @@ export default function CreateTask() {
             {message && (
               <div className={`p-3 rounded-lg ${message.includes("successfully") || message.includes("assigned to") ? "bg-green-50 text-green-700 border border-green-200" : "bg-red-50 text-red-700 border border-red-200"}`}>
                 {message}
+              </div>
+            )}
+
+            {assistMessage && (
+              <div className={`p-3 rounded-lg ${assistMessage.includes("applied") || assistMessage.includes("No matching") ? "bg-green-50 text-green-700 border border-green-200" : "bg-red-50 text-red-700 border border-red-200"}`}>
+                {assistMessage}
               </div>
             )}
 
