@@ -1,0 +1,100 @@
+{
+  "features": {
+    "w1_system_prompt": {
+      "enabled": false,
+      "description": "System prompt and behavior framework",
+      "week": 1,
+      "status": "in_review",
+      "prompts": [],
+      "dataset": "ai/eval/datasets/w1_system_prompt.jsonl"
+    },
+    "w2_onboarding_cv": {
+      "enabled": false,
+      "description": "CV extraction validation",
+      "week": 2,
+      "status": "pending",
+      "prompts": ["ai/prompts/onboarding/cv-extraction.md"],
+      "dataset": "ai/eval/datasets/w2_onboarding_cv.jsonl"
+    },
+    "w2_onboarding_linkedin": {
+      "enabled": false,
+      "description": "LinkedIn extraction validation",
+      "week": 2,
+      "status": "pending",
+      "prompts": ["ai/prompts/onboarding/linkedin-extraction.md"],
+      "dataset": "ai/eval/datasets/w2_onboarding_linkedin.jsonl"
+    },
+    "w3_capability_suggestion": {
+      "enabled": false,
+      "description": "Capability suggestion prompt",
+      "week": 3,
+      "status": "pending",
+      "prompts": ["ai/prompts/capability/suggestion.md"],
+      "dataset": "ai/eval/datasets/w3_capability_suggestion.jsonl"
+    },
+    "w3_capability_validation": {
+      "enabled": false,
+      "description": "Capability validation & explanation prompts",
+      "week": 3,
+      "status": "pending",
+      "prompts": ["ai/prompts/capability/validation-explanation.md"],
+      "dataset": "ai/eval/datasets/w3_capability_validation.jsonl"
+    },
+    "w4_eval_interpretation": {
+      "enabled": false,
+      "description": "Evaluation interpretation prompt",
+      "week": 4,
+      "status": "pending",
+      "prompts": ["ai/prompts/evaluation/interpretation.md"],
+      "dataset": "ai/eval/datasets/w4_eval_interpretation.jsonl"
+    },
+    "w4_eval_feedback": {
+      "enabled": false,
+      "description": "Evaluation feedback generation prompt",
+      "week": 4,
+      "status": "pending",
+      "prompts": ["ai/prompts/evaluation/feedback-generation.md"],
+      "dataset": "ai/eval/datasets/w4_eval_feedback.jsonl"
+    },
+    "w5_capability_explanations": {
+      "enabled": false,
+      "description": "Capability explanations & growth recommendations",
+      "week": 5,
+      "status": "pending",
+      "prompts": ["ai/prompts/capability/explanations-growth.md"],
+      "dataset": "ai/eval/datasets/w5_capability_explanations.jsonl"
+    },
+    "w6_analytics_insights": {
+      "enabled": false,
+      "description": "Analytics prompts and insight generation",
+      "week": 6,
+      "status": "pending",
+      "prompts": ["ai/prompts/analytics/insights.md"],
+      "dataset": "ai/eval/datasets/w6_analytics_insights.jsonl"
+    },
+    "w6_summary_validation": {
+      "enabled": false,
+      "description": "Analytics summary validation",
+      "week": 6,
+      "status": "pending",
+      "prompts": ["ai/prompts/analytics/summary-validation.md"],
+      "dataset": "ai/eval/datasets/w6_summary_validation.jsonl"
+    },
+    "w7_reporting": {
+      "enabled": false,
+      "description": "Executive summary & report prompts",
+      "week": 7,
+      "status": "pending",
+      "prompts": ["ai/prompts/reporting/reporting-suite.md"],
+      "dataset": "ai/eval/datasets/w7_reporting.jsonl"
+    },
+    "w8_final_qa": {
+      "enabled": false,
+      "description": "Final AI QA and validation report",
+      "week": 8,
+      "status": "pending",
+      "prompts": [],
+      "dataset": "ai/eval/datasets/w8_e2e_regression.jsonl"
+    }
+  }
+}
