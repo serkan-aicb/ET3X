@@ -2,7 +2,8 @@
 
 /**
  * Evaluator flow — Week 4 (handover v1.6 §7, R6/R9). Reached via a single-use
- * token link (no account assumed — pending André). The evaluator:
+ * token link; the link resolves publicly but scoring requires a rudimentary
+ * profile (v1.7 R12 / spec v6 §2) — gated in-page by <AccountGate>. The evaluator:
  *   Context & role → Difficulty → Score each capability → Review → Done.
  *
  * v1.6 rules encoded:
@@ -30,6 +31,7 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { AccountGate } from "@/components/account/account-gate";
 import { FocusedFlowShell } from "@/components/layout/focused-flow-shell";
 import {
   getCapability,
@@ -73,7 +75,15 @@ export default function EvaluatePage() {
   if (!invite || !action) {
     return <InvalidLink used={invite?.status === "used"} />;
   }
-  return <Evaluator token={token} action={action} />;
+  // R12: the link resolves, but scoring needs a rudimentary profile first.
+  return (
+    <AccountGate
+      title="Sign in to evaluate"
+      subtitle="Evaluators need a minimal profile before scoring — email, organisation and your role. No full account required."
+    >
+      <Evaluator token={token} action={action} />
+    </AccountGate>
+  );
 }
 
 function Evaluator({ token, action }: { token: string; action: ActionRecord }) {

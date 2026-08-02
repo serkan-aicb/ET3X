@@ -26,9 +26,9 @@ const PUBLIC_PREFIXES = [
   '/design-lab',
   '/profile-studio-preview',
   '/onboarding-preview',
-  // Evaluator reaches the scoring flow via a single-use token link, not an
-  // account (Week 4 assumption — pending André on whether evaluators must log
-  // in; see workspace doc 15). Token validation is Cyprian's in production.
+  // The invite link must resolve so the in-page account gate can render (v1.7
+  // R12 / spec v6 §2): /evaluate stays public, but scoring requires a rudimentary
+  // profile, gated in-page by <AccountGate>. Token validation is Cyprian's.
   '/evaluate',
 ]
 
