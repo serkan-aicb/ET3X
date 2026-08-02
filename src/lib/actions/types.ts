@@ -47,21 +47,27 @@ export type EvaluationInvite = {
   status: "pending" | "used";
 };
 
+/** One rated skill within an evaluation (v6 §7 — skills are rated directly). */
+export type SkillScore = {
+  skill_id: string;
+  capability_id_resolved: string | null; // R4 snapshot mapping
+  score: number; // 0–5
+};
+
 /**
- * One evaluation = one (action, evaluator, capability) — v1.6 §4 / R6.
- * NOTE (Phase 3, v6 §7): the model moves to SKILL-LEVEL — the evaluator rates
- * each selected skill 0–5 and the capability is computed (Confirmed at ≥3 rated
- * skills). This shape is restructured together with the evaluate UI + R9 stub in
- * Phase 3 so the build stays green; kept capability-level for now.
+ * One evaluation = one evaluator, one action (v6 §7 — skill-level). The evaluator
+ * rates each selected SKILL 0–5; the capability is COMPUTED from rated skills
+ * (Confirmed at ≥3 rated skills). One evidence_quality and one shared comment per
+ * evaluation; comment required if any skill is scored 0/1/5 (R6). Difficulty is
+ * evaluator-confirmed and drives the R9 weight.
  */
 export type Evaluation = {
   evaluation_id: string;
   action_id: string;
-  capability_id: string;
-  score: number; // 0–5 holistic vs rubric anchors
-  evidence_quality: number; // 0–5, measurement confidence
+  skill_scores: SkillScore[];
+  evidence_quality: number; // 0–5, one per evaluation
   difficulty_confirmed: string;
-  comment: string;
+  comment: string; // one shared comment
   evaluator_role: string;
   evaluator_relationship: string;
   evaluator_verification_tier: number; // 0–3 (backend-assigned; stub = 0)

@@ -60,7 +60,7 @@ export function useProfileView(): ProfileView {
         capability_id: s.capability_id,
         name: cap?.name ?? s.capability_id,
         value: s.capability_score,
-        evaluatedActions: s.evaluation_count,
+        ratedSkills: s.rated_skill_count,
         provisional: s.display_status === "provisional",
       };
     })
@@ -78,9 +78,18 @@ export function useProfileView(): ProfileView {
   const contributions = [...evalsByAction.entries()]
     .map(([actionId, evals]) => {
       const action = actionById.get(actionId);
-      const avg = evals.reduce((s, e) => s + e.score, 0) / evals.length;
+      const skillScores = evals.flatMap((e) => e.skill_scores);
+      const avg = skillScores.length
+        ? skillScores.reduce((s, ss) => s + ss.score, 0) / skillScores.length
+        : 0;
       const capNames = [
-        ...new Set(evals.map((e) => getCapability(e.capability_id)?.name).filter(Boolean)),
+        ...new Set(
+          skillScores
+            .map((ss) =>
+              ss.capability_id_resolved ? getCapability(ss.capability_id_resolved)?.name : undefined
+            )
+            .filter(Boolean)
+        ),
       ] as string[];
       const roles = [...new Set(evals.map((e) => titleCase(e.evaluator_role)))].join(", ");
       const latest = evals.reduce((m, e) => (e.created_at > m ? e.created_at : m), evals[0].created_at);
@@ -103,7 +112,9 @@ export function useProfileView(): ProfileView {
     .map((e) => ({
       date: monthYear(e.created_at),
       title: actionById.get(e.action_id)?.title ?? "Evaluated action",
-      score: e.score,
+      score: e.skill_scores.length
+        ? Math.round((e.skill_scores.reduce((s, ss) => s + ss.score, 0) / e.skill_scores.length) * 10) / 10
+        : 0,
     }));
 
   // Growth — per capability, cumulative R9 score over its evaluations.
@@ -111,12 +122,14 @@ export function useProfileView(): ProfileView {
     ? capabilities
         .map((c) => {
           const capEvals = evaluations
-            .filter((e) => e.capability_id === c.capability_id)
+            .filter((e) => e.skill_scores.some((ss) => ss.capability_id_resolved === c.capability_id))
             .sort((a, b) => (a.created_at < b.created_at ? -1 : 1));
           const points = capEvals.map((_, i) => ({
             date: monthYear(capEvals[i].created_at),
             value:
-              computeCapabilityScores(capEvals.slice(0, i + 1))[0]?.capability_score ?? 0,
+              computeCapabilityScores(capEvals.slice(0, i + 1)).find(
+                (x) => x.capability_id === c.capability_id
+              )?.capability_score ?? 0,
           }));
           return { capability_id: c.capability_id, name: c.name, points };
         })

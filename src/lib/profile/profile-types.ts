@@ -28,12 +28,13 @@ export type ProfileBasics = {
   avatarDataUrl: string; // "" = none; localStorage stub for Supabase storage
 };
 
-/** Mirrors Cyprian's `profile_capability_scores` output row (drop-in swap). */
+/** Mirrors Cyprian's `profile_capability_scores` output row (drop-in swap).
+ *  v6: a capability is Confirmed at ≥3 rated skills (was ≥3 evaluations). */
 export type CapabilityScore = {
   capability_id: string;
   capability_score: number;
-  evaluation_count: number;
-  display_status: "full" | "provisional";
+  rated_skill_count: number;
+  display_status: "confirmed" | "provisional";
   scoring_version: string;
 };
 
@@ -43,7 +44,7 @@ export type ProfileCapabilityView = {
   capability_id: string;
   name: string;
   value: number;
-  evaluatedActions: number;
+  ratedSkills: number;
   provisional: boolean;
 };
 

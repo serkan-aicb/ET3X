@@ -60,9 +60,16 @@ const COMMENT_REQUIRED = new Set(
   getScoreScale().filter((s) => s.requiresComment).map((s) => s.value)
 );
 
-type CapScore = { score: number | null; evidenceQuality: number; comment: string };
-
 const titleCase = (s: string) => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+
+/** A capability with its selected skills + rubric anchors, for the score step. */
+type CapGroup = {
+  capability_id: string;
+  name: string;
+  description: string;
+  anchors: { level: number; anchor_text: string }[];
+  skills: { skill_id: string; label: string }[];
+};
 
 export default function EvaluatePage() {
   const { token } = useParams<{ token: string }>();
@@ -90,7 +97,8 @@ function Evaluator({ token, action }: { token: string; action: ActionRecord }) {
   const invites = useLocalDraft<EvaluationInvite[]>(DRAFT_KEYS.evaluationInvites, NO_INVITES);
   const evaluations = useLocalDraft<Evaluation[]>(DRAFT_KEYS.evaluations, NO_EVALS);
 
-  const capabilities = distinctCapabilities(action);
+  const capGroups = capabilitiesWithSkills(action);
+  const allSkills = capGroups.flatMap((g) => g.skills);
   const roleOptions = getEnum("evaluator_role");
   const relationshipOptions = getEnum("evaluator_relationship");
   const difficultyLevels = getDifficultyLevels();
@@ -100,45 +108,50 @@ function Evaluator({ token, action }: { token: string; action: ActionRecord }) {
   const [role, setRole] = useState("");
   const [relationship, setRelationship] = useState("");
   const [difficulty, setDifficulty] = useState(action.difficulty_declared);
-  const [scores, setScores] = useState<Record<string, CapScore>>(
-    Object.fromEntries(
-      capabilities.map((c) => [c.capability_id, { score: null, evidenceQuality: 3, comment: "" }])
-    )
+  const [skillScores, setSkillScores] = useState<Record<string, number | null>>(
+    Object.fromEntries(allSkills.map((s) => [s.skill_id, null]))
   );
+  const [evidenceQuality, setEvidenceQuality] = useState(3);
+  const [comment, setComment] = useState("");
 
-  const setCap = (id: string, patch: Partial<CapScore>) =>
-    setScores((s) => ({ ...s, [id]: { ...s[id], ...patch } }));
+  const setSkill = (id: string, score: number) =>
+    setSkillScores((s) => ({ ...s, [id]: score }));
 
-  const scoringComplete = capabilities.every((c) => {
-    const cs = scores[c.capability_id];
-    if (cs.score === null) return false;
-    if (COMMENT_REQUIRED.has(cs.score) && !cs.comment.trim()) return false;
-    return true;
-  });
+  // Comment required if any skill was scored 0, 1 or 5 (R6).
+  const anyExtreme = Object.values(skillScores).some(
+    (v) => v !== null && COMMENT_REQUIRED.has(v)
+  );
+  const scoringComplete =
+    allSkills.every((s) => skillScores[s.skill_id] !== null) &&
+    (!anyExtreme || comment.trim() !== "");
 
   const submit = () => {
     const scoringVersion = getScoringParam("scoring_version") ?? "1.1";
-    const now = new Date().toISOString();
-    const rows: Evaluation[] = capabilities.map((c) => {
-      const cs = scores[c.capability_id];
-      const rubricVersion = getRubric(c.capability_id)[0]?.rubric_version ?? "0.9-draft";
-      return {
-        evaluation_id: `ev_${Math.random().toString(36).slice(2, 10)}`,
-        action_id: action.action_id,
-        capability_id: c.capability_id,
-        score: cs.score as number,
-        evidence_quality: cs.evidenceQuality,
-        difficulty_confirmed: difficulty,
-        comment: cs.comment.trim(),
-        evaluator_role: role,
-        evaluator_relationship: relationship,
-        evaluator_verification_tier: 0,
-        rubric_version: rubricVersion,
-        scoring_version: scoringVersion,
-        created_at: now,
-      };
-    });
-    writeDraft(DRAFT_KEYS.evaluations, [...rows, ...evaluations]);
+    const rubricVersion = capGroups[0]
+      ? getRubric(capGroups[0].capability_id)[0]?.rubric_version ?? "0.9-draft"
+      : "0.9-draft";
+    // One evaluation, carrying a score per selected skill (v6 §7).
+    const row: Evaluation = {
+      evaluation_id: `ev_${Math.random().toString(36).slice(2, 10)}`,
+      action_id: action.action_id,
+      skill_scores: action.action_skills
+        .filter((as) => skillScores[as.skill_id] != null)
+        .map((as) => ({
+          skill_id: as.skill_id,
+          capability_id_resolved: as.capability_id_resolved,
+          score: skillScores[as.skill_id] as number,
+        })),
+      evidence_quality: evidenceQuality,
+      difficulty_confirmed: difficulty,
+      comment: comment.trim(),
+      evaluator_role: role,
+      evaluator_relationship: relationship,
+      evaluator_verification_tier: 0,
+      rubric_version: rubricVersion,
+      scoring_version: scoringVersion,
+      created_at: new Date().toISOString(),
+    };
+    writeDraft(DRAFT_KEYS.evaluations, [row, ...evaluations]);
     // Consume the single-use token.
     writeDraft(
       DRAFT_KEYS.evaluationInvites,
@@ -152,7 +165,7 @@ function Evaluator({ token, action }: { token: string; action: ActionRecord }) {
   if (done) {
     return (
       <FocusedFlowShell steps={STEPS} currentStep={STEPS.length} saveExitLabel="">
-        <Confirmation count={capabilities.length} />
+        <Confirmation skills={allSkills.length} capabilities={capGroups.length} />
       </FocusedFlowShell>
     );
   }
@@ -183,9 +196,14 @@ function Evaluator({ token, action }: { token: string; action: ActionRecord }) {
       )}
       {step === 2 && (
         <ScoreStep
-          capabilities={capabilities}
-          scores={scores}
-          setCap={setCap}
+          capGroups={capGroups}
+          skillScores={skillScores}
+          setSkill={setSkill}
+          evidenceQuality={evidenceQuality}
+          setEvidenceQuality={setEvidenceQuality}
+          comment={comment}
+          setComment={setComment}
+          anyExtreme={anyExtreme}
           canContinue={scoringComplete}
           onBack={() => setStep(1)}
           onContinue={() => setStep(3)}
@@ -193,12 +211,13 @@ function Evaluator({ token, action }: { token: string; action: ActionRecord }) {
       )}
       {step === 3 && (
         <ReviewStep
-          action={action}
           role={role}
           relationship={relationship}
           difficulty={difficulty}
-          capabilities={capabilities}
-          scores={scores}
+          capGroups={capGroups}
+          skillScores={skillScores}
+          evidenceQuality={evidenceQuality}
+          comment={comment}
           onBack={() => setStep(2)}
           onSubmit={submit}
         />
@@ -340,39 +359,102 @@ function DifficultyStep({
 }
 
 /* ------------------------------------------------------------------ */
-/* Step 2 — Score each capability against its rubric anchors         */
+/* Step 2 — Rate each selected skill 0–5 (v6 §7)                      */
 /* ------------------------------------------------------------------ */
 
 function ScoreStep({
-  capabilities,
-  scores,
-  setCap,
+  capGroups,
+  skillScores,
+  setSkill,
+  evidenceQuality,
+  setEvidenceQuality,
+  comment,
+  setComment,
+  anyExtreme,
   canContinue,
   onBack,
   onContinue,
 }: {
-  capabilities: { capability_id: string; name: string; description: string }[];
-  scores: Record<string, CapScore>;
-  setCap: (id: string, patch: Partial<CapScore>) => void;
+  capGroups: CapGroup[];
+  skillScores: Record<string, number | null>;
+  setSkill: (id: string, score: number) => void;
+  evidenceQuality: number;
+  setEvidenceQuality: (n: number) => void;
+  comment: string;
+  setComment: (v: string) => void;
+  anyExtreme: boolean;
   canContinue: boolean;
   onBack: () => void;
   onContinue: () => void;
 }) {
+  const commentMissing = anyExtreme && !comment.trim();
   return (
     <div>
       <StepHeading
-        title="Score the capabilities"
-        subtitle="Pick the level whose description best matches the evidence. Holistic 0–5."
+        title="Rate the skills"
+        subtitle="Score each skill 0–5 against the evidence. Capability scores are calculated from these."
       />
       <div className="space-y-4">
-        {capabilities.map((c) => (
-          <CapabilityScorer
-            key={c.capability_id}
-            capability={c}
-            value={scores[c.capability_id]}
-            onChange={(patch) => setCap(c.capability_id, patch)}
-          />
+        {capGroups.map((g) => (
+          <section key={g.capability_id} className="rounded-xl border bg-card p-6 shadow-card">
+            <h2 className="text-base font-semibold text-foreground">{g.name}</h2>
+            <p className="mt-1 text-sm text-muted-foreground">{g.description}</p>
+            <AnchorGuide anchors={g.anchors} />
+            <div className="mt-4 space-y-3">
+              {g.skills.map((sk) => (
+                <div
+                  key={sk.skill_id}
+                  className="flex flex-col gap-2 border-b border-muted pb-3 last:border-0 sm:flex-row sm:items-center sm:justify-between"
+                >
+                  <span className="text-sm font-medium text-foreground">{sk.label}</span>
+                  <ScoreButtons
+                    value={skillScores[sk.skill_id]}
+                    onChange={(n) => setSkill(sk.skill_id, n)}
+                  />
+                </div>
+              ))}
+            </div>
+          </section>
         ))}
+
+        {/* One evidence_quality for the whole evaluation (v6 §7) */}
+        <section className="rounded-xl border bg-card p-6 shadow-card">
+          <h2 className="text-sm font-semibold text-foreground">
+            Evidence quality{" "}
+            <span className="font-normal text-muted-foreground/70">
+              (how confident are you in the evidence?)
+            </span>
+          </h2>
+          <div className="mt-3">
+            <ScoreButtons value={evidenceQuality} onChange={setEvidenceQuality} />
+          </div>
+        </section>
+
+        {/* One shared comment; required if any skill is 0/1/5 (R6) */}
+        <section className="rounded-xl border bg-card p-6 shadow-card">
+          <label className="text-sm font-semibold text-foreground">
+            Comment{" "}
+            {anyExtreme ? (
+              <span className="text-danger">(required — you gave a 0, 1 or 5)</span>
+            ) : (
+              <span className="font-normal text-muted-foreground/70">(optional)</span>
+            )}
+          </label>
+          <textarea
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            rows={3}
+            placeholder="What in the evidence supports these scores?"
+            className={`mt-2 w-full rounded-lg border px-3 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 ${
+              commentMissing ? "border-danger ring-2 ring-danger/15" : ""
+            }`}
+          />
+          {commentMissing && (
+            <p className="mt-1 text-xs text-danger">
+              A comment is required when any skill is scored 0, 1 or 5.
+            </p>
+          )}
+        </section>
       </div>
       <NavRow onBack={onBack}>
         <Button onClick={onContinue} disabled={!canContinue}>
@@ -383,98 +465,53 @@ function ScoreStep({
   );
 }
 
-function CapabilityScorer({
-  capability,
+/* 0–5 selector shared by skill scores and evidence quality. */
+function ScoreButtons({
   value,
   onChange,
 }: {
-  capability: { capability_id: string; name: string; description: string };
-  value: CapScore;
-  onChange: (patch: Partial<CapScore>) => void;
+  value: number | null;
+  onChange: (n: number) => void;
 }) {
-  const anchors = getRubric(capability.capability_id);
-  const commentRequired = value.score !== null && COMMENT_REQUIRED.has(value.score);
-  const commentMissing = commentRequired && !value.comment.trim();
-
   return (
-    <section className="rounded-xl border bg-card p-6 shadow-card">
-      <h2 className="text-base font-semibold text-foreground">{capability.name}</h2>
-      <p className="mt-1 text-sm text-muted-foreground">{capability.description}</p>
-
-      {/* Rubric anchors 0–5 — the evaluator picks the matching level */}
-      <ul className="mt-4 space-y-1.5">
-        {anchors.map((a) => {
-          const selected = value.score === a.level;
-          return (
-            <li key={a.level}>
-              <button
-                type="button"
-                onClick={() => onChange({ score: a.level })}
-                className={`flex w-full items-start gap-3 rounded-lg border px-3 py-2 text-left transition-colors ${
-                  selected ? "border-primary bg-primary-soft" : "bg-card hover:bg-muted"
-                }`}
-              >
-                <span
-                  className={`flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold tabular-nums ${
-                    selected ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
-                  }`}
-                >
-                  {a.level}
-                </span>
-                <span className="text-sm text-foreground/90">{a.anchor_text}</span>
-              </button>
-            </li>
-          );
-        })}
-      </ul>
-
-      {/* evidence_quality (measurement confidence, never part of the score) */}
-      <div className="mt-4">
-        <label className="text-xs font-medium text-muted-foreground">
-          Evidence quality <span className="font-normal text-muted-foreground/70">(how confident are you in the evidence?)</span>
-        </label>
-        <div className="mt-2 flex gap-1.5">
-          {Array.from({ length: SCORE_MAX + 1 }, (_, n) => (
-            <button
-              key={n}
-              type="button"
-              onClick={() => onChange({ evidenceQuality: n })}
-              className={`size-8 rounded-lg border text-sm font-medium tabular-nums transition-colors ${
-                value.evidenceQuality === n
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "bg-card text-foreground hover:bg-muted"
-              }`}
-            >
-              {n}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* comment — required at 0 / 1 / 5 */}
-      <div className="mt-4">
-        <label className="text-xs font-medium text-muted-foreground">
-          Comment{" "}
-          {commentRequired ? (
-            <span className="text-danger">(required at this score)</span>
-          ) : (
-            <span className="font-normal text-muted-foreground/70">(optional)</span>
-          )}
-        </label>
-        <textarea
-          value={value.comment}
-          onChange={(e) => onChange({ comment: e.target.value })}
-          rows={2}
-          placeholder="What in the evidence supports this level?"
-          className={`mt-1 w-full rounded-lg border px-3 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 ${
-            commentMissing ? "border-danger ring-2 ring-danger/15" : ""
+    <div className="flex gap-1.5">
+      {Array.from({ length: SCORE_MAX + 1 }, (_, n) => (
+        <button
+          key={n}
+          type="button"
+          onClick={() => onChange(n)}
+          className={`size-9 rounded-lg border text-sm font-semibold tabular-nums transition-colors ${
+            value === n
+              ? "border-primary bg-primary text-primary-foreground"
+              : "bg-card text-foreground hover:bg-muted"
           }`}
-        />
-        {commentMissing && (
-          <p className="mt-1 text-xs text-danger">A comment is required at scores 0, 1 and 5.</p>
-        )}
-      </div>
-    </section>
+        >
+          {n}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/* Collapsible rubric-anchor reference (levels 0–5) for the capability. */
+function AnchorGuide({ anchors }: { anchors: { level: number; anchor_text: string }[] }) {
+  if (anchors.length === 0) return null;
+  return (
+    <details className="mt-3 rounded-lg border bg-background px-3 py-2">
+      <summary className="cursor-pointer text-xs font-medium text-muted-foreground">
+        Level guide (0–5)
+      </summary>
+      <ul className="mt-2 space-y-1.5">
+        {anchors.map((a) => (
+          <li key={a.level} className="flex items-start gap-2 text-xs text-foreground/90">
+            <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-muted text-[11px] font-semibold tabular-nums text-muted-foreground">
+              {a.level}
+            </span>
+            <span>{a.anchor_text}</span>
+          </li>
+        ))}
+      </ul>
+    </details>
   );
 }
 
@@ -483,21 +520,23 @@ function CapabilityScorer({
 /* ------------------------------------------------------------------ */
 
 function ReviewStep({
-  action,
   role,
   relationship,
   difficulty,
-  capabilities,
-  scores,
+  capGroups,
+  skillScores,
+  evidenceQuality,
+  comment,
   onBack,
   onSubmit,
 }: {
-  action: ActionRecord;
   role: string;
   relationship: string;
   difficulty: string;
-  capabilities: { capability_id: string; name: string }[];
-  scores: Record<string, CapScore>;
+  capGroups: CapGroup[];
+  skillScores: Record<string, number | null>;
+  evidenceQuality: number;
+  comment: string;
   onBack: () => void;
   onSubmit: () => void;
 }) {
@@ -505,7 +544,7 @@ function ReviewStep({
     <div>
       <StepHeading
         title="Review your evaluation"
-        subtitle="One evaluation is recorded per capability. You can’t change it after submitting."
+        subtitle="Your rated skills roll up into capability scores. You can’t change this after submitting."
       />
       <div className="space-y-4">
         <section className="rounded-xl border bg-card p-6 shadow-card">
@@ -515,38 +554,45 @@ function ReviewStep({
           <Row k="Role" v={titleCase(role)} />
           <Row k="Relationship" v={titleCase(relationship.replace(/_/g, " "))} />
           <Row k="Difficulty confirmed" v={titleCase(difficulty)} />
+          <Row k="Evidence quality" v={`${evidenceQuality}/${SCORE_MAX}`} />
         </section>
 
-        <section className="rounded-xl border bg-card p-6 shadow-card">
-          <h2 className="mb-3 text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">
-            Scores · {action.title}
-          </h2>
-          <ul className="space-y-2">
-            {capabilities.map((c) => {
-              const cs = scores[c.capability_id];
-              return (
+        {capGroups.map((g) => (
+          <section key={g.capability_id} className="rounded-xl border bg-card p-6 shadow-card">
+            <h2 className="mb-3 text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">
+              {g.name}
+            </h2>
+            <ul className="space-y-2">
+              {g.skills.map((sk) => (
                 <li
-                  key={c.capability_id}
+                  key={sk.skill_id}
                   className="flex items-center justify-between gap-3 border-b border-muted py-2 last:border-0"
                 >
-                  <span className="min-w-0 truncate text-sm text-foreground">{c.name}</span>
-                  <span className="shrink-0 text-xs text-muted-foreground">
-                    evidence {cs.evidenceQuality}/{SCORE_MAX}
-                  </span>
+                  <span className="min-w-0 truncate text-sm text-foreground">{sk.label}</span>
                   <span className="shrink-0 rounded-lg bg-primary-soft px-2.5 py-1 text-sm font-bold tabular-nums text-primary">
-                    {cs.score}/{SCORE_MAX}
+                    {skillScores[sk.skill_id]}/{SCORE_MAX}
                   </span>
                 </li>
-              );
-            })}
-          </ul>
-        </section>
+              ))}
+            </ul>
+          </section>
+        ))}
+
+        {comment && (
+          <section className="rounded-xl border bg-card p-6 shadow-card">
+            <h2 className="mb-2 text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">
+              Comment
+            </h2>
+            <p className="text-sm text-muted-foreground">{comment}</p>
+          </section>
+        )}
 
         <div className="flex items-start gap-2 rounded-lg bg-primary-soft px-4 py-3 text-sm text-muted-foreground">
           <Sparkles className="mt-0.5 size-4 shrink-0 text-primary" />
           <span>
-            Scores are combined by the capability engine. A capability shows a full score after
-            3 evaluations; fewer than that displays as provisional.
+            Rated skills are combined by the capability engine. A capability shows as{" "}
+            <span className="font-medium text-foreground">Confirmed</span> once it has 3 or more
+            rated skills; fewer than that displays as provisional.
           </span>
         </div>
       </div>
@@ -559,7 +605,7 @@ function ReviewStep({
   );
 }
 
-function Confirmation({ count }: { count: number }) {
+function Confirmation({ skills, capabilities }: { skills: number; capabilities: number }) {
   return (
     <div className="flex flex-col items-center py-8 text-center">
       <span className="flex size-16 items-center justify-center rounded-full bg-success-soft text-success">
@@ -567,8 +613,8 @@ function Confirmation({ count }: { count: number }) {
       </span>
       <h1 className="mt-6 text-3xl font-bold tracking-tight">Evaluation submitted</h1>
       <p className="mt-2 max-w-[440px] text-[15px] leading-relaxed text-muted-foreground">
-        Thank you. You recorded {count} capability {count === 1 ? "score" : "scores"} against the
-        rubric. This link is now used and can&apos;t be reopened.
+        Thank you. You rated {skills} skill{skills === 1 ? "" : "s"} across {capabilities}{" "}
+        capabilit{capabilities === 1 ? "y" : "ies"}. This link is now used and can&apos;t be reopened.
       </p>
     </div>
   );
@@ -661,19 +707,24 @@ function InvalidLink({ used }: { used: boolean }) {
   );
 }
 
-function distinctCapabilities(action: ActionRecord) {
-  const map = new Map<string, { capability_id: string; name: string; description: string }>();
+function capabilitiesWithSkills(action: ActionRecord): CapGroup[] {
+  const map = new Map<string, CapGroup>();
   for (const s of action.action_skills) {
     const cap = s.capability_id_resolved
       ? getCapability(s.capability_id_resolved)
       : resolveCapability(s.skill_id);
-    if (cap && !map.has(cap.capability_id)) {
+    const skill = getSkill(s.skill_id);
+    if (!cap || !skill) continue;
+    if (!map.has(cap.capability_id)) {
       map.set(cap.capability_id, {
         capability_id: cap.capability_id,
         name: cap.name,
         description: cap.description,
+        anchors: getRubric(cap.capability_id),
+        skills: [],
       });
     }
+    map.get(cap.capability_id)!.skills.push({ skill_id: s.skill_id, label: skill.label });
   }
   return [...map.values()];
 }
