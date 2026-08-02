@@ -9,6 +9,18 @@ export type ActionSkill = {
   capability_id_resolved: string | null; // snapshot at selection (R4)
 };
 
+/**
+ * Rudimentary profile — the minimum identity to create OR receive an action, or
+ * to evaluate one (Handover v1.7 R12 / spec v6 §2). Email + organisation +
+ * function only; the full CV/LinkedIn build ("Journey 1") is separate and later.
+ * There is no token-only / no-account evaluation path.
+ */
+export type RudimentaryProfile = {
+  email: string;
+  organisation: string;
+  function: string; // role/function label
+};
+
 export type ActionRecord = {
   action_id: string;
   title: string;
@@ -19,8 +31,8 @@ export type ActionRecord = {
   evidence: {
     note: string;
     link: string;
-    mode: string;
-    files: { name: string; size?: number; hash?: string }[];
+    mode: string; // evidence_storage_mode: "external_reference" | "stored" (v1.7 R13)
+    files: { name: string; size?: number; hash?: string }[]; // hash computed for every file
   };
   org_visibility: string;
   created_at: string;
@@ -35,7 +47,13 @@ export type EvaluationInvite = {
   status: "pending" | "used";
 };
 
-/** One evaluation = one (action, evaluator, capability) — v1.6 §4 / R6. */
+/**
+ * One evaluation = one (action, evaluator, capability) — v1.6 §4 / R6.
+ * NOTE (Phase 3, v6 §7): the model moves to SKILL-LEVEL — the evaluator rates
+ * each selected skill 0–5 and the capability is computed (Confirmed at ≥3 rated
+ * skills). This shape is restructured together with the evaluate UI + R9 stub in
+ * Phase 3 so the build stays green; kept capability-level for now.
+ */
 export type Evaluation = {
   evaluation_id: string;
   action_id: string;

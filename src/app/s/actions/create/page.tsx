@@ -10,8 +10,9 @@
  *  - ai_involvement REQUIRED at creation (R5); rendered from the enums.
  *  - difficulty declared by the creator (confirmed by the evaluator later, R9);
  *    rendered from the enums. No action categories (removed in v1.6).
- *  - Evidence: note + link + files; storage mode Store / Hash Only / External
- *    Reference; Hash-Only computes a SHA-256 and keeps only the hash (R10/NDA).
+ *  - Evidence (v1.7 R13 / spec v6 §5d): link-preferred, file-fallback; storage
+ *    mode external_reference (default) / stored. A SHA-256 hash is computed for
+ *    every submission regardless of mode (not a third "hash-only" mode).
  *  - org_visibility consent set by the individual, who can always restrict (R10).
  *  - Evaluator selection / invitation / scoring are NOT here — Week 4.
  *
@@ -45,13 +46,14 @@ import { DRAFT_KEYS, readDraft, useLocalDraft, writeDraft, clearDraft } from "@/
 
 type EvidenceFile = { name: string; size: number; hash?: string };
 
-// Evidence storage modes come from prior records (260707 §7 + the pre-v1.6
-// config), not the v1.6 enums sheet. Kept local until André adds them there.
-// TODO(andré): add evidence_storage_mode to the enums sheet.
+// Evidence storage modes per Handover v1.7 R13 / spec v6 §5d: TWO modes only,
+// link-preferred / file-fallback. A content hash is computed for every
+// submission regardless of mode (a property, not a third mode).
+// Not yet in the ingestion enums sheet.
+// TODO(cyprian): add evidence_storage_mode {external_reference, stored} to enums.
 const EVIDENCE_MODES = [
-  { value: "store", label: "Store evidence", meaning: "Upload the file; it stays in your app storage." },
-  { value: "hash-only", label: "Hash only", meaning: "For NDA/confidential work: only a fingerprint is kept, never the file." },
-  { value: "external-reference", label: "External link", meaning: "Point to evidence hosted elsewhere." },
+  { value: "external_reference", label: "External link", meaning: "Link to evidence hosted elsewhere. Preferred — Talent3X isn't a file host." },
+  { value: "stored", label: "Upload file", meaning: "Capped fallback when there's no external host. Hashed at submission." },
 ] as const;
 
 type ActionDraft = {
@@ -79,7 +81,7 @@ const EMPTY: ActionDraft = {
   difficulty: "",
   note: "",
   link: "",
-  evidenceMode: "store",
+  evidenceMode: "external_reference",
   files: [],
   orgVisibility: "yes", // default per deployment agreement; individual can restrict (R10)
 };
@@ -384,8 +386,8 @@ function EvidenceStep({
     setHashing(true);
     const next: EvidenceFile[] = [];
     for (const f of Array.from(list)) {
-      // Hash-Only: keep only the fingerprint, never the file (R10/NDA).
-      const hash = evidenceMode === "hash-only" ? await sha256Hex(f) : undefined;
+      // A content hash is computed for every submission, regardless of mode (R13).
+      const hash = await sha256Hex(f);
       next.push({ name: f.name, size: f.size, hash });
     }
     setFiles((prev) => [...prev, ...next]);
@@ -405,7 +407,7 @@ function EvidenceStep({
         <label className="mb-1 block text-xs font-medium text-muted-foreground">
           How should evidence be stored?
         </label>
-        <div className="grid gap-2 sm:grid-cols-3">
+        <div className="grid gap-2 sm:grid-cols-2">
           {EVIDENCE_MODES.map((m) => (
             <button
               key={m.value}
@@ -418,7 +420,7 @@ function EvidenceStep({
               }`}
             >
               <span className="flex items-center gap-1.5 text-sm font-medium text-foreground">
-                {m.value === "hash-only" && <Lock className="size-3.5 text-primary" />}
+                {m.value === "stored" && <Lock className="size-3.5 text-primary" />}
                 {m.label}
               </span>
               <span className="mt-0.5 block text-xs text-muted-foreground/80">{m.meaning}</span>
@@ -426,7 +428,7 @@ function EvidenceStep({
           ))}
         </div>
 
-        {evidenceMode === "external-reference" ? (
+        {evidenceMode === "external_reference" ? (
           <div className="mt-4">
             <label className="mb-1 block text-xs font-medium text-muted-foreground">Evidence link</label>
             <input
@@ -439,10 +441,7 @@ function EvidenceStep({
         ) : (
           <div className="mt-4">
             <label className="mb-1 block text-xs font-medium text-muted-foreground">
-              Files{" "}
-              {evidenceMode === "hash-only" && (
-                <span className="font-normal text-primary">· hashed locally, file not stored</span>
-              )}
+              Files <span className="font-normal text-primary">· hashed at submission</span>
             </label>
             <label className="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed bg-card px-6 py-8 text-center hover:border-primary">
               <input
@@ -551,7 +550,7 @@ function ReviewStep({
   const capabilities = distinctCapabilities(draft.skillIds);
   const aiLabel = prettyEnum(draft.aiInvolvement);
   const evidenceCount =
-    draft.evidenceMode === "external-reference"
+    draft.evidenceMode === "external_reference"
       ? draft.link
         ? "1 link"
         : "none"
