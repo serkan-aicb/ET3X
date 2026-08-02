@@ -38,6 +38,30 @@ export type ActionRecord = {
   created_at: string;
 };
 
+/**
+ * Path B — prospective / issued actions (v6 §5a). An evaluator creates action
+ * content once and ISSUES it to one or many recipients (class/team broadcast);
+ * the system makes one read-only instance per recipient, grouped under one
+ * Assignment. Recipients can't change title/description/skills; each submits
+ * their own evidence + sets their own org_visibility consent (§5c).
+ */
+export type AssignmentRecipient = {
+  token: string; // single-use receive link
+  email: string;
+  status: "assigned" | "submitted";
+  submitted_at?: string;
+};
+
+export type Assignment = {
+  assignment_id: string;
+  title: string;
+  description: string;
+  action_skills: ActionSkill[]; // fixed at issuance (recipients can't edit)
+  issued_by: string; // the issuing evaluator
+  created_at: string;
+  recipients: AssignmentRecipient[];
+};
+
 /** Single-use invite token (stub of Cyprian's invitations). */
 export type EvaluationInvite = {
   token: string;
