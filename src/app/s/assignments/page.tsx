@@ -15,10 +15,23 @@ import { Check, ClipboardList, Copy, Plus, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AppLayout } from "@/components/app-layout";
 import { getCapability, resolveCapability } from "@/lib/catalogue";
-import { DRAFT_KEYS, useLocalDraft } from "@/lib/local-draft";
-import type { Assignment, ActionSkill } from "@/lib/actions/types";
+import { DRAFT_KEYS, readDraft, useLocalDraft, writeDraft } from "@/lib/local-draft";
+import type {
+  ActionRecord,
+  ActionSkill,
+  Assignment,
+  AssignmentRecipient,
+  EvaluationInvite,
+  RecipientStatus,
+} from "@/lib/actions/types";
 
 const EMPTY: Assignment[] = [];
+
+function newToken() {
+  return typeof crypto !== "undefined" && crypto.randomUUID
+    ? crypto.randomUUID()
+    : `tok_${Math.random().toString(36).slice(2)}`;
+}
 
 export default function AssignmentsPage() {
   const router = useRouter();
@@ -67,7 +80,9 @@ export default function AssignmentsPage() {
 
 function AssignmentCard({ assignment: a }: { assignment: Assignment }) {
   const caps = distinctCapabilityNames(a.action_skills);
-  const submitted = a.recipients.filter((r) => r.status === "submitted").length;
+  const submitted = a.recipients.filter(
+    (r) => r.status === "submitted" || r.status === "evaluated"
+  ).length;
   const created = new Date(a.created_at).toLocaleDateString(undefined, {
     month: "short",
     day: "numeric",
@@ -99,7 +114,7 @@ function AssignmentCard({ assignment: a }: { assignment: Assignment }) {
       <div className="mt-4 border-t pt-3">
         <ul className="divide-y divide-muted">
           {a.recipients.map((r) => (
-            <RecipientRow key={r.token} email={r.email} token={r.token} status={r.status} />
+            <RecipientRow key={r.token} assignment={a} recipient={r} />
           ))}
         </ul>
       </div>
@@ -110,16 +125,18 @@ function AssignmentCard({ assignment: a }: { assignment: Assignment }) {
 }
 
 function RecipientRow({
-  email,
-  token,
-  status,
+  assignment,
+  recipient,
 }: {
-  email: string;
-  token: string;
-  status: "assigned" | "submitted";
+  assignment: Assignment;
+  recipient: AssignmentRecipient;
 }) {
+  const router = useRouter();
   const [copied, setCopied] = useState(false);
-  const link = typeof window !== "undefined" ? `${window.location.origin}/receive/${token}` : "";
+  const [declining, setDeclining] = useState(false);
+  const [reason, setReason] = useState("");
+  const link =
+    typeof window !== "undefined" ? `${window.location.origin}/receive/${recipient.token}` : "";
 
   const copy = async () => {
     try {
@@ -131,22 +148,114 @@ function RecipientRow({
     }
   };
 
+  // Materialise a scoreable action from the assignment + this recipient's evidence,
+  // then hand off to the standard skill-level evaluate flow (linked back so submit
+  // flips the recipient to "evaluated").
+  const evaluate = () => {
+    const actionId = `act_${recipient.token}`;
+    const action: ActionRecord = {
+      action_id: actionId,
+      title: assignment.title,
+      description: assignment.description,
+      action_skills: assignment.action_skills,
+      ai_involvement: "none",
+      difficulty_declared: "INTERMEDIATE",
+      evidence: recipient.evidence ?? { note: "", link: "", mode: "external_reference", files: [] },
+      org_visibility: recipient.org_visibility ?? "yes",
+      created_at: recipient.submitted_at ?? new Date().toISOString(),
+    };
+    const actions = readDraft<ActionRecord[]>(DRAFT_KEYS.actionsDrafts) ?? [];
+    if (!actions.some((x) => x.action_id === actionId)) {
+      writeDraft(DRAFT_KEYS.actionsDrafts, [action, ...actions]);
+    }
+    const token = newToken();
+    const invite: EvaluationInvite = {
+      token,
+      action_id: actionId,
+      action_title: assignment.title,
+      created_at: new Date().toISOString(),
+      status: "pending",
+      assignment_id: assignment.assignment_id,
+      recipient_token: recipient.token,
+    };
+    const invites = readDraft<EvaluationInvite[]>(DRAFT_KEYS.evaluationInvites) ?? [];
+    writeDraft(DRAFT_KEYS.evaluationInvites, [invite, ...invites]);
+    router.push(`/evaluate/${token}`);
+  };
+
+  const confirmDecline = () => {
+    const list = readDraft<Assignment[]>(DRAFT_KEYS.assignments) ?? [];
+    writeDraft(
+      DRAFT_KEYS.assignments,
+      list.map((a) =>
+        a.assignment_id !== assignment.assignment_id
+          ? a
+          : {
+              ...a,
+              recipients: a.recipients.map((r) =>
+                r.token !== recipient.token
+                  ? r
+                  : { ...r, status: "declined" as const, decline_reason: reason.trim() || undefined }
+              ),
+            }
+      )
+    );
+    setDeclining(false);
+    setReason("");
+  };
+
   return (
-    <li className="flex items-center gap-3 py-2.5">
-      <span className="min-w-0 flex-1 truncate text-sm text-foreground">{email}</span>
-      {status === "submitted" ? (
-        <span className="shrink-0 rounded-md bg-success/15 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-success">
-          Submitted
-        </span>
-      ) : (
-        <span className="shrink-0 rounded-md bg-muted px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-          Assigned
-        </span>
+    <li className="py-2.5">
+      <div className="flex items-center gap-3">
+        <span className="min-w-0 flex-1 truncate text-sm text-foreground">{recipient.email}</span>
+        <StatusBadge status={recipient.status} />
+        {recipient.status === "submitted" ? (
+          <>
+            <Button variant="outline" size="sm" onClick={() => setDeclining((v) => !v)}>
+              Decline
+            </Button>
+            <Button size="sm" onClick={evaluate}>
+              Evaluate
+            </Button>
+          </>
+        ) : recipient.status === "evaluated" ? null : (
+          <Button variant="outline" size="sm" onClick={copy}>
+            {copied ? <Check /> : <Copy />} {copied ? "Copied" : "Link"}
+          </Button>
+        )}
+      </div>
+      {declining && (
+        <div className="mt-2 flex items-center gap-2">
+          <input
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            placeholder="Reason (optional)"
+            className="h-8 min-w-0 flex-1 rounded-lg border px-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+          />
+          <Button size="sm" variant="ghost" onClick={() => setDeclining(false)}>
+            Cancel
+          </Button>
+          <Button size="sm" onClick={confirmDecline}>
+            Confirm decline
+          </Button>
+        </div>
       )}
-      <Button variant="outline" size="sm" onClick={copy}>
-        {copied ? <Check /> : <Copy />} {copied ? "Copied" : "Link"}
-      </Button>
     </li>
+  );
+}
+
+function StatusBadge({ status }: { status: RecipientStatus }) {
+  const map = {
+    assigned: ["Assigned", "bg-muted text-muted-foreground"],
+    submitted: ["Submitted", "bg-primary-soft text-primary"],
+    evaluated: ["Evaluated", "bg-success/15 text-success"],
+    declined: ["Declined", "bg-danger/10 text-danger"],
+  } as const;
+  const [label, cls] = map[status];
+  return (
+    <span className={`shrink-0 rounded-md px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide ${cls}`}>
+      {label}
+    </span>
   );
 }
 

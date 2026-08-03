@@ -48,13 +48,16 @@ export type ActionRecord = {
  * Assignment. Recipients can't change title/description/skills; each submits
  * their own evidence + sets their own org_visibility consent (§5c).
  */
+export type RecipientStatus = "assigned" | "submitted" | "evaluated" | "declined";
+
 export type AssignmentRecipient = {
   token: string; // single-use receive link
   email: string;
-  status: "assigned" | "submitted";
+  status: RecipientStatus;
   evidence?: Evidence; // the recipient's own submitted evidence
   org_visibility?: string; // each recipient sets their own consent (§5c)
   submitted_at?: string;
+  decline_reason?: string; // optional, one-click decline (v6 §6)
 };
 
 export type Assignment = {
@@ -74,6 +77,10 @@ export type EvaluationInvite = {
   action_title: string;
   created_at: string;
   status: "pending" | "used";
+  // Set when this invite evaluates a Path-B assignment submission — links back so
+  // submitting the evaluation flips the recipient's status to "evaluated".
+  assignment_id?: string;
+  recipient_token?: string;
 };
 
 /** One rated skill within an evaluation (v6 §7 — skills are rated directly). */

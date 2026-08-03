@@ -50,6 +50,7 @@ export default function ReceivePage() {
 
   if (!assignment || !recipient) return <Notice />;
   if (recipient.status === "submitted") return <Notice submitted />;
+  if (recipient.status === "evaluated") return <Notice evaluated />;
 
   return (
     <AccountGate
@@ -137,6 +138,16 @@ function Receiver({
             title="You've been assigned an Action"
             subtitle={`Issued by ${assignment.issued_by}. Do the work, then submit your evidence. The task itself can't be changed.`}
           />
+          {recipient.status === "declined" && (
+            <div className="mb-4 flex items-start gap-2 rounded-lg bg-warning/10 px-4 py-3 text-sm text-warning-foreground">
+              <ShieldAlert className="mt-0.5 size-4 shrink-0 text-warning" />
+              <span>
+                Your previous submission was declined
+                {recipient.decline_reason ? `: “${recipient.decline_reason}”` : ""}. Update your
+                evidence and resubmit.
+              </span>
+            </div>
+          )}
           <section className="rounded-xl border bg-card p-6 shadow-card">
             <h2 className="text-base font-semibold text-foreground">{assignment.title}</h2>
             {assignment.description && (
@@ -324,20 +335,27 @@ function Confirmation() {
   );
 }
 
-function Notice({ submitted }: { submitted?: boolean }) {
+function Notice({ submitted, evaluated }: { submitted?: boolean; evaluated?: boolean }) {
+  const done = submitted || evaluated;
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-6">
       <div className="max-w-[420px] rounded-xl border bg-card p-8 text-center shadow-card">
         <span className="mx-auto flex size-12 items-center justify-center rounded-full bg-muted text-muted-foreground">
-          {submitted ? <CheckCircle2 className="size-6" /> : <ShieldAlert className="size-6" />}
+          {done ? <CheckCircle2 className="size-6" /> : <ShieldAlert className="size-6" />}
         </span>
         <h1 className="mt-4 text-lg font-semibold text-foreground">
-          {submitted ? "You've already submitted this" : "Invalid or expired link"}
+          {evaluated
+            ? "This has been evaluated"
+            : submitted
+              ? "You've already submitted this"
+              : "Invalid or expired link"}
         </h1>
         <p className="mt-1.5 text-sm text-muted-foreground">
-          {submitted
-            ? "This assigned Action was completed. Ask for a fresh link if you need to resubmit."
-            : "We couldn't find an assigned Action for this link. Check the URL, or ask for a new one."}
+          {evaluated
+            ? "The evaluator scored your submission — check the profile for the result."
+            : submitted
+              ? "Your work is in. You'll hear back once the evaluator scores it."
+              : "We couldn't find an assigned Action for this link. Check the URL, or ask for a new one."}
         </p>
       </div>
     </div>

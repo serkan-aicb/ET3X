@@ -45,9 +45,10 @@ import {
   resolveCapability,
   SCORE_MAX,
 } from "@/lib/catalogue";
-import { DRAFT_KEYS, useLocalDraft, writeDraft } from "@/lib/local-draft";
+import { DRAFT_KEYS, readDraft, useLocalDraft, writeDraft } from "@/lib/local-draft";
 import type {
   ActionRecord,
+  Assignment,
   Evaluation,
   EvaluationInvite,
 } from "@/lib/actions/types";
@@ -157,6 +158,24 @@ function Evaluator({ token, action }: { token: string; action: ActionRecord }) {
       DRAFT_KEYS.evaluationInvites,
       invites.map((i) => (i.token === token ? { ...i, status: "used" as const } : i))
     );
+    // Path B: if this invite evaluates an assignment submission, mark it evaluated.
+    const invite = invites.find((i) => i.token === token);
+    if (invite?.assignment_id && invite.recipient_token) {
+      const assignments = readDraft<Assignment[]>(DRAFT_KEYS.assignments) ?? [];
+      writeDraft(
+        DRAFT_KEYS.assignments,
+        assignments.map((a) =>
+          a.assignment_id !== invite.assignment_id
+            ? a
+            : {
+                ...a,
+                recipients: a.recipients.map((r) =>
+                  r.token !== invite.recipient_token ? r : { ...r, status: "evaluated" as const }
+                ),
+              }
+        )
+      );
+    }
     setDone(true);
   };
 
