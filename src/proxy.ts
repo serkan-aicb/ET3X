@@ -27,9 +27,10 @@ const PUBLIC_PREFIXES = [
   '/profile-studio-preview',
   '/onboarding-preview',
   // The invite link must resolve so the in-page account gate can render (v1.7
-  // R12 / spec v6 §2): /evaluate stays public, but scoring requires a rudimentary
-  // profile, gated in-page by <AccountGate>. Token validation is Cyprian's.
+  // R12 / spec v6 §2): /evaluate and /receive stay public, but taking part requires
+  // a rudimentary profile, gated in-page by <AccountGate>. Tokens are Cyprian's.
   '/evaluate',
+  '/receive', // Path B recipient opens their issued action here (v6 §5a)
 ]
 
 export async function proxy(request: NextRequest) {

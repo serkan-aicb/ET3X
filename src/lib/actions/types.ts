@@ -21,6 +21,14 @@ export type RudimentaryProfile = {
   function: string; // role/function label
 };
 
+/** Evidence attached to an action, or submitted for an issued instance (v1.7 R13). */
+export type Evidence = {
+  note: string;
+  link: string;
+  mode: string; // evidence_storage_mode: "external_reference" | "stored"
+  files: { name: string; size?: number; hash?: string }[]; // hash computed for every file
+};
+
 export type ActionRecord = {
   action_id: string;
   title: string;
@@ -28,12 +36,7 @@ export type ActionRecord = {
   action_skills: ActionSkill[];
   ai_involvement: string;
   difficulty_declared: string;
-  evidence: {
-    note: string;
-    link: string;
-    mode: string; // evidence_storage_mode: "external_reference" | "stored" (v1.7 R13)
-    files: { name: string; size?: number; hash?: string }[]; // hash computed for every file
-  };
+  evidence: Evidence;
   org_visibility: string;
   created_at: string;
 };
@@ -49,6 +52,8 @@ export type AssignmentRecipient = {
   token: string; // single-use receive link
   email: string;
   status: "assigned" | "submitted";
+  evidence?: Evidence; // the recipient's own submitted evidence
+  org_visibility?: string; // each recipient sets their own consent (§5c)
   submitted_at?: string;
 };
 
