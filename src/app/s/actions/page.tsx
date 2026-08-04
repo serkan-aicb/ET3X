@@ -15,6 +15,7 @@ import {
   Lock,
   Plus,
   Sparkles,
+  Users,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -40,9 +41,14 @@ export default function MyActionsPage() {
               Real work you can get evaluated into verified capabilities.
             </p>
           </div>
-          <Button onClick={() => router.push("/s/actions/create")}>
-            <Plus /> Create Action
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button variant="outline" onClick={() => router.push("/s/assignments")}>
+              <Users /> Assignments
+            </Button>
+            <Button onClick={() => router.push("/s/actions/create")}>
+              <Plus /> Create Action
+            </Button>
+          </div>
         </div>
 
         {actions.length === 0 ? (

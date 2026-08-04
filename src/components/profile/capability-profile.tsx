@@ -208,15 +208,19 @@ export function CapabilityProfile({ mode }: { mode: "owner" | "public" }) {
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-1.5">
                           <span className="truncate text-sm font-medium">{d.name}</span>
-                          {d.provisional && (
+                          {d.provisional ? (
                             <span className="shrink-0 rounded bg-warning/15 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-warning-foreground/80">
                               Provisional
+                            </span>
+                          ) : (
+                            <span className="shrink-0 rounded bg-success/15 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-success">
+                              Confirmed
                             </span>
                           )}
                         </div>
                         <div className="text-[11px] text-muted-foreground/70">
-                          based on {d.evaluatedActions} evaluation
-                          {d.evaluatedActions === 1 ? "" : "s"}
+                          based on {d.ratedSkills} rated skill
+                          {d.ratedSkills === 1 ? "" : "s"}
                         </div>
                       </div>
                       <span className="rounded-lg bg-primary-soft px-2.5 py-1 text-sm font-bold tabular-nums text-primary">

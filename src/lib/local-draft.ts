@@ -22,6 +22,8 @@ export const DRAFT_KEYS = {
   evaluationInvites: "t3x.evaluation.invites", // single-use invite tokens (stub)
   evaluations: "t3x.evaluations", // submitted evaluations (stub)
   profile: "t3x.profile", // owner-editable profile basics (name/headline/bio/avatar)
+  rudimentaryProfile: "t3x.profile.rudimentary", // v1.7 R12: email+org+function gate (Phase 2)
+  assignments: "t3x.assignments", // v6 §5a: evaluator-issued action assignments (Phase 4)
 } as const;
 
 /* ---- plain read/write (use outside React or in event handlers) -------- */
