@@ -46,6 +46,8 @@ export function computeCapabilityScores(evaluations: Evaluation[]): CapabilitySc
   // Flatten rated skills → group by capability, each carrying its evaluation weight.
   const byCapability = new Map<string, { score: number; w: number }[]>();
   for (const e of evaluations) {
+    // Guard against stale/legacy records that predate the skill-level shape.
+    if (!Array.isArray(e?.skill_scores)) continue;
     const w = difficultyWeight(e.difficulty_confirmed) * confidenceWeight(e.evidence_quality);
     for (const s of e.skill_scores) {
       if (!s.capability_id_resolved) continue;
