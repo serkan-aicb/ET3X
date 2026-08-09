@@ -93,6 +93,11 @@ export function getSkill(id: string): Skill | undefined {
   return pickableSkills.find((s) => s.skill_id === id);
 }
 
+/** All pickable (non-dormant) skills belonging to a capability (R7). */
+export function getSkillsForCapability(capabilityId: string): Skill[] {
+  return pickableSkills.filter((s) => s.capability_id === capabilityId);
+}
+
 /**
  * Case-insensitive typeahead over pickable skill labels (§7). Ranks exact →
  * prefix → substring. `limit` caps the dropdown length.
