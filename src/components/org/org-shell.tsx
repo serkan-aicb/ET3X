@@ -31,7 +31,7 @@ type NavItem = { key: string; label: string; href?: string; icon: typeof LayoutD
 const VIEWER_NAV: NavItem[] = [
   { key: "overview", label: "Overview", href: "/org/overview", icon: LayoutDashboard },
   { key: "analytics", label: "Analytics", href: "/org/analytics", icon: BarChart3 },
-  { key: "reports", label: "Reports", icon: FileText, soon: true },
+  { key: "reports", label: "Reports", href: "/org/reports", icon: FileText },
   { key: "profiles", label: "Profiles", icon: Users, soon: true },
   { key: "evaluations", label: "Evaluations", icon: ClipboardList, soon: true },
 ];
@@ -63,7 +63,7 @@ export function OrgShell({ active, children }: { active: string; children: React
 
   return (
     <div className="flex min-h-screen bg-background">
-      <aside className="hidden w-64 shrink-0 flex-col border-r bg-card px-4 py-5 md:flex">
+      <aside className="hidden w-64 shrink-0 flex-col border-r bg-card px-4 py-5 md:flex print:hidden">
         <Link href="/org/overview" className="mb-6 flex items-center gap-2 px-2">
           <Image src="/pics/logo-transparent.png" alt="Talent3X" width={160} height={36} className="h-8 w-auto" priority />
         </Link>

@@ -122,6 +122,25 @@ export function scoreDistribution(dataset: OrgDataset, activated: string[]): Sco
   return bands;
 }
 
+/** Capability maturity bands (design: Advanced / Developed / Emerging / Foundational). */
+export function maturityDistribution(dataset: OrgDataset, activated: string[]): ScoreBand[] {
+  const gate = getCapabilityIdsInPackages(activated);
+  const entries = visibleEntries(dataset, gate);
+  const bands: ScoreBand[] = [
+    { label: "Advanced (4.0–5.0)", min: 4.0, max: 5.0, count: 0, percent: 0 },
+    { label: "Developed (3.0–3.9)", min: 3.0, max: 3.99, count: 0, percent: 0 },
+    { label: "Emerging (2.0–2.9)", min: 2.0, max: 2.99, count: 0, percent: 0 },
+    { label: "Foundational (1.0–1.9)", min: 1.0, max: 1.99, count: 0, percent: 0 },
+  ];
+  for (const e of entries) {
+    const b = bands.find((b) => e.score >= b.min && e.score <= b.max);
+    if (b) b.count++;
+  }
+  const total = entries.length || 1;
+  for (const b of bands) b.percent = Math.round((b.count / total) * 100);
+  return bands;
+}
+
 export type GrowthSeries = { capability_id: string; name: string; points: { label: string; value: number }[] };
 
 /** Synthetic monthly trend per top capability (deterministic, ends at today's avg). */
