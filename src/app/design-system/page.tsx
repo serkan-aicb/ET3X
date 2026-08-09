@@ -633,7 +633,7 @@ export default function DesignSystemPage() {
         {/* ── Product patterns from verification-layer config ────── */}
         <DesignSystemSection
           title="Evaluation score scale (from config)"
-          description="Holistic 0–5, scored against each capability's rubric anchors (handover v1.6) — never a global label set. Comment mandatory at 0, 1 and 5, from scoring_policy."
+          description="Skills are rated 0–5 against the capability's rubric anchors (spec v6 §7); capabilities are computed, never rated directly. Never a global label set. Comment mandatory at 0, 1 and 5, from scoring_policy."
         >
           <div className="grid gap-6 lg:grid-cols-2">
             <Card>

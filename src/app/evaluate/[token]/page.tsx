@@ -1,22 +1,19 @@
 "use client";
 
 /**
- * Evaluator flow — Week 4 (handover v1.6 §7, R6/R9). Reached via a single-use
- * token link; the link resolves publicly but scoring requires a rudimentary
- * profile (v1.7 R12 / spec v6 §2) — gated in-page by <AccountGate>. The evaluator:
- *   Context & role → Difficulty → Score each capability → Review → Done.
+ * Evaluator flow. Reached via a single-use token link; the link resolves
+ * publicly but scoring requires a rudimentary profile (R12) — gated in-page by
+ * <AccountGate>. Steps: Context & role → Difficulty → Score → Review → Done.
  *
- * v1.6 rules encoded:
- *  - Capability-level, holistic integer 0–5 against that capability's six rubric
- *    anchors (shown, at the stored rubric_version).
- *  - evidence_quality 0–5 required per capability; comment required at 0/1/5.
- *  - evaluator_role + evaluator_relationship declared; verification_tier stored
- *    (stub = 0). rubric_version + scoring_version stored on every evaluation.
- *  - No self-evaluation (stated; enforced server-side by Cyprian).
- *  - Difficulty confirmed/corrected by the evaluator drives the weight (R9).
+ * SCORING IS SKILL-LEVEL (spec v6 §7): the evaluator rates each selected SKILL
+ * 0–5 and the engine rolls those up into capability scores. Capabilities are
+ * never rated directly. v1.7's R6/R9 capability-holistic wording is void for us
+ * — André ruled for v6 on 2 Aug 2026. Do not "correct" this back.
+ *
+ * Rules and rationale: docs/MODEL.md.
  *
  * Persistence is a localStorage stub; the real submit + token consume are
- * Cyprian's (workspace doc 15). One evaluation row is written per capability.
+ * Cyprian's. One evaluation is written per action, carrying a score per skill.
  */
 
 import { useState } from "react";

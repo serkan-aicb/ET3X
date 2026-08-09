@@ -35,19 +35,20 @@ const PUBLIC_PREFIXES = [
   '/propose', // Path B-5b evaluator reviews a worker's proposal here (v6 §5b)
 ]
 
-// Legacy pre-v1.6 surfaces (task / star-rating model), superseded by the v1.7/v6
-// build. Quarantined: the files remain (reversible) but the routes redirect home
-// so nothing reaches the old Supabase schema. NOT deleted — kept for reference and
-// as the seed for the rebuilt org/evaluator surfaces (Phases 3–4).
-const LEGACY_PREFIXES = [
-  '/e/', // entire legacy educator tree (dashboard, tasks, profile, rate-all)
+// Retired pre-v1.6 surfaces (task / star-rating model), superseded by the v1.7/v6
+// build. The files are DELETED (workspace doc 22, C4) — recoverable from the
+// pushed tag `legacy-v1.6-task-model`. These prefixes stay only so stale links
+// land home instead of 404: the legacy app was live at talent3x.com and share
+// codes were handed to Oulu students, so old bookmarks and QR codes exist.
+const RETIRED_PREFIXES = [
+  '/e/', // legacy educator tree (dashboard, tasks, profile, rate-all)
   '/s/tasks',
   '/s/my-tasks',
   '/s/collect-matriculation',
   '/submit',
   '/rating',
   '/professor',
-  '/t/', // legacy shared-task landing
+  '/t/', // legacy shared-task landing (share codes are still in the wild)
   '/admin/', // legacy platform admin (/admin/overview)
   '/admin-talent3x',
   '/admin-public',
@@ -61,8 +62,8 @@ export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
   const session = parseSessionCookie(request.cookies.get(SESSION_COOKIE)?.value)
 
-  // Quarantined legacy routes → home (which then routes a signed-in user on).
-  if (LEGACY_PREFIXES.some((prefix) => pathname.startsWith(prefix))) {
+  // Retired legacy routes → home (which then routes a signed-in user on).
+  if (RETIRED_PREFIXES.some((prefix) => pathname.startsWith(prefix))) {
     return NextResponse.redirect(new URL('/', request.url))
   }
 

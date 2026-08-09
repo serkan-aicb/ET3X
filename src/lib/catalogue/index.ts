@@ -222,8 +222,9 @@ export const SCORE_MAX = scoreBounds ? Number(scoreBounds[2]) : 5;
 export type ScoreStep = { value: number; requiresComment: boolean; label?: string };
 
 /**
- * The 0–5 score scale as data (v1.6): holistic integers against the capability's
- * rubric anchors, comment mandatory at the scores in `comment_required_scores`.
+ * The 0–5 score scale as data: integers rated against the capability's rubric
+ * anchors, comment mandatory at the scores in `comment_required_scores`.
+ * Skills carry the rating; capabilities are computed (spec v6 §7 — docs/MODEL.md).
  * No generic quality labels — quality language lives only in rubric anchors.
  */
 export function getScoreScale(): ScoreStep[] {
