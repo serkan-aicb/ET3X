@@ -38,8 +38,8 @@ const VIEWER_NAV: NavItem[] = [
 
 const ADMIN_NAV: NavItem[] = [
   { key: "overview", label: "Overview", href: "/org/overview", icon: LayoutDashboard },
-  { key: "members", label: "Members", icon: Users, soon: true },
-  { key: "governance", label: "Governance", icon: ShieldCheck, soon: true },
+  { key: "members", label: "Members", href: "/org/members", icon: Users },
+  { key: "governance", label: "Governance", href: "/org/governance", icon: ShieldCheck },
 ];
 
 const ROLE_LABEL: Record<string, string> = {
