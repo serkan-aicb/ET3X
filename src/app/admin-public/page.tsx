@@ -1,8 +1,14 @@
 import { createClient } from "@supabase/supabase-js";
 import { Database } from "@/lib/supabase/types";
+import { hasSupabaseEnv } from "@/lib/supabase/fake-client";
 import GovernanceDashboardContent, {
   GovernanceLiveData,
 } from "./dashboard-content";
+
+// This legacy dashboard reads live data with a service-role client. In the
+// frozen build (no backend) it is quarantined — never statically generated,
+// and it renders a notice instead of touching Supabase.
+export const dynamic = "force-dynamic";
 
 // ── Exact oulu_domain TEXT values as stored in public.skills ─
 const DOMAIN_KEYS = [
@@ -405,6 +411,22 @@ async function getGovernanceLiveData(): Promise<GovernanceLiveData> {
 }
 
 export default async function GovernanceDashboardPage() {
+  if (!hasSupabaseEnv) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background px-6 text-center">
+        <div className="max-w-md">
+          <h1 className="text-xl font-semibold text-foreground">
+            Governance dashboard unavailable
+          </h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            This legacy dashboard reads live data from the backend, which isn&apos;t
+            connected in this build. The v1.7/v6 organisation analytics are being
+            rebuilt separately.
+          </p>
+        </div>
+      </div>
+    );
+  }
   const liveData = await getGovernanceLiveData();
   return <GovernanceDashboardContent liveData={liveData} />;
 }

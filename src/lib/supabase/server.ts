@@ -1,9 +1,16 @@
 import { createServerClient as supabaseCreateServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
+import type { SupabaseClient } from '@supabase/supabase-js'
+import { hasSupabaseEnv, makeFakeSupabaseClient } from './fake-client'
 
-export async function createServerClient() {
+export async function createServerClient(): Promise<SupabaseClient> {
+  // Frozen build with no backend: hand back a no-op client (see ./fake-client.ts).
+  if (!hasSupabaseEnv) {
+    return makeFakeSupabaseClient() as unknown as SupabaseClient
+  }
+
   const cookieStore = await cookies()
-  
+
   return supabaseCreateServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
