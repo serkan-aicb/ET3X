@@ -4,16 +4,24 @@
  * The v1.7/v6 product is localStorage-only (see `src/lib/local-draft.ts` and
  * `src/lib/auth/local-session.ts`). The legacy pre-v1.6 pages still import the
  * Supabase browser client; rather than rewrite them all, `createClient()` hands
- * back this no-op when the Supabase env vars are ABSENT — so the app boots and
- * deploys with zero secrets and legacy pages render empty instead of throwing
- * "supabaseUrl is required" at startup.
+ * back this no-op UNLESS the real backend is explicitly opted in — so the app
+ * boots and deploys with zero secrets, and legacy pages render empty instead of
+ * throwing (or network-erroring against a dead instance) at startup.
  *
- * This is purely an absence-of-config fallback: if the env vars ARE present the
- * real client is returned unchanged. Nothing here is destructive.
+ * Nothing here is destructive: flip the opt-in below and the real client returns
+ * unchanged.
  */
 
-export const hasSupabaseEnv =
+/**
+ * Use the REAL Supabase backend only when explicitly opted in AND configured.
+ * The default (flag unset) is the frozen no-backend build — so a leftover
+ * Supabase URL sitting in `.env` can't silently drag the app back onto a server
+ * that may be paused/down. Set `NEXT_PUBLIC_USE_SUPABASE=true` (alongside the URL
+ * and anon key) to reconnect the real backend.
+ */
+export const useRealSupabase =
   typeof process !== "undefined" &&
+  process.env.NEXT_PUBLIC_USE_SUPABASE === "true" &&
   !!process.env.NEXT_PUBLIC_SUPABASE_URL &&
   !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 

@@ -1,6 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { Database } from "@/lib/supabase/types";
-import { hasSupabaseEnv } from "@/lib/supabase/fake-client";
+import { useRealSupabase } from "@/lib/supabase/fake-client";
 import GovernanceDashboardContent, {
   GovernanceLiveData,
 } from "./dashboard-content";
@@ -411,7 +411,7 @@ async function getGovernanceLiveData(): Promise<GovernanceLiveData> {
 }
 
 export default async function GovernanceDashboardPage() {
-  if (!hasSupabaseEnv) {
+  if (!useRealSupabase) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background px-6 text-center">
         <div className="max-w-md">
