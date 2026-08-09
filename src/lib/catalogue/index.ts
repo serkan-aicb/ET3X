@@ -138,6 +138,27 @@ export function getScoringParam(parameter: string): string | undefined {
   return data.scoringPolicy.find((p) => p.parameter === parameter)?.value;
 }
 
+/* ---- packages (commercial bundles — gate ORG analytics only) ---------- */
+
+export function getPackages(): Package[] {
+  return data.packages;
+}
+
+/**
+ * The capability_ids covered by any of the given packages (v1.7 §Activation
+ * "Check 2 / commercial_scope"): org analytics only ever return capabilities
+ * inside the org's activated packages. Individual data outside them still exists
+ * but is never surfaced to org endpoints.
+ */
+export function getCapabilityIdsInPackages(packageIds: string[]): Set<string> {
+  const active = new Set(packageIds);
+  return new Set(
+    data.packageCapabilities
+      .filter((pc) => active.has(pc.package_id))
+      .map((pc) => pc.capability_id)
+  );
+}
+
 /* ---- rubrics (the 6 anchors per capability, for the evaluator view) --- */
 
 const rubricsByCapability = (() => {

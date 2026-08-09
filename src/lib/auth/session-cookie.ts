@@ -11,7 +11,15 @@
 
 export const SESSION_COOKIE = "t3x.session";
 
-export type SessionRole = "student" | "educator" | "admin";
+export type SessionRole = "student" | "educator" | "admin" | "org_viewer" | "org_admin";
+
+const ROLES: readonly SessionRole[] = [
+  "student",
+  "educator",
+  "admin",
+  "org_viewer",
+  "org_admin",
+];
 
 export type LocalSession = {
   role: SessionRole;
@@ -29,13 +37,7 @@ export function parseSessionCookie(
   if (!value) return null;
   try {
     const parsed = JSON.parse(decodeURIComponent(value)) as LocalSession;
-    if (
-      parsed &&
-      (parsed.role === "student" ||
-        parsed.role === "educator" ||
-        parsed.role === "admin") &&
-      typeof parsed.name === "string"
-    ) {
+    if (parsed && ROLES.includes(parsed.role) && typeof parsed.name === "string") {
       return parsed;
     }
     return null;

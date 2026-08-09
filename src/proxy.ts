@@ -66,10 +66,13 @@ export function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL('/', request.url))
   }
 
-  // Logged-in users visiting marketing pages → their workspace. Only the
-  // individual signs in during the frozen build (see src/app/auth/page.tsx).
+  // Logged-in users visiting marketing pages → their workspace.
   if (session && PUBLIC_PATHS.has(pathname)) {
-    return NextResponse.redirect(new URL('/s/dashboard', request.url))
+    const home =
+      session.role === 'org_viewer' || session.role === 'org_admin'
+        ? '/org/overview'
+        : '/s/dashboard'
+    return NextResponse.redirect(new URL(home, request.url))
   }
 
   // Allow public paths through without authentication
@@ -87,6 +90,15 @@ export function proxy(request: NextRequest) {
     redirectUrl.pathname = '/auth'
     redirectUrl.searchParams.set('redirect_to', pathname)
     return NextResponse.redirect(redirectUrl)
+  }
+
+  // The org area is for org roles only (admin ≠ analyst is enforced in-app).
+  if (
+    pathname.startsWith('/org') &&
+    session.role !== 'org_viewer' &&
+    session.role !== 'org_admin'
+  ) {
+    return NextResponse.redirect(new URL('/s/dashboard', request.url))
   }
 
   return NextResponse.next({ request })

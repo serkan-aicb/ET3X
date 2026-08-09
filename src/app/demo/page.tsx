@@ -10,7 +10,8 @@ import { Sparkles, Trash2, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DRAFT_KEYS, useLocalDraft } from "@/lib/local-draft";
 import { seedDemoProfile, clearAllData, DEMO_PERSONA } from "@/lib/demo/seed";
-import type { LocalSession } from "@/lib/auth/local-session";
+import { signIn, type LocalSession, type SessionRole } from "@/lib/auth/local-session";
+import { ORG_NAME } from "@/lib/org/org-data";
 import type { ActionRecord, Evaluation } from "@/lib/actions/types";
 
 const NO_SESSION: LocalSession | null = null;
@@ -30,6 +31,18 @@ export default function DemoPage() {
   const clearData = () => {
     clearAllData();
     window.location.assign("/demo");
+  };
+
+  const enterOrg = (role: SessionRole) => {
+    const admin = role === "org_admin";
+    signIn({
+      role,
+      name: admin ? "Dr. Michael Lee" : "Prof. Anna Laine",
+      email: admin ? "m.lee@oulu.fi" : "a.laine@oulu.fi",
+      organisation: ORG_NAME,
+      function: admin ? "Administrator" : "Analytics viewer",
+    });
+    window.location.assign("/org/overview");
   };
 
   return (
@@ -79,6 +92,25 @@ export default function DemoPage() {
           </Button>
           <p className="px-1 text-xs text-muted-foreground">
             Wipes localStorage and signs out — the app returns to a first-run state.
+          </p>
+        </div>
+
+        {/* Organisation demo */}
+        <div className="space-y-2 border-t pt-5">
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            Organisation dashboards
+          </p>
+          <div className="grid grid-cols-2 gap-2">
+            <Button variant="outline" onClick={() => enterOrg("org_viewer")}>
+              Org analytics (viewer)
+            </Button>
+            <Button variant="outline" onClick={() => enterOrg("org_admin")}>
+              Org admin
+            </Button>
+          </div>
+          <p className="px-1 text-xs text-muted-foreground">
+            Enter the {ORG_NAME} dashboards on mock org data. Viewer sees capability analytics
+            (package-gated, k-anonymised); admin sees governance without scores.
           </p>
         </div>
 
