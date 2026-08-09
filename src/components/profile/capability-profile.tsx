@@ -108,14 +108,12 @@ export function CapabilityProfile({ mode }: { mode: "owner" | "public" }) {
                 onAvatar={(dataUrl) => persist({ avatarDataUrl: dataUrl })}
               />
 
-              {/* Trust tiles.
-                  TODO: swap the middle "Capabilities" tile for an "Evaluators"
-                  count (distinct educators/evaluators) once evaluations carry an
-                  evaluator identity — the Week-4 stub Evaluation has no evaluator
-                  id, so it can't be counted yet; Cyprian's real data will have it. */}
+              {/* Trust tiles — Evaluations · distinct Evaluators · Verified contributions.
+                  Evaluators is the count of distinct evaluator identities (R12
+                  evaluator_id); capability count is shown in the panel below. */}
               <div className="mt-4 grid grid-cols-3 gap-2 text-center">
                 <Tile value={view.trust.evaluations} label="Evaluations" />
-                <Tile value={view.trust.capabilities} label="Capabilities" />
+                <Tile value={view.trust.evaluators} label="Evaluators" />
                 <Tile value={view.trust.verified} label="Verified" tone="success" />
               </div>
 

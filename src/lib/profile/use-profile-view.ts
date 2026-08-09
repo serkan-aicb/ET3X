@@ -163,6 +163,7 @@ export function useProfileView(): ProfileView {
     trust: {
       evaluations: evaluations.length,
       capabilities: capabilities.length,
+      evaluators: new Set(evaluations.map((e) => e.evaluator_id).filter(Boolean)).size,
       verified: evalsByAction.size,
     },
     capabilities,

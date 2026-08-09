@@ -100,6 +100,9 @@ export type SkillScore = {
 export type Evaluation = {
   evaluation_id: string;
   action_id: string;
+  // Who evaluated (R12: evaluations.evaluator_id is NOT NULL → profiles(id)).
+  // Frozen-build stand-in = the evaluator's rudimentary-profile email.
+  evaluator_id: string;
   skill_scores: SkillScore[];
   evidence_quality: number; // 0–5, one per evaluation
   difficulty_confirmed: string;

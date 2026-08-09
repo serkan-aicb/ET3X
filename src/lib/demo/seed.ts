@@ -140,6 +140,7 @@ export function seedDemoProfile(): string {
     {
       evaluation_id: "demo-ev-1",
       action_id: "demo-act-1",
+      evaluator_id: "prof.laine@oulu.fi",
       skill_scores: [...rate(aSkills, [5, 4, 5, 4, 4]), ...rate(bSkills.slice(0, 2), [3, 3])],
       evidence_quality: 5,
       difficulty_confirmed: "ADVANCED",
@@ -155,6 +156,7 @@ export function seedDemoProfile(): string {
     {
       evaluation_id: "demo-ev-2",
       action_id: "demo-act-2",
+      evaluator_id: "mentor.harju@nokia.com",
       skill_scores: rate(cSkills, [4, 3, 4, 4]),
       evidence_quality: 4,
       difficulty_confirmed: "INTERMEDIATE",
@@ -169,6 +171,7 @@ export function seedDemoProfile(): string {
     {
       evaluation_id: "demo-ev-3",
       action_id: "demo-act-3",
+      evaluator_id: "client.makela@company.fi",
       skill_scores: [...rate(bSkills, [5, 4, 5, 4]), ...rate(dSkills, [4, 3])],
       evidence_quality: 5,
       difficulty_confirmed: "ADVANCED",

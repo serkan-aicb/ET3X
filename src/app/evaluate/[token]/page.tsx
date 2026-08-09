@@ -51,6 +51,7 @@ import type {
   Assignment,
   Evaluation,
   EvaluationInvite,
+  RudimentaryProfile,
 } from "@/lib/actions/types";
 
 const NO_ACTIONS: ActionRecord[] = [];
@@ -132,9 +133,13 @@ function Evaluator({ token, action }: { token: string; action: ActionRecord }) {
       ? getRubric(capGroups[0].capability_id)[0]?.rubric_version ?? "0.9-draft"
       : "0.9-draft";
     // One evaluation, carrying a score per selected skill (v6 §7).
+    // R12: the evaluator passed the account gate, so a rudimentary profile
+    // exists — stamp its email as the evaluator identity (NOT NULL).
+    const evaluatorProfile = readDraft<RudimentaryProfile>(DRAFT_KEYS.rudimentaryProfile);
     const row: Evaluation = {
       evaluation_id: `ev_${Math.random().toString(36).slice(2, 10)}`,
       action_id: action.action_id,
+      evaluator_id: evaluatorProfile?.email ?? "unknown",
       skill_scores: action.action_skills
         .filter((as) => skillScores[as.skill_id] != null)
         .map((as) => ({
