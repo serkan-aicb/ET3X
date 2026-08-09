@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { ArrowRight, Sparkles, FileText, ClipboardCheck, Send } from "lucide-react";
+import { ArrowRight, Sparkles, FileText, ClipboardCheck, Send, Lightbulb } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SharedCard } from "@/components/shared-card";
 import { AppLayout } from "@/components/app-layout";
@@ -122,6 +122,9 @@ export default function StudentDashboard() {
               </Button>
               <Button onClick={() => router.push("/s/assignments")} variant="outline" className="w-full">
                 <Send /> Assignments
+              </Button>
+              <Button onClick={() => router.push("/s/proposals")} variant="outline" className="w-full">
+                <Lightbulb /> Proposals
               </Button>
               <Button onClick={() => router.push("/s/profile")} variant="outline" className="w-full">
                 View profile

@@ -70,6 +70,38 @@ export type Assignment = {
   recipients: AssignmentRecipient[];
 };
 
+/**
+ * Path B — prospective, WORKER-proposed (v6 §5b). The worker drafts the scope
+ * (title/description/skills) plus their own org_visibility consent, then sends it
+ * to an evaluator who Accepts & locks / Adjusts & locks / Declines. Once LOCKED
+ * the scope is final on both sides (no negotiation). The worker then does the
+ * work, submits evidence, and it is scored via the standard evaluate flow.
+ */
+export type ProposalStatus =
+  | "proposed" // sent to the evaluator, awaiting their decision
+  | "locked" // accepted/adjusted & locked — scope final
+  | "declined" // evaluator declined before work (one click, optional reason)
+  | "submitted" // worker submitted evidence on the locked scope
+  | "evaluated"; // scored via /evaluate
+
+export type Proposal = {
+  proposal_id: string;
+  token: string; // single-use link to the evaluator (/propose/<token>)
+  title: string;
+  description: string;
+  action_skills: ActionSkill[];
+  org_visibility: string; // worker's own consent, set at draft (§5c)
+  proposed_by: string; // worker email
+  status: ProposalStatus;
+  created_at: string;
+  adjusted?: boolean; // evaluator changed the scope before locking
+  locked_by?: string; // evaluator email
+  locked_at?: string;
+  decline_reason?: string;
+  evidence?: Evidence; // worker's evidence, added after lock
+  submitted_at?: string;
+};
+
 /** Single-use invite token (stub of Cyprian's invitations). */
 export type EvaluationInvite = {
   token: string;
@@ -81,6 +113,9 @@ export type EvaluationInvite = {
   // submitting the evaluation flips the recipient's status to "evaluated".
   assignment_id?: string;
   recipient_token?: string;
+  // Set when this invite evaluates a Path-B-5b worker proposal — links back so
+  // submitting the evaluation flips the proposal's status to "evaluated".
+  proposal_id?: string;
 };
 
 /** One rated skill within an evaluation (v6 §7 — skills are rated directly). */

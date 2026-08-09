@@ -51,6 +51,7 @@ import type {
   Assignment,
   Evaluation,
   EvaluationInvite,
+  Proposal,
   RudimentaryProfile,
 } from "@/lib/actions/types";
 
@@ -178,6 +179,16 @@ function Evaluator({ token, action }: { token: string; action: ActionRecord }) {
                   r.token !== invite.recipient_token ? r : { ...r, status: "evaluated" as const }
                 ),
               }
+        )
+      );
+    }
+    // Path B-5b: if this invite evaluates a worker proposal, mark it evaluated.
+    if (invite?.proposal_id) {
+      const proposals = readDraft<Proposal[]>(DRAFT_KEYS.proposals) ?? [];
+      writeDraft(
+        DRAFT_KEYS.proposals,
+        proposals.map((p) =>
+          p.proposal_id !== invite.proposal_id ? p : { ...p, status: "evaluated" as const }
         )
       );
     }

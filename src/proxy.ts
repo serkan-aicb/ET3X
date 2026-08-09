@@ -32,6 +32,7 @@ const PUBLIC_PREFIXES = [
   // a rudimentary profile, gated in-page by <AccountGate>. Tokens are Cyprian's.
   '/evaluate',
   '/receive', // Path B recipient opens their issued action here (v6 §5a)
+  '/propose', // Path B-5b evaluator reviews a worker's proposal here (v6 §5b)
 ]
 
 // Legacy pre-v1.6 surfaces (task / star-rating model), superseded by the v1.7/v6
