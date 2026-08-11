@@ -6,6 +6,58 @@
 -- rubrics, scoring_policy-as-config, activation logic, org hierarchy, and
 -- binding rules R1-R11.
 --
+-- ==================== INGESTION FILE CROSS-CHECK (20 July 2026) ====================
+-- The actual 260713_Talent3X_DEV_Handover_Ingestion.xlsx has now been read
+-- directly (not just the handover's prose descriptions of it). All 5 core
+-- tables match exactly: capabilities=119, skills=497, packages=10,
+-- package_capabilities=124, rubrics=714, and the activation_scope
+-- distribution matches exactly (43 validated_pilot / 66 launch_unvalidated /
+-- 10 dormant). This cross-check corrected several placeholder values that
+-- were wrong, and surfaced two new items:
+--
+-- CORRECTED (previously wrong placeholders, now fixed against real data):
+--   - ai_involvement: real values are 'none'/'ai_assisted'/'ai_delegated'
+--     (previous placeholder 'assisted'/'primary' was wrong).
+--   - tier: real values are 'core'/'domain' (previous placeholder 'advanced'
+--     was wrong).
+--   - action_difficulty: real values are UPPERCASE
+--     (FOUNDATIONAL/INTERMEDIATE/ADVANCED/EXCEPTIONAL) — previous mixed-case
+--     version would have silently mismatched real data on ingest.
+--   - evaluator_verification_tier: NOT a text enum at all — real data is an
+--     INTEGER 0-3. Changed from a Postgres ENUM type to a SMALLINT column
+--     with a CHECK constraint.
+--   - evaluator_role, evaluator_relationship, activation_scope, org_visibility:
+--     confirmed exactly matching what was already in place. No change.
+--
+-- NEW DISCOVERY (not previously modeled at all):
+--   - platform_role (individual/evaluator/org_viewer/org_admin) exists in the
+--     enums sheet but had no home in the schema. profiles.role was still
+--     using the OLD legacy Contributor/Evaluator/Admin set as a single TEXT
+--     column — both wrong (stale values) and structurally wrong (section 12
+--     is explicit that a person can hold MULTIPLE roles simultaneously with
+--     unioned permissions, which a single column cannot represent). Replaced
+--     with a profile_platform_roles many-to-many table.
+--
+-- FLAGGED — genuine discrepancy, not resolved unilaterally:
+--   - scoring_policy sheet's `max_evaluations_per_evaluator_per_action`
+--     parameter is worded "1 ... per subject" (i.e. reads as one evaluation
+--     total per evaluator per action). This appears to conflict with the
+--     already-confirmed decision that each capability gets its own
+--     evaluation row per evaluator (multiple rows per evaluator per action
+--     when an action spans multiple capabilities). Current schema
+--     implements the multi-row-per-capability model per that direct
+--     confirmation, since it was a more specific, more recent answer — but
+--     this wording discrepancy in the ingestion file itself should be
+--     raised with André rather than silently assumed to be a loose choice
+--     of words.
+--
+-- STILL MISSING (not a schema issue, a build gap):
+--   - Nothing yet loads this ingestion file into the database. No ingestion
+--     script exists. This is explicitly Cyprian's ownership ("ingestion"
+--     per the ownership table) and the handover requires ingest to fail
+--     loudly on any count mismatch — that logic doesn't exist yet either.
+-- =====================================================================================
+--
 -- ==================== STATUS OF THIS REVISION ====================
 -- All 4 blocking items from the prior review are RESOLVED (feedback received
 -- 20 July 2026). This revision applies those decisions directly rather than
@@ -57,8 +109,13 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 DO $$
 BEGIN
+  -- CONFIRMED from the actual ingestion file (enums + scoring_policy sheets).
+  -- CASING FIX: values are UPPERCASE, not mixed-case as previously guessed.
+  -- Weights (from scoring_policy sheet, for reference — stored as config in
+  -- scoring_policy, never hardcoded in application code):
+  --   FOUNDATIONAL = 0.8, INTERMEDIATE = 1.0, ADVANCED = 1.2, EXCEPTIONAL = 1.4
   IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'action_difficulty') THEN
-    CREATE TYPE action_difficulty AS ENUM ('Foundational', 'Intermediate', 'Advanced', 'Exceptional');
+    CREATE TYPE action_difficulty AS ENUM ('FOUNDATIONAL', 'INTERMEDIATE', 'ADVANCED', 'EXCEPTIONAL');
   END IF;
 
   -- CONFIRMED from handover section 12 (not a placeholder): describes the
@@ -72,26 +129,36 @@ BEGIN
     CREATE TYPE evaluator_relationship AS ENUM ('MANAGER', 'PEER', 'DIRECT_REPORT', 'EXTERNAL', 'OTHER');
   END IF;
 
-  -- PLACEHOLDER — confirm exact 4 values against the enums sheet.
-  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'evaluator_verification_tier') THEN
-    CREATE TYPE evaluator_verification_tier AS ENUM ('unverified', 'self_attested', 'verified', 'certified');
-  END IF;
+  -- CORRECTED: evaluator_verification_tier is NOT a text enum. The actual
+  -- ingestion file stores it as an integer tier, 0-3 (0=unverified up to
+  -- 3=fully verified/trust network). No Postgres ENUM type needed — see the
+  -- SMALLINT column definition on `evaluations` below instead.
 
-  -- PLACEHOLDER — confirm exact 3 values against the enums sheet.
+  -- CONFIRMED from the actual ingestion file's enums sheet (not a placeholder):
   IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'ai_involvement') THEN
-    CREATE TYPE ai_involvement AS ENUM ('none', 'assisted', 'primary');
+    CREATE TYPE ai_involvement AS ENUM ('none', 'ai_assisted', 'ai_delegated');
   END IF;
 
   IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'activation_scope') THEN
     CREATE TYPE activation_scope AS ENUM ('validated_pilot', 'launch_unvalidated', 'dormant');
   END IF;
 
+  -- CONFIRMED from the actual ingestion file (was a guess before — 'advanced'
+  -- was WRONG, real value is 'domain'):
   IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'capability_tier') THEN
-    CREATE TYPE capability_tier AS ENUM ('core', 'advanced'); -- PLACEHOLDER, tier has 2 values per sheet 6
+    CREATE TYPE capability_tier AS ENUM ('core', 'domain');
   END IF;
 
   IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'org_visibility') THEN
     CREATE TYPE org_visibility AS ENUM ('yes', 'no');
+  END IF;
+
+  -- NEW DISCOVERY from the ingestion file's enums sheet: platform_role
+  -- (individual/evaluator/org_viewer/org_admin) — this was not previously
+  -- built anywhere. It replaces the legacy Contributor/Evaluator/Admin set
+  -- that profiles.role was still defaulting to. See profiles table below.
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'platform_role') THEN
+    CREATE TYPE platform_role AS ENUM ('individual', 'evaluator', 'org_viewer', 'org_admin');
   END IF;
 
   -- CONFIRMED: Draft -> Submitted -> Evaluated -> Verified. 'Shared' dropped —
@@ -203,15 +270,37 @@ COMMENT ON TABLE scoring_policy IS
 -- Paywall enforcement stays behind a feature flag, OFF at launch — this
 -- migration adds only the counter column, no enforcement logic.
 
+-- CORRECTION (caught against handover section 12): platform_role cannot be
+-- a single column on `profiles`. Section 12 states explicitly: "One person
+-- may hold several simultaneously (a manager is typically all of the first
+-- three at once); permissions are the union." A single-value `role` column
+-- would silently make roles mutually exclusive, which contradicts this
+-- directly. Replaced with a many-to-many table instead — see
+-- profile_platform_roles below. (profiles previously had a legacy
+-- `role TEXT DEFAULT 'Contributor'` column here — also removed, since it
+-- used the old Contributor/Evaluator/Admin set, not the confirmed
+-- individual/evaluator/org_viewer/org_admin set.)
+
 CREATE TABLE IF NOT EXISTS profiles (
   id                       UUID REFERENCES auth.users ON DELETE CASCADE PRIMARY KEY,
-  role                     TEXT NOT NULL DEFAULT 'Contributor',
   free_actions_submitted   INTEGER NOT NULL DEFAULT 0,
   created_at               TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 COMMENT ON COLUMN profiles.free_actions_submitted IS
   'Increments on action submission only (N=10 threshold per section 4). Paywall behind feature flag, OFF at launch — do not wire up enforcement yet.';
+
+-- profile_platform_roles — many-to-many, so a profile can hold multiple
+-- platform roles simultaneously with unioned permissions (section 12).
+CREATE TABLE IF NOT EXISTS profile_platform_roles (
+  profile_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  role       platform_role NOT NULL,
+  granted_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  PRIMARY KEY (profile_id, role)
+);
+
+COMMENT ON TABLE profile_platform_roles IS
+  'Every profile gets at least one row here (typically "individual" by default at signup — confirm default assignment behavior with André, not stated explicitly in the handover). Application/RLS logic should check "does this profile have role X" via EXISTS against this table, never assume a single role per profile.';
 
 -- =============================================================================
 -- 4. ACTIONS + ACTION_SKILLS
@@ -226,7 +315,7 @@ CREATE TABLE IF NOT EXISTS actions (
   ai_involvement      ai_involvement NOT NULL,       -- R5: required at creation, always
   difficulty_declared action_difficulty,               -- creator-declared; confirmed value lives on evaluations (R9)
   org_visibility      org_visibility NOT NULL,        -- R10: individual consent, set at creation
-  status              action_status DEFAULT 'Draft',  -- STATUS OPEN (B) — enum values unconfirmed
+  status              action_status DEFAULT 'Draft',  -- CONFIRMED enum values, see action_status type above
   due_date            TIMESTAMP WITH TIME ZONE,
   created_at          TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -283,7 +372,7 @@ CREATE TABLE IF NOT EXISTS evaluations (
   evaluator_id                UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
   evaluator_role               evaluator_role NOT NULL,
   evaluator_relationship        evaluator_relationship NOT NULL,   -- snapshotted at creation
-  evaluator_verification_tier  evaluator_verification_tier,        -- stored on every evaluation; weight-NEUTRAL in v1.1 per R9
+  evaluator_verification_tier  SMALLINT CHECK (evaluator_verification_tier >= 0 AND evaluator_verification_tier <= 3),   -- stored on every evaluation; weight-NEUTRAL in v1.1 per R9. 0=unverified..3=fully verified (trust network)
   capability_id                TEXT NOT NULL REFERENCES capabilities(capability_id),
   score                        SMALLINT NOT NULL CHECK (score >= 0 AND score <= 5),
   evidence_quality             SMALLINT NOT NULL CHECK (evidence_quality >= 0 AND evidence_quality <= 5),
@@ -469,6 +558,7 @@ COMMENT ON COLUMN org_unit_members.job_level IS
 -- role table (section 12); flagged where it isn't.
 
 ALTER TABLE profiles                   ENABLE ROW LEVEL SECURITY;
+ALTER TABLE profile_platform_roles     ENABLE ROW LEVEL SECURITY;
 ALTER TABLE capabilities               ENABLE ROW LEVEL SECURITY;
 ALTER TABLE skills                     ENABLE ROW LEVEL SECURITY;
 ALTER TABLE packages                   ENABLE ROW LEVEL SECURITY;
@@ -508,6 +598,13 @@ CREATE POLICY "Users can view their own profile" ON profiles
 DROP POLICY IF EXISTS "Users can update their own profile" ON profiles;
 CREATE POLICY "Users can update their own profile" ON profiles
   FOR UPDATE USING (auth.uid() = id);
+
+DROP POLICY IF EXISTS "Users can view their own platform roles" ON profile_platform_roles;
+CREATE POLICY "Users can view their own platform roles" ON profile_platform_roles
+  FOR SELECT USING (auth.uid() = profile_id);
+-- No client-side INSERT/UPDATE/DELETE policy: role grants are managed by
+-- org_admin actions or system processes (e.g. signup granting 'individual'),
+-- never directly by the profile owner.
 
 -- actions — Check 1 (profile_scope) applies at the application layer when
 -- selecting skills; RLS here governs row visibility only.
