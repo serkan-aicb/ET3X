@@ -33,6 +33,7 @@ export type ActionRecord = {
   action_id: string;
   title: string;
   description: string;
+  expected_outcome: string; // required at creation (v1.10 §3 / flow-v9)
   action_skills: ActionSkill[];
   ai_involvement: string;
   difficulty_declared: string;
@@ -123,17 +124,19 @@ export type SkillScore = {
   skill_id: string;
   capability_id_resolved: string | null; // R4 snapshot mapping
   score: number; // 0–5
+  comment?: string; // required when score is 0/1/5 (R6, per-skill in v1.10)
 };
 
 /**
- * One evaluation = one evaluator, one action (v6 §7 — skill-level). The evaluator
- * rates each selected SKILL 0–5; the capability is COMPUTED from rated skills
- * (Confirmed at ≥3 rated skills). One evidence_quality and one shared comment per
- * evaluation; comment required if any skill is scored 0/1/5 (R6). Difficulty is
- * evaluator-confirmed and drives the R9 weight.
+ * One evaluation = one evaluator, one action, one atomic submission (v1.10 §7 —
+ * maps to Cyprian's one `session_id` grouping N Skill-scoped `evaluations` rows).
+ * The evaluator rates each selected SKILL 0–5; the capability is COMPUTED from
+ * rated skills (Confirmed at ≥3 rated-skill rows, raw count — R9 v1.10). Comment
+ * is per-skill, required at 0/1/5 (R6, v1.10) — see SkillScore.comment. Difficulty
+ * is evaluator-confirmed and drives the R9 weight.
  */
 export type Evaluation = {
-  evaluation_id: string;
+  evaluation_id: string; // maps to session_id (atomic submission) in Cyprian's schema
   action_id: string;
   // Who evaluated (R12: evaluations.evaluator_id is NOT NULL → profiles(id)).
   // Frozen-build stand-in = the evaluator's rudimentary-profile email.
@@ -141,7 +144,6 @@ export type Evaluation = {
   skill_scores: SkillScore[];
   evidence_quality: number; // 0–5, one per evaluation
   difficulty_confirmed: string;
-  comment: string; // one shared comment
   evaluator_role: string;
   evaluator_relationship: string;
   evaluator_verification_tier: number; // 0–3 (backend-assigned; stub = 0)

@@ -232,6 +232,7 @@ function LockedActions({ proposal: p }: { proposal: Proposal }) {
       action_id: actionId,
       title: p.title,
       description: p.description,
+      expected_outcome: "",
       action_skills: p.action_skills,
       ai_involvement: "none",
       difficulty_declared: "INTERMEDIATE",

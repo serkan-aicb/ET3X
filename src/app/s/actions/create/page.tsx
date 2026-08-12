@@ -60,6 +60,7 @@ type ActionDraft = {
   step: number;
   title: string;
   description: string;
+  expectedOutcome: string;
   skillIds: string[];
   aiInvolvement: string;
   difficulty: string;
@@ -76,6 +77,7 @@ const EMPTY: ActionDraft = {
   step: 0,
   title: "",
   description: "",
+  expectedOutcome: "",
   skillIds: [],
   aiInvolvement: "",
   difficulty: "",
@@ -109,6 +111,7 @@ export default function CreateActionPage() {
       action_id: `act_${Date.now().toString(36)}`,
       title: draft.title.trim(),
       description: draft.description.trim(),
+      expected_outcome: draft.expectedOutcome.trim(),
       action_skills: actionSkills,
       ai_involvement: draft.aiInvolvement,
       difficulty_declared: draft.difficulty,
@@ -166,7 +169,16 @@ export default function CreateActionPage() {
 
 const detailsSchema = z.object({
   title: z.string().trim().min(3, "Give your Action a clear title (3+ characters)."),
-  description: z.string().trim().max(1000, "Keep the description under 1000 characters.").optional(),
+  description: z
+    .string()
+    .trim()
+    .min(1, "Add a short description of the work.")
+    .max(1000, "Keep the description under 1000 characters."),
+  expectedOutcome: z
+    .string()
+    .trim()
+    .min(1, "Describe what a good outcome looks like.")
+    .max(1000, "Keep it under 1000 characters."),
 });
 type DetailsValues = z.infer<typeof detailsSchema>;
 
@@ -183,13 +195,21 @@ function DetailsStep({
     formState: { errors },
   } = useForm<DetailsValues>({
     resolver: zodResolver(detailsSchema),
-    defaultValues: { title: draft.title, description: draft.description },
+    defaultValues: {
+      title: draft.title,
+      description: draft.description,
+      expectedOutcome: draft.expectedOutcome,
+    },
   });
 
   return (
     <form
       onSubmit={handleSubmit((v) =>
-        onContinue({ title: v.title.trim(), description: v.description?.trim() ?? "" })
+        onContinue({
+          title: v.title.trim(),
+          description: v.description.trim(),
+          expectedOutcome: v.expectedOutcome.trim(),
+        })
       )}
     >
       <StepHeading
@@ -208,17 +228,34 @@ function DetailsStep({
         />
         {errors.title && <p className="mt-1 text-xs text-danger">{errors.title.message}</p>}
 
-        <label className="mb-1 mt-4 block text-xs font-medium text-muted-foreground">
-          Description <span className="font-normal text-muted-foreground/70">(optional)</span>
-        </label>
+        <label className="mb-1 mt-4 block text-xs font-medium text-muted-foreground">Description</label>
         <textarea
           {...register("description")}
-          rows={5}
+          rows={4}
           placeholder="What was the work, and what did you do?"
-          className="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+          aria-invalid={!!errors.description}
+          className={`w-full rounded-lg border px-3 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 ${
+            errors.description ? "border-danger ring-2 ring-danger/15" : ""
+          }`}
         />
         {errors.description && (
           <p className="mt-1 text-xs text-danger">{errors.description.message}</p>
+        )}
+
+        <label className="mb-1 mt-4 block text-xs font-medium text-muted-foreground">
+          Expected outcome
+        </label>
+        <textarea
+          {...register("expectedOutcome")}
+          rows={3}
+          placeholder="What does a good result look like, and how will it be judged?"
+          aria-invalid={!!errors.expectedOutcome}
+          className={`w-full rounded-lg border px-3 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 ${
+            errors.expectedOutcome ? "border-danger ring-2 ring-danger/15" : ""
+          }`}
+        />
+        {errors.expectedOutcome && (
+          <p className="mt-1 text-xs text-danger">{errors.expectedOutcome.message}</p>
         )}
       </div>
       <div className="mt-8 flex justify-end">
@@ -568,6 +605,12 @@ function ReviewStep({
           <div className="text-sm font-semibold text-foreground">{draft.title}</div>
           {draft.description && (
             <p className="mt-1 text-sm text-muted-foreground">{draft.description}</p>
+          )}
+          {draft.expectedOutcome && (
+            <p className="mt-2 text-sm text-muted-foreground">
+              <span className="font-medium text-foreground">Expected outcome:</span>{" "}
+              {draft.expectedOutcome}
+            </p>
           )}
         </SummaryCard>
 

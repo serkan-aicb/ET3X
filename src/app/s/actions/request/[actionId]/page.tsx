@@ -12,6 +12,7 @@
 
 import { useState } from "react";
 import { useParams } from "next/navigation";
+import Link from "next/link";
 import { QRCodeSVG } from "qrcode.react";
 import { ArrowLeft, Check, Copy, Link2, ShieldAlert } from "lucide-react";
 
@@ -82,12 +83,12 @@ export default function RequestEvaluationPage() {
   return (
     <AppLayout userRole="student">
       <div className="mx-auto max-w-[720px] space-y-6">
-        <a
+        <Link
           href="/s/actions"
           className="inline-flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="size-4" /> My Actions
-        </a>
+        </Link>
 
         {!action ? (
           <div className="rounded-xl border bg-card p-6 shadow-card">

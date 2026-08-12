@@ -157,6 +157,7 @@ function RecipientRow({
       action_id: actionId,
       title: assignment.title,
       description: assignment.description,
+      expected_outcome: "",
       action_skills: assignment.action_skills,
       ai_involvement: "none",
       difficulty_declared: "INTERMEDIATE",

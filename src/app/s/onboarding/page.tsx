@@ -19,6 +19,7 @@
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -658,7 +659,7 @@ function Confirmation({ onFinish }: { onFinish: () => void }) {
         {/* Consumer-facing CTA uses outcome language (Capability); the route is
             the Week-3 Action wizard. */}
         <Button size="lg" variant="outline" asChild>
-          <a href="/s/actions/create">Create my first Capability</a>
+          <Link href="/s/actions/create">Create my first Capability</Link>
         </Button>
       </div>
     </div>

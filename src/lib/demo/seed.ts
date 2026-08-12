@@ -45,11 +45,19 @@ const toActionSkill = (s: Skill): ActionSkill => ({
 });
 
 const rate = (skills: Skill[], scores: number[]): SkillScore[] =>
-  skills.map((s, i) => ({
-    skill_id: s.skill_id,
-    capability_id_resolved: s.capability_id,
-    score: scores[i] ?? 4,
-  }));
+  skills.map((s, i) => {
+    const score = scores[i] ?? 4;
+    const row: SkillScore = {
+      skill_id: s.skill_id,
+      capability_id_resolved: s.capability_id,
+      score,
+    };
+    // R6: a comment is required per skill scored 0/1/5.
+    if (score === 0 || score === 1 || score === 5) {
+      row.comment = "Standout, clearly-evidenced work on this skill.";
+    }
+    return row;
+  });
 
 const evidence = (note: string, link: string): Evidence => ({
   note,
@@ -93,6 +101,7 @@ export function seedDemoProfile(): string {
       title: "Redesigned the onboarding analytics dashboard",
       description:
         "Rebuilt the product's activation dashboard end to end: reframed the metrics, redesigned the layout and shipped it with the data team.",
+      expected_outcome: "A clearer activation dashboard the team relies on to make decisions.",
       action_skills: [...aSkills, ...bSkills.slice(0, 2)].map(toActionSkill),
       ai_involvement: "ai_assisted",
       difficulty_declared: "ADVANCED",
@@ -108,6 +117,7 @@ export function seedDemoProfile(): string {
       title: "Led a cross-team sprint retrospective",
       description:
         "Facilitated a retro across three squads, synthesised the themes and drove three concrete process changes that stuck.",
+      expected_outcome: "Three agreed process changes adopted across the squads.",
       action_skills: cSkills.map(toActionSkill),
       ai_involvement: "none",
       difficulty_declared: "INTERMEDIATE",
@@ -123,6 +133,7 @@ export function seedDemoProfile(): string {
       title: "Authored the data-governance proposal",
       description:
         "Wrote and socialised a data-governance proposal (ownership, retention, access) that was adopted by the department.",
+      expected_outcome: "A governance proposal (ownership, retention, access) adopted by the department.",
       action_skills: [...bSkills, ...dSkills].map(toActionSkill),
       ai_involvement: "ai_assisted",
       difficulty_declared: "ADVANCED",
@@ -144,8 +155,6 @@ export function seedDemoProfile(): string {
       skill_scores: [...rate(aSkills, [5, 4, 5, 4, 4]), ...rate(bSkills.slice(0, 2), [3, 3])],
       evidence_quality: 5,
       difficulty_confirmed: "ADVANCED",
-      comment:
-        "Exceptional ownership — took an ambiguous brief and delivered a dashboard the team now relies on.",
       evaluator_role: "PROFESSOR",
       evaluator_relationship: "MANAGER",
       evaluator_verification_tier: 0,
@@ -160,7 +169,6 @@ export function seedDemoProfile(): string {
       skill_scores: rate(cSkills, [4, 3, 4, 4]),
       evidence_quality: 4,
       difficulty_confirmed: "INTERMEDIATE",
-      comment: "Ran the room well and, more importantly, the changes actually landed.",
       evaluator_role: "MENTOR",
       evaluator_relationship: "PEER",
       evaluator_verification_tier: 0,
@@ -175,7 +183,6 @@ export function seedDemoProfile(): string {
       skill_scores: [...rate(bSkills, [5, 4, 5, 4]), ...rate(dSkills, [4, 3])],
       evidence_quality: 5,
       difficulty_confirmed: "ADVANCED",
-      comment: "Clear, well-argued and pragmatic — it got adopted, which says it all.",
       evaluator_role: "CLIENT",
       evaluator_relationship: "EXTERNAL",
       evaluator_verification_tier: 0,

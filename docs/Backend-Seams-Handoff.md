@@ -5,7 +5,7 @@ localStorage stubs marked `TODO(cyprian)`. This doc lists exactly what the backe
 the swap is a drop-in with no UI change. Flip `NEXT_PUBLIC_USE_SUPABASE=true` (see `DEPLOY.md`) to
 activate the real client (`src/lib/supabase/client.ts`).
 
-Model is authoritative per Handover v1.7 + Action-Flow Spec v6 + Flow v5.
+Model is authoritative per **Handover v1.10 + Action-Flow Spec v10 + Flow v9** (10 Aug 2026).
 
 ## 1. Catalogue — `GET /api/catalogue`
 Frontend reads `src/lib/catalogue` (local JSON) today. Endpoint returns the 7 keys, counts:
@@ -24,12 +24,15 @@ path. Create the real `profiles` row on rudimentary signup (`src/components/acco
 
 ## 3. Core shapes (localStorage keys → tables)
 Types: `src/lib/actions/types.ts`, `src/lib/profile/profile-types.ts`. Keys in `src/lib/local-draft.ts`:
-- `actionsDrafts` → actions (`ActionRecord`: action_id, title, description, action_skills[
-  {skill_id, capability_id_resolved (R4 snapshot)}], ai_involvement, difficulty_declared,
+- `actionsDrafts` → actions (`ActionRecord`: action_id, title, description, **expected_outcome**,
+  action_skills[{skill_id, capability_id_resolved (R4 snapshot)}], ai_involvement, difficulty_declared,
   evidence{note,link,mode,files[{name,size,hash}]}, org_visibility, created_at).
-- `evaluations` → evaluations (`Evaluation`: evaluation_id, action_id, **evaluator_id**,
-  skill_scores[{skill_id, capability_id_resolved, score 0–5}], evidence_quality, difficulty_confirmed,
-  comment, evaluator_role/relationship/verification_tier, rubric_version, scoring_version). Skill-level (v6 §7).
+- `evaluations` → **Skill-scoped in your schema: ONE row per rated skill + a `session_id`** grouping
+  the atomic submission (v1.10 §4/§7). Our `Evaluation` object = one `session_id` (its `evaluation_id`),
+  carrying `skill_scores[{skill_id, capability_id (denormalized R4 snapshot), score 0–5, comment?}]` —
+  **comment is per-skill, required at 0/1/5** (R6, v1.10) — plus evaluator_id, evidence_quality,
+  difficulty_confirmed, evaluator_role/relationship/verification_tier, rubric_version, scoring_version.
+  Map each `skill_scores[]` entry → one `evaluations` row; the object → one session.
 - `assignments` → Path B-5a evaluator-issued (`Assignment` + `AssignmentRecipient` per-recipient token/status/evidence/org_visibility).
 - `proposals` → Path B-5b worker-proposed (`Proposal`: proposed→locked|declined→submitted→evaluated; adjusted; locked_by).
 - `evaluationInvites` → single-use invite tokens (link back via `assignment_id`+`recipient_token` or `proposal_id`).
@@ -44,11 +47,20 @@ These are single-device stubs today — a second actor on another device can't r
 - **Public profile** `/p/[slug]` — fetch public profile + capability scores by `public_slug`.
   (An `/api/profiles/public/[slug]` route exists but returns identity only and isn't wired.)
 
+## 4b. Display rule (v1.10 §7 / UI assertion §10)
+Skill-level scores + comments appear ONLY on the **finished-task view** (`/s/actions/[actionId]`,
+worker/evaluator on that action) and the evaluator's in-progress scoring form. The **profile and
+org dashboards are Capability-only** — no other surface renders a skill next to a score. Preserve
+that boundary when wiring real data.
+
 ## 5. Scoring — `profile_capability_scores`
 Row shape (drop-in): `capability_id, capability_score, rated_skill_count, display_status
-(confirmed ≥3 rated skills / provisional), scoring_version`. **The skill→capability roll-up
-formula is the engine's** — frontend uses a weighted-mean stub (`src/lib/profile/capability-scores.ts`),
-flagged `TODO(cyprian)`. Difficulty weight = evaluator-confirmed (R9, anti-gaming).
+(confirmed / provisional), scoring_version`. **R9 (v1.10) now specifies the formula exactly** —
+`capability_score = Σ(score·w)/Σw`, `w = difficulty_weight × (0.5 + 0.1·evidence_quality)`, difficulty =
+evaluator-confirmed — and our stub (`src/lib/profile/capability-scores.ts`) implements it verbatim.
+**Confirmed threshold = ≥3 skill-level rows resolving to the capability, raw `COUNT(*)`** — session
+and evaluator identity are irrelevant (v1.10, reverting v1.9's distinct-sessions rule). Our
+`rated_skill_count` is exactly that count.
 
 ## 6. Org analytics — `GET /api/org/*`
 Frontend has a governed rules engine (`src/lib/org/org-analytics.ts`) applying **package-gating**
@@ -58,5 +70,6 @@ already-governed aggregates (or raw data the frontend governs). **admin ≠ anal
 must not receive scores. Mock data lives in `src/lib/org/org-data.ts`.
 
 ## 7. Still open / not ours
-Roll-up formula (Cyprian) · rubric-anchor calibration to skill level (Steve/André) ·
-verification-layer ruling (André §6.4) · AI CV/LinkedIn extraction (Nivin) · on-chain (deferred).
+rubric-anchor calibration to skill level (Steve/André) · verification-layer ruling (André) ·
+AI CV/LinkedIn extraction (Nivin) · on-chain evidence-hash commitment (deferred, v1.10 §14). The
+skill→capability roll-up formula is now specified in R9 (§5 above) — no longer an open item.
