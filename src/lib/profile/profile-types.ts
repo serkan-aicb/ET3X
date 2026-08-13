@@ -66,7 +66,7 @@ export type ProfileView = {
   slug: string;
   university: string;
   role: string;
-  trust: { evaluations: number; capabilities: number; verified: number };
+  trust: { evaluations: number; capabilities: number; evaluators: number; verified: number };
   capabilities: ProfileCapabilityView[];
   contributions: ProfileContribution[];
   timeline: { date: string; title: string; score: number }[];

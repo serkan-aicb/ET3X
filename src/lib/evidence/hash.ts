@@ -1,8 +1,9 @@
 /**
- * Client-side evidence hashing for the "Hash Only" storage mode (handover v1.6,
- * R10 / 260707 §7): for NDA/confidential work the raw file NEVER leaves the
- * browser — only this hash is kept and (in the real build) sent to the
- * verification layer as proof of integrity.
+ * Client-side evidence hashing. R13: a hash is computed for EVERY submission,
+ * regardless of storage mode — `external_reference` (default) or `stored`. The
+ * old "Hash Only" storage MODE no longer exists (removed in spec v6 §5d); a
+ * hash is now a property every piece of evidence has, not a third mode.
+ * On-chain commitment is explicitly deferred (v1.7 §14). See docs/MODEL.md.
  *
  * SHA-256 via Web Crypto (same primitive as src/lib/crypto/email.ts). Returns a
  * lowercase hex digest.

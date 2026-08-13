@@ -33,6 +33,7 @@ export type ActionRecord = {
   action_id: string;
   title: string;
   description: string;
+  expected_outcome: string; // required at creation (v1.10 §3 / flow-v9)
   action_skills: ActionSkill[];
   ai_involvement: string;
   difficulty_declared: string;
@@ -70,6 +71,38 @@ export type Assignment = {
   recipients: AssignmentRecipient[];
 };
 
+/**
+ * Path B — prospective, WORKER-proposed (v6 §5b). The worker drafts the scope
+ * (title/description/skills) plus their own org_visibility consent, then sends it
+ * to an evaluator who Accepts & locks / Adjusts & locks / Declines. Once LOCKED
+ * the scope is final on both sides (no negotiation). The worker then does the
+ * work, submits evidence, and it is scored via the standard evaluate flow.
+ */
+export type ProposalStatus =
+  | "proposed" // sent to the evaluator, awaiting their decision
+  | "locked" // accepted/adjusted & locked — scope final
+  | "declined" // evaluator declined before work (one click, optional reason)
+  | "submitted" // worker submitted evidence on the locked scope
+  | "evaluated"; // scored via /evaluate
+
+export type Proposal = {
+  proposal_id: string;
+  token: string; // single-use link to the evaluator (/propose/<token>)
+  title: string;
+  description: string;
+  action_skills: ActionSkill[];
+  org_visibility: string; // worker's own consent, set at draft (§5c)
+  proposed_by: string; // worker email
+  status: ProposalStatus;
+  created_at: string;
+  adjusted?: boolean; // evaluator changed the scope before locking
+  locked_by?: string; // evaluator email
+  locked_at?: string;
+  decline_reason?: string;
+  evidence?: Evidence; // worker's evidence, added after lock
+  submitted_at?: string;
+};
+
 /** Single-use invite token (stub of Cyprian's invitations). */
 export type EvaluationInvite = {
   token: string;
@@ -81,6 +114,9 @@ export type EvaluationInvite = {
   // submitting the evaluation flips the recipient's status to "evaluated".
   assignment_id?: string;
   recipient_token?: string;
+  // Set when this invite evaluates a Path-B-5b worker proposal — links back so
+  // submitting the evaluation flips the proposal's status to "evaluated".
+  proposal_id?: string;
 };
 
 /** One rated skill within an evaluation (v6 §7 — skills are rated directly). */
@@ -88,22 +124,26 @@ export type SkillScore = {
   skill_id: string;
   capability_id_resolved: string | null; // R4 snapshot mapping
   score: number; // 0–5
+  comment?: string; // required when score is 0/1/5 (R6, per-skill in v1.10)
 };
 
 /**
- * One evaluation = one evaluator, one action (v6 §7 — skill-level). The evaluator
- * rates each selected SKILL 0–5; the capability is COMPUTED from rated skills
- * (Confirmed at ≥3 rated skills). One evidence_quality and one shared comment per
- * evaluation; comment required if any skill is scored 0/1/5 (R6). Difficulty is
- * evaluator-confirmed and drives the R9 weight.
+ * One evaluation = one evaluator, one action, one atomic submission (v1.10 §7 —
+ * maps to Cyprian's one `session_id` grouping N Skill-scoped `evaluations` rows).
+ * The evaluator rates each selected SKILL 0–5; the capability is COMPUTED from
+ * rated skills (Confirmed at ≥3 rated-skill rows, raw count — R9 v1.10). Comment
+ * is per-skill, required at 0/1/5 (R6, v1.10) — see SkillScore.comment. Difficulty
+ * is evaluator-confirmed and drives the R9 weight.
  */
 export type Evaluation = {
-  evaluation_id: string;
+  evaluation_id: string; // maps to session_id (atomic submission) in Cyprian's schema
   action_id: string;
+  // Who evaluated (R12: evaluations.evaluator_id is NOT NULL → profiles(id)).
+  // Frozen-build stand-in = the evaluator's rudimentary-profile email.
+  evaluator_id: string;
   skill_scores: SkillScore[];
   evidence_quality: number; // 0–5, one per evaluation
   difficulty_confirmed: string;
-  comment: string; // one shared comment
   evaluator_role: string;
   evaluator_relationship: string;
   evaluator_verification_tier: number; // 0–3 (backend-assigned; stub = 0)

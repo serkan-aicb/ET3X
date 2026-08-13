@@ -1,200 +1,54 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { ArrowRight, Sparkles, FileText, ClipboardCheck, Send, Lightbulb } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowRight, Sparkles } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
-import { AppLayout } from "@/components/app-layout";
 import { SharedCard } from "@/components/shared-card";
+import { AppLayout } from "@/components/app-layout";
 import { DRAFT_KEYS, useLocalDraft } from "@/lib/local-draft";
+import type { LocalSession } from "@/lib/auth/local-session";
+import type {
+  ActionRecord,
+  Assignment,
+  Evaluation,
+  RudimentaryProfile,
+} from "@/lib/actions/types";
 
-type UserWithProfile = {
-  id: string;
-  email: string | undefined;
-  username: string;
-  real_name?: string | null;
-  matriculation_number?: string | null;
-};
-
-type Task = {
-  id: string;
-  status: string;
-};
+// Stable fallbacks (useLocalDraft requires a stable reference).
+const NO_SESSION: LocalSession | null = null;
+const NO_PROFILE: RudimentaryProfile | null = null;
+const NO_ACTIONS: ActionRecord[] = [];
+const NO_EVALUATIONS: Evaluation[] = [];
+const NO_ASSIGNMENTS: Assignment[] = [];
 
 export default function StudentDashboard() {
-  const [user, setUser] = useState<UserWithProfile | null>(null);
-  const [stats, setStats] = useState({
-    totalTasks: 0,
-    completedTasks: 0,
-    pendingTasks: 0,
-  });
-  const [loading, setLoading] = useState(true);
   const router = useRouter();
+
+  const session = useLocalDraft<LocalSession | null>(DRAFT_KEYS.session, NO_SESSION);
+  const rudimentary = useLocalDraft<RudimentaryProfile | null>(
+    DRAFT_KEYS.rudimentaryProfile,
+    NO_PROFILE
+  );
+  const actions = useLocalDraft<ActionRecord[]>(DRAFT_KEYS.actionsDrafts, NO_ACTIONS);
+  const evaluations = useLocalDraft<Evaluation[]>(DRAFT_KEYS.evaluations, NO_EVALUATIONS);
+  const assignments = useLocalDraft<Assignment[]>(DRAFT_KEYS.assignments, NO_ASSIGNMENTS);
 
   // Soft onboarding prompt (Week 2): localStorage-only completeness signal.
   const onboardingComplete = useLocalDraft<boolean>(DRAFT_KEYS.onboardingComplete, false);
   const needsOnboarding = !onboardingComplete;
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const supabase = createClient();
-      
-      // Get user data
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        router.push("/auth");
-        return;
-      }
-      
-      // Get profile
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('username, real_name, matriculation_number')
-        .eq('id', user.id)
-        .single();
-      
-      if (profileError) {
-        console.error("Error fetching profile:", profileError);
-        router.push("/auth");
-        return;
-      }
-      
-      setUser({
-        id: user.id,
-        email: user.email,
-        username: profile.username,
-        real_name: profile.real_name,
-        matriculation_number: profile.matriculation_number
-      });
-      
-      // Get task statistics - FIXED IMPLEMENTATION
-      console.log("Fetching task assignments for user:", user.id);
-      
-      // Fetch all assignments for the user with task details
-      const { data: assignments, error: assignmentsError } = await supabase
-        .from('task_assignments')
-        .select(`
-          id,
-          task,
-          status,
-          tasks (
-            id,
-            status
-          )
-        `)
-        .eq('assignee', user.id);
-      
-      console.log("Assignments data:", { assignments, assignmentsError });
-      
-      if (!assignmentsError && assignments) {
-        // Count tasks by status
-        const totalTasks = assignments.length;
-        let completedTasks = 0; // Tasks with ratings (graded status)
-        let pendingTasks = 0;   // Tasks not yet submitted or not fully rated
-        
-        // For each assignment, check if there's a submission and rating
-        for (const assignment of assignments) {
-          // Check if task has graded status
-          // Handle both array and object cases for tasks
-          let taskStatus = '';
-          if (assignment.tasks) {
-            if (Array.isArray(assignment.tasks)) {
-              if (assignment.tasks.length > 0) {
-                taskStatus = assignment.tasks[0].status;
-              }
-            } else {
-              const taskObj = assignment.tasks as Task;
-              taskStatus = taskObj.status;
-            }
-          }
-          
-          if (taskStatus === 'graded') {
-            completedTasks++;
-          } else {
-            // Check if there's a submission for this assignment
-            const { data: submissions } = await supabase
-              .from('submissions')
-              .select('id')
-              .eq('task', assignment.task)
-              .eq('submitter', user.id)
-              .limit(1);
-            
-            // Check if there's a rating for this assignment
-            const { data: ratings } = await supabase
-              .from('task_ratings')
-              .select('id')
-              .eq('task_id', assignment.task)
-              .eq('rated_user_id', user.id)
-              .limit(1);
-            
-            // If submitted but not rated, it's pending
-            // If not submitted at all, it's also pending
-            if ((submissions && submissions.length > 0) && (!ratings || ratings.length === 0)) {
-              pendingTasks++;
-            } else if (!submissions || submissions.length === 0) {
-              pendingTasks++;
-            }
-          }
-        }
-        
-        console.log("Task statistics:", { totalTasks, completedTasks, pendingTasks });
-        
-        setStats({
-          totalTasks,
-          completedTasks,
-          pendingTasks
-        });
-      }
-      
-      setLoading(false);
-    };
-    
-    fetchData();
-  }, [router]);
-
-  if (loading) {
-    return (
-      <AppLayout userRole="student">
-        <div className="space-y-8">
-          <div>
-            <Skeleton className="h-10 w-64 mb-2" />
-            <Skeleton className="h-4 w-96" />
-          </div>
-          
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {[1, 2, 3].map((i) => (
-              <SharedCard key={i}>
-                <Skeleton className="h-6 w-32" />
-                <Skeleton className="h-8 w-16" />
-              </SharedCard>
-            ))}
-          </div>
-          
-          <div className="grid gap-6 md:grid-cols-2">
-            <SharedCard>
-              <Skeleton className="h-6 w-48" />
-              <Skeleton className="h-32 w-full" />
-            </SharedCard>
-            
-            <SharedCard>
-              <Skeleton className="h-6 w-48" />
-              <Skeleton className="h-32 w-full" />
-            </SharedCard>
-          </div>
-        </div>
-      </AppLayout>
-    );
-  }
+  const displayName =
+    session?.name || (session?.email ? session.email.split("@")[0] : "there");
+  const evaluatedActionCount = new Set(evaluations.map((e) => e.action_id)).size;
 
   return (
     <AppLayout userRole="student">
       <div className="space-y-8">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Student Dashboard</h1>
+          <h1 className="text-3xl font-bold text-foreground">Your workspace</h1>
           <p className="text-muted-foreground">
-            Welcome back, <span className="font-semibold text-foreground">{user?.real_name || (user?.email ? user?.email.split('@')[0] : `@${user?.username}`)}</span>
+            Welcome back,{" "}
+            <span className="font-semibold text-foreground">{displayName}</span>
           </p>
         </div>
 
@@ -220,47 +74,64 @@ export default function StudentDashboard() {
           </button>
         )}
 
-
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           <SharedCard>
-            <h3 className="text-lg font-semibold text-foreground">Total Tasks</h3>
-            <p className="text-sm text-muted-foreground">All assigned tasks</p>
-            <div className="text-3xl font-semibold text-primary">{stats.totalTasks}</div>
+            <h3 className="text-lg font-semibold text-foreground">Actions</h3>
+            <p className="text-sm text-muted-foreground">Real work you&apos;ve logged</p>
+            <div className="text-3xl font-semibold text-primary">{actions.length}</div>
           </SharedCard>
-          
+
           <SharedCard>
-            <h3 className="text-lg font-semibold text-foreground">Completed</h3>
-            <p className="text-sm text-muted-foreground">Tasks with ratings</p>
-            <div className="text-3xl font-semibold text-green-500">{stats.completedTasks}</div>
+            <h3 className="text-lg font-semibold text-foreground">Evaluated</h3>
+            <p className="text-sm text-muted-foreground">Actions with an evaluation</p>
+            <div className="text-3xl font-semibold text-green-500">{evaluatedActionCount}</div>
           </SharedCard>
-          
+
           <SharedCard>
-            <h3 className="text-lg font-semibold text-foreground">Pending</h3>
-            <p className="text-sm text-muted-foreground">Tasks awaiting submission/rating</p>
-            <div className="text-3xl font-semibold text-amber-500">{stats.pendingTasks}</div>
+            <h3 className="text-lg font-semibold text-foreground">Assignments</h3>
+            <p className="text-sm text-muted-foreground">Actions you&apos;ve issued</p>
+            <div className="text-3xl font-semibold text-amber-500">{assignments.length}</div>
           </SharedCard>
         </div>
-        
+
         <div className="grid gap-6 md:grid-cols-2">
-          <SharedCard title="Your Profile" description="Account information">
+          <SharedCard title="Your profile" description="The minimum we hold to let you take part">
             <div className="space-y-2">
-              <p className="text-sm text-muted-foreground">Email: <span className="text-foreground font-medium">{user?.email}</span></p>
-              <p className="text-sm text-muted-foreground">Name: <span className="text-foreground font-medium">{user?.real_name || user?.username}</span></p>
+              <p className="text-sm text-muted-foreground">
+                Name: <span className="text-foreground font-medium">{session?.name || "—"}</span>
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Email: <span className="text-foreground font-medium">{session?.email || "—"}</span>
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Organisation:{" "}
+                <span className="text-foreground font-medium">
+                  {rudimentary?.organisation || "—"}
+                </span>
+              </p>
             </div>
           </SharedCard>
-          
-          <SharedCard title="Quick Actions" description="Navigate to key sections">
-            <div className="flex flex-col gap-4">
-              <Button onClick={() => router.push("/s/my-tasks")} className="w-full">
-                My Tasks
+
+          <SharedCard title="Quick actions" description="Jump to the core flows">
+            <div className="flex flex-col gap-3">
+              <Button onClick={() => router.push("/s/actions/create")} className="w-full">
+                <FileText /> Create an Action
+              </Button>
+              <Button onClick={() => router.push("/s/actions")} variant="outline" className="w-full">
+                <ClipboardCheck /> My Actions
+              </Button>
+              <Button onClick={() => router.push("/s/assignments")} variant="outline" className="w-full">
+                <Send /> Assignments
+              </Button>
+              <Button onClick={() => router.push("/s/proposals")} variant="outline" className="w-full">
+                <Lightbulb /> Proposals
               </Button>
               <Button onClick={() => router.push("/s/profile")} variant="outline" className="w-full">
-                View Profile
+                View profile
               </Button>
             </div>
           </SharedCard>
         </div>
-        
       </div>
     </AppLayout>
   );

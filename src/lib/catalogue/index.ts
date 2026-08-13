@@ -93,6 +93,11 @@ export function getSkill(id: string): Skill | undefined {
   return pickableSkills.find((s) => s.skill_id === id);
 }
 
+/** All pickable (non-dormant) skills belonging to a capability (R7). */
+export function getSkillsForCapability(capabilityId: string): Skill[] {
+  return pickableSkills.filter((s) => s.capability_id === capabilityId);
+}
+
 /**
  * Case-insensitive typeahead over pickable skill labels (§7). Ranks exact →
  * prefix → substring. `limit` caps the dropdown length.
@@ -131,6 +136,27 @@ export function getEnum(name: string): EnumOption[] {
 
 export function getScoringParam(parameter: string): string | undefined {
   return data.scoringPolicy.find((p) => p.parameter === parameter)?.value;
+}
+
+/* ---- packages (commercial bundles — gate ORG analytics only) ---------- */
+
+export function getPackages(): Package[] {
+  return data.packages;
+}
+
+/**
+ * The capability_ids covered by any of the given packages (v1.7 §Activation
+ * "Check 2 / commercial_scope"): org analytics only ever return capabilities
+ * inside the org's activated packages. Individual data outside them still exists
+ * but is never surfaced to org endpoints.
+ */
+export function getCapabilityIdsInPackages(packageIds: string[]): Set<string> {
+  const active = new Set(packageIds);
+  return new Set(
+    data.packageCapabilities
+      .filter((pc) => active.has(pc.package_id))
+      .map((pc) => pc.capability_id)
+  );
 }
 
 /* ---- rubrics (the 6 anchors per capability, for the evaluator view) --- */
@@ -196,8 +222,9 @@ export const SCORE_MAX = scoreBounds ? Number(scoreBounds[2]) : 5;
 export type ScoreStep = { value: number; requiresComment: boolean; label?: string };
 
 /**
- * The 0–5 score scale as data (v1.6): holistic integers against the capability's
- * rubric anchors, comment mandatory at the scores in `comment_required_scores`.
+ * The 0–5 score scale as data: integers rated against the capability's rubric
+ * anchors, comment mandatory at the scores in `comment_required_scores`.
+ * Skills carry the rating; capabilities are computed (spec v6 §7 — docs/MODEL.md).
  * No generic quality labels — quality language lives only in rubric anchors.
  */
 export function getScoreScale(): ScoreStep[] {

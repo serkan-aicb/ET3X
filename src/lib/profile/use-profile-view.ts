@@ -41,7 +41,12 @@ export function useProfileView(): ProfileView {
   const onboarding = useLocalDraft<OnboardingDraft>(DRAFT_KEYS.onboardingDraft, EMPTY_ONBOARDING);
   const stored = useLocalDraft<ProfileBasics>(DRAFT_KEYS.profile, EMPTY_BASICS);
   const actions = useLocalDraft<ActionRecord[]>(DRAFT_KEYS.actionsDrafts, NO_ACTIONS);
-  const evaluations = useLocalDraft<Evaluation[]>(DRAFT_KEYS.evaluations, NO_EVALS);
+  const rawEvaluations = useLocalDraft<Evaluation[]>(DRAFT_KEYS.evaluations, NO_EVALS);
+  // Drop stale/legacy records that predate the v6 skill-level shape so a mix of
+  // old and new localStorage data can't crash the profile.
+  const evaluations = rawEvaluations.filter(
+    (e): e is Evaluation => !!e && Array.isArray(e.skill_scores)
+  );
 
   const basics: ProfileBasics = {
     name: stored.name || onboarding.name,
@@ -158,6 +163,7 @@ export function useProfileView(): ProfileView {
     trust: {
       evaluations: evaluations.length,
       capabilities: capabilities.length,
+      evaluators: new Set(evaluations.map((e) => e.evaluator_id).filter(Boolean)).size,
       verified: evalsByAction.size,
     },
     capabilities,

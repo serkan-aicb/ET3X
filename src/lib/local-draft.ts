@@ -24,6 +24,8 @@ export const DRAFT_KEYS = {
   profile: "t3x.profile", // owner-editable profile basics (name/headline/bio/avatar)
   rudimentaryProfile: "t3x.profile.rudimentary", // v1.7 R12: email+org+function gate (Phase 2)
   assignments: "t3x.assignments", // v6 §5a: evaluator-issued action assignments (Phase 4)
+  proposals: "t3x.proposals", // v6 §5b: worker-proposed actions (propose → lock)
+  session: "t3x.session", // frozen-build demo session (role+name); mirrors the session cookie
 } as const;
 
 /* ---- plain read/write (use outside React or in event handlers) -------- */

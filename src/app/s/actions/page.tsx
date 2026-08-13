@@ -123,9 +123,12 @@ function ActionCard({ action: a }: { action: ActionRecord }) {
         <span className="ml-auto text-muted-foreground/70">Created {created}</span>
       </div>
 
-      {/* Request an evaluation (Week 4) — someone other than you scores it. */}
-      <div className="mt-4">
-        <Button variant="outline" size="sm" className="w-full" asChild>
+      {/* View skill-level feedback (finished-task view) + request an evaluation. */}
+      <div className="mt-4 flex gap-2">
+        <Button variant="outline" size="sm" className="flex-1" asChild>
+          <a href={`/s/actions/${a.action_id}`}>View feedback</a>
+        </Button>
+        <Button variant="outline" size="sm" className="flex-1" asChild>
           <a href={`/s/actions/request/${a.action_id}`}>Request evaluation</a>
         </Button>
       </div>

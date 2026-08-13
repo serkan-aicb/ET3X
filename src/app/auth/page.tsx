@@ -1,203 +1,57 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/client";
-import { Suspense } from "react";
 import Image from "next/image";
+import { signIn, getSession } from "@/lib/auth/local-session";
 
+/**
+ * Demo sign-in (frozen build). No password, no server — this collects the
+ * rudimentary profile (R12: email + organisation + function) plus a display
+ * name, records a local session, and drops the individual into their workspace.
+ *
+ * Only the individual signs in here. Evaluators never log in: they act on the
+ * link they are sent (/evaluate/<token>), where the in-page account gate collects
+ * their rudimentary profile (v6 §2). Org roles arrive with the org dashboards.
+ * Replaced by real Supabase auth when the backend is live.
+ */
 function AuthContent() {
-  const [mode, setMode] = useState<"login" | "register">("login");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [role, setRole] = useState<"student" | "educator">("student");
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get("redirect_to") || "";
-  const initialRole = searchParams.get("role") || "student";
-  const initialMode = searchParams.get("mode") || "login";
+  const dest = redirectTo || "/s/dashboard";
 
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [organisation, setOrganisation] = useState("");
+  const [fn, setFn] = useState("");
+  const [error, setError] = useState("");
+
+  // Already signed in → straight through.
   useEffect(() => {
-    if (initialRole === "educator") setRole("educator");
-    if (initialMode === "register") setMode("register");
-  }, [initialRole, initialMode]);
+    if (getSession()) router.push(dest);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  // Check if user is already logged in
-  useEffect(() => {
-    const checkSession = async () => {
-      const supabase = createClient();
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        // Already logged in, redirect
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("role")
-          .eq("id", session.user.id)
-          .single();
-        
-        if (profile) {
-          const dest = redirectTo || (profile.role === "student" ? "/s/dashboard" : "/e/dashboard");
-          router.push(dest);
-        }
-      }
-    };
-    checkSession();
-  }, [router, redirectTo]);
-
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setMessage("");
     setError("");
-
-    if (!email || !password) {
-      setError("Please enter your email and password.");
-      setLoading(false);
+    if (!name.trim() || !email.trim() || !organisation.trim() || !fn.trim()) {
+      setError("Please fill in every field.");
       return;
     }
-
-    try {
-      const supabase = createClient();
-      const { data, error: authError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (authError) {
-        if (authError.message.includes("Invalid login credentials")) {
-          setError("Invalid email or password. Please try again.");
-        } else if (authError.message.includes("Email not confirmed")) {
-          setError("Please confirm your email address before logging in. Check your inbox for the confirmation link.");
-        } else {
-          setError(authError.message);
-        }
-        return;
-      }
-
-      if (data.user) {
-        // Get user role and redirect
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("role")
-          .eq("id", data.user.id)
-          .single();
-
-        const dest = redirectTo || (profile?.role === "student" ? "/s/dashboard" : "/e/dashboard");
-        router.push(dest);
-      }
-    } catch (err) {
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError("An unexpected error occurred.");
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setMessage("");
-    setError("");
-
-    if (!email || !password) {
-      setError("Please enter your email and password.");
-      setLoading(false);
-      return;
-    }
-
-    if (password.length < 8) {
-      setError("Password must be at least 8 characters long.");
-      setLoading(false);
-      return;
-    }
-
-    // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    if (!emailRegex.test(email.trim())) {
       setError("Please enter a valid email address.");
-      setLoading(false);
       return;
     }
-
-    try {
-      const supabase = createClient();
-      const { data, error: authError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            role: role,
-          },
-          emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/auth/callback?redirect_to=${redirectTo}`,
-        },
-      });
-
-      if (authError) {
-        if (authError.message.includes("already registered")) {
-          setError("This email is already registered. Please log in instead.");
-        } else if (authError.message.includes("password")) {
-          setError("Password is too weak. Please use at least 8 characters.");
-        } else {
-          setError(authError.message);
-        }
-        return;
-      }
-
-      if (data.user) {
-        // Create profile via API
-        try {
-          const response = await fetch("/api/auth/signup", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              userId: data.user.id,
-              email: data.user.email,
-              role: role,
-            }),
-          });
-
-          const result = await response.json();
-          if (!response.ok) {
-            console.error("Profile creation error:", result.error);
-          }
-        } catch (profileErr) {
-          console.error("Profile creation failed:", profileErr);
-        }
-
-        if (data.session) {
-          // Auto-confirmed (email confirmation disabled) — redirect immediately
-          setMessage("Account created successfully. Redirecting...");
-          // New students land in onboarding (Week 2); an explicit redirect_to
-          // (e.g. from a task invite link) still wins.
-          const dest = redirectTo || (role === "student" ? "/s/onboarding" : "/e/dashboard");
-          router.push(dest);
-        } else {
-          // Fallback: session not returned (email confirmation enabled)
-          setMessage("Account created! Please log in with your credentials.");
-          setMode("login");
-        }
-      }
-    } catch (err) {
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError("An unexpected error occurred.");
-      }
-    } finally {
-      setLoading(false);
-    }
+    signIn({ role: "student", name, email, organisation, function: fn });
+    router.push(dest);
   };
 
   return (
@@ -208,125 +62,47 @@ function AuthContent() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
           </svg>
         </div>
-        <CardTitle className="text-2xl text-foreground">
-          {mode === "login" ? "Login" : "Create Account"}
-        </CardTitle>
+        <CardTitle className="text-2xl text-foreground">Enter the pilot</CardTitle>
         <CardDescription className="text-muted-foreground">
-          {mode === "login" 
-            ? "Enter your email and password to log in" 
-            : "Register with email and password"
-          }
+          No password needed — this build runs entirely in your browser. Tell us the minimum to take part.
         </CardDescription>
       </CardHeader>
 
-      {/* Mode toggle */}
-      <div className="flex justify-center gap-2 px-6 pb-2">
-        <Button
-          variant={mode === "login" ? "default" : "outline"}
-          size="sm"
-          onClick={() => { setMode("login"); setError(""); setMessage(""); }}
-        >
-          Login
-        </Button>
-        <Button
-          variant={mode === "register" ? "default" : "outline"}
-          size="sm"
-          onClick={() => { setMode("register"); setError(""); setMessage(""); }}
-        >
-          Register
-        </Button>
-      </div>
-
-      <form onSubmit={mode === "login" ? handleLogin : handleRegister}>
-        <CardContent className="space-y-6 pt-2">
-          {mode === "register" && (
-            <div className="space-y-2">
-              <Label htmlFor="role" className="text-foreground">Role</Label>
-              <Select value={role} onValueChange={(v: "student" | "educator") => setRole(v)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select your role" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="student">Student</SelectItem>
-                  <SelectItem value="educator">Educator / Professor</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          )}
+      <form onSubmit={handleSubmit}>
+        <CardContent className="space-y-5 pt-2">
+          <div className="space-y-2">
+            <Label htmlFor="name" className="text-foreground">Full name</Label>
+            <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" required />
+          </div>
 
           <div className="space-y-2">
             <Label htmlFor="email" className="text-foreground">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="your.email@university.edu"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
+            <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@work.com" required />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password" className="text-foreground">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder={mode === "register" ? "At least 8 characters" : "Enter your password"}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              minLength={mode === "register" ? 8 : undefined}
-            />
+            <Label htmlFor="organisation" className="text-foreground">Organisation</Label>
+            <Input id="organisation" value={organisation} onChange={(e) => setOrganisation(e.target.value)} placeholder="Company or university" required />
           </div>
 
-          {message && (
-            <div className="p-3 rounded-lg bg-green-50 text-green-700 border border-green-200">
-              {message}
-            </div>
-          )}
+          <div className="space-y-2">
+            <Label htmlFor="function" className="text-foreground">Role / function</Label>
+            <Input id="function" value={fn} onChange={(e) => setFn(e.target.value)} placeholder="e.g. Student, Engineer, Analyst" required />
+          </div>
 
           {error && (
             <div className="p-3 rounded-lg bg-red-50 text-red-700 border border-red-200">
               {error}
             </div>
           )}
-
-          {mode === "login" && (
-            <div className="text-center">
-              <Link href="/auth/reset-password" className="text-sm text-primary hover:underline">
-                Forgot your password?
-              </Link>
-            </div>
-          )}
         </CardContent>
 
         <CardFooter className="flex flex-col pb-6">
-          <div className="mt-4 w-full">
-            <Button
-              type="submit"
-              className="w-full"
-              size="lg"
-              disabled={loading}
-            >
-              {loading ? (
-                <span className="flex items-center justify-center">
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  {mode === "login" ? "Logging in..." : "Creating account..."}
-                </span>
-              ) : mode === "login" ? "Login" : "Create Account"}
-            </Button>
+          <div className="mt-2 w-full">
+            <Button type="submit" className="w-full" size="lg">Enter</Button>
           </div>
           <div className="mt-4 w-full">
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full"
-              size="lg"
-              onClick={() => router.push("/")}
-            >
+            <Button type="button" variant="outline" className="w-full" size="lg" onClick={() => router.push("/")}>
               Back to Home
             </Button>
           </div>
@@ -340,9 +116,9 @@ function AuthLoading() {
   return (
     <Card className="w-full max-w-md rounded-2xl overflow-hidden border bg-card">
       <CardHeader className="text-center pb-4 pt-6">
-        <CardTitle className="text-2xl text-foreground">Login</CardTitle>
+        <CardTitle className="text-2xl text-foreground">Enter the pilot</CardTitle>
         <CardDescription className="text-muted-foreground">
-          Enter your email and password to log in
+          No password needed — this build runs entirely in your browser.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6 pt-2">
@@ -374,7 +150,7 @@ export default function AuthPage() {
         </Link>
       </header>
 
-      <main className="flex-grow flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <main className="grow flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
         <Suspense fallback={<AuthLoading />}>
           <AuthContent />
         </Suspense>
@@ -387,13 +163,13 @@ export default function AuthPage() {
               <p className="text-muted-foreground">© {new Date().getFullYear()} Talent3X. University Pilot.</p>
             </div>
             <div className="flex space-x-6">
-              <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
+              <Link href="/terms-of-use" className="text-muted-foreground hover:text-primary transition-colors">
                 Terms of Use
               </Link>
-              <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
+              <Link href="/legal-notice" className="text-muted-foreground hover:text-primary transition-colors">
                 Disclaimer
               </Link>
-              <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
+              <Link href="/privacy-policy" className="text-muted-foreground hover:text-primary transition-colors">
                 Privacy Policy
               </Link>
             </div>

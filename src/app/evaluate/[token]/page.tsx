@@ -1,22 +1,19 @@
 "use client";
 
 /**
- * Evaluator flow — Week 4 (handover v1.6 §7, R6/R9). Reached via a single-use
- * token link; the link resolves publicly but scoring requires a rudimentary
- * profile (v1.7 R12 / spec v6 §2) — gated in-page by <AccountGate>. The evaluator:
- *   Context & role → Difficulty → Score each capability → Review → Done.
+ * Evaluator flow. Reached via a single-use token link; the link resolves
+ * publicly but scoring requires a rudimentary profile (R12) — gated in-page by
+ * <AccountGate>. Steps: Context & role → Difficulty → Score → Review → Done.
  *
- * v1.6 rules encoded:
- *  - Capability-level, holistic integer 0–5 against that capability's six rubric
- *    anchors (shown, at the stored rubric_version).
- *  - evidence_quality 0–5 required per capability; comment required at 0/1/5.
- *  - evaluator_role + evaluator_relationship declared; verification_tier stored
- *    (stub = 0). rubric_version + scoring_version stored on every evaluation.
- *  - No self-evaluation (stated; enforced server-side by Cyprian).
- *  - Difficulty confirmed/corrected by the evaluator drives the weight (R9).
+ * SCORING IS SKILL-LEVEL (spec v6 §7): the evaluator rates each selected SKILL
+ * 0–5 and the engine rolls those up into capability scores. Capabilities are
+ * never rated directly. v1.7's R6/R9 capability-holistic wording is void for us
+ * — André ruled for v6 on 2 Aug 2026. Do not "correct" this back.
+ *
+ * Rules and rationale: docs/MODEL.md.
  *
  * Persistence is a localStorage stub; the real submit + token consume are
- * Cyprian's (workspace doc 15). One evaluation row is written per capability.
+ * Cyprian's. One evaluation is written per action, carrying a score per skill.
  */
 
 import { useState } from "react";
@@ -51,6 +48,8 @@ import type {
   Assignment,
   Evaluation,
   EvaluationInvite,
+  Proposal,
+  RudimentaryProfile,
 } from "@/lib/actions/types";
 
 const NO_ACTIONS: ActionRecord[] = [];
@@ -113,18 +112,21 @@ function Evaluator({ token, action }: { token: string; action: ActionRecord }) {
     Object.fromEntries(allSkills.map((s) => [s.skill_id, null]))
   );
   const [evidenceQuality, setEvidenceQuality] = useState(3);
-  const [comment, setComment] = useState("");
+  const [skillComments, setSkillComments] = useState<Record<string, string>>({});
 
   const setSkill = (id: string, score: number) =>
     setSkillScores((s) => ({ ...s, [id]: score }));
+  const setSkillComment = (id: string, text: string) =>
+    setSkillComments((c) => ({ ...c, [id]: text }));
 
-  // Comment required if any skill was scored 0, 1 or 5 (R6).
-  const anyExtreme = Object.values(skillScores).some(
-    (v) => v !== null && COMMENT_REQUIRED.has(v)
-  );
+  // R6 (v1.10): a comment is required PER SKILL scored 0, 1 or 5.
+  const missingComment = (id: string) => {
+    const v = skillScores[id];
+    return v !== null && COMMENT_REQUIRED.has(v) && !(skillComments[id] ?? "").trim();
+  };
   const scoringComplete =
     allSkills.every((s) => skillScores[s.skill_id] !== null) &&
-    (!anyExtreme || comment.trim() !== "");
+    allSkills.every((s) => !missingComment(s.skill_id));
 
   const submit = () => {
     const scoringVersion = getScoringParam("scoring_version") ?? "1.1";
@@ -132,19 +134,23 @@ function Evaluator({ token, action }: { token: string; action: ActionRecord }) {
       ? getRubric(capGroups[0].capability_id)[0]?.rubric_version ?? "0.9-draft"
       : "0.9-draft";
     // One evaluation, carrying a score per selected skill (v6 §7).
+    // R12: the evaluator passed the account gate, so a rudimentary profile
+    // exists — stamp its email as the evaluator identity (NOT NULL).
+    const evaluatorProfile = readDraft<RudimentaryProfile>(DRAFT_KEYS.rudimentaryProfile);
     const row: Evaluation = {
       evaluation_id: `ev_${Math.random().toString(36).slice(2, 10)}`,
       action_id: action.action_id,
+      evaluator_id: evaluatorProfile?.email ?? "unknown",
       skill_scores: action.action_skills
         .filter((as) => skillScores[as.skill_id] != null)
         .map((as) => ({
           skill_id: as.skill_id,
           capability_id_resolved: as.capability_id_resolved,
           score: skillScores[as.skill_id] as number,
+          comment: (skillComments[as.skill_id] ?? "").trim() || undefined,
         })),
       evidence_quality: evidenceQuality,
       difficulty_confirmed: difficulty,
-      comment: comment.trim(),
       evaluator_role: role,
       evaluator_relationship: relationship,
       evaluator_verification_tier: 0,
@@ -173,6 +179,16 @@ function Evaluator({ token, action }: { token: string; action: ActionRecord }) {
                   r.token !== invite.recipient_token ? r : { ...r, status: "evaluated" as const }
                 ),
               }
+        )
+      );
+    }
+    // Path B-5b: if this invite evaluates a worker proposal, mark it evaluated.
+    if (invite?.proposal_id) {
+      const proposals = readDraft<Proposal[]>(DRAFT_KEYS.proposals) ?? [];
+      writeDraft(
+        DRAFT_KEYS.proposals,
+        proposals.map((p) =>
+          p.proposal_id !== invite.proposal_id ? p : { ...p, status: "evaluated" as const }
         )
       );
     }
@@ -220,9 +236,9 @@ function Evaluator({ token, action }: { token: string; action: ActionRecord }) {
           setSkill={setSkill}
           evidenceQuality={evidenceQuality}
           setEvidenceQuality={setEvidenceQuality}
-          comment={comment}
-          setComment={setComment}
-          anyExtreme={anyExtreme}
+          skillComments={skillComments}
+          setSkillComment={setSkillComment}
+          missingComment={missingComment}
           canContinue={scoringComplete}
           onBack={() => setStep(1)}
           onContinue={() => setStep(3)}
@@ -235,8 +251,8 @@ function Evaluator({ token, action }: { token: string; action: ActionRecord }) {
           difficulty={difficulty}
           capGroups={capGroups}
           skillScores={skillScores}
+          skillComments={skillComments}
           evidenceQuality={evidenceQuality}
-          comment={comment}
           onBack={() => setStep(2)}
           onSubmit={submit}
         />
@@ -387,9 +403,9 @@ function ScoreStep({
   setSkill,
   evidenceQuality,
   setEvidenceQuality,
-  comment,
-  setComment,
-  anyExtreme,
+  skillComments,
+  setSkillComment,
+  missingComment,
   canContinue,
   onBack,
   onContinue,
@@ -399,14 +415,13 @@ function ScoreStep({
   setSkill: (id: string, score: number) => void;
   evidenceQuality: number;
   setEvidenceQuality: (n: number) => void;
-  comment: string;
-  setComment: (v: string) => void;
-  anyExtreme: boolean;
+  skillComments: Record<string, string>;
+  setSkillComment: (id: string, v: string) => void;
+  missingComment: (id: string) => boolean;
   canContinue: boolean;
   onBack: () => void;
   onContinue: () => void;
 }) {
-  const commentMissing = anyExtreme && !comment.trim();
   return (
     <div>
       <StepHeading
@@ -420,23 +435,42 @@ function ScoreStep({
             <p className="mt-1 text-sm text-muted-foreground">{g.description}</p>
             <AnchorGuide anchors={g.anchors} />
             <div className="mt-4 space-y-3">
-              {g.skills.map((sk) => (
-                <div
-                  key={sk.skill_id}
-                  className="flex flex-col gap-2 border-b border-muted pb-3 last:border-0 sm:flex-row sm:items-center sm:justify-between"
-                >
-                  <span className="text-sm font-medium text-foreground">{sk.label}</span>
-                  <ScoreButtons
-                    value={skillScores[sk.skill_id]}
-                    onChange={(n) => setSkill(sk.skill_id, n)}
-                  />
-                </div>
-              ))}
+              {g.skills.map((sk) => {
+                const score = skillScores[sk.skill_id];
+                const needsComment = score !== null && COMMENT_REQUIRED.has(score);
+                const missing = missingComment(sk.skill_id);
+                return (
+                  <div key={sk.skill_id} className="border-b border-muted pb-3 last:border-0">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                      <span className="text-sm font-medium text-foreground">{sk.label}</span>
+                      <ScoreButtons value={score} onChange={(n) => setSkill(sk.skill_id, n)} />
+                    </div>
+                    {needsComment && (
+                      <div className="mt-2">
+                        <textarea
+                          value={skillComments[sk.skill_id] ?? ""}
+                          onChange={(e) => setSkillComment(sk.skill_id, e.target.value)}
+                          rows={2}
+                          placeholder={`Why ${score}? A comment is required for a 0, 1 or 5.`}
+                          className={`w-full rounded-lg border px-3 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 ${
+                            missing ? "border-danger ring-2 ring-danger/15" : ""
+                          }`}
+                        />
+                        {missing && (
+                          <p className="mt-1 text-xs text-danger">
+                            A comment is required when a skill is scored 0, 1 or 5.
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </section>
         ))}
 
-        {/* One evidence_quality for the whole evaluation (v6 §7) */}
+        {/* One evidence_quality for the whole evaluation (v1.10 §7) */}
         <section className="rounded-xl border bg-card p-6 shadow-card">
           <h2 className="text-sm font-semibold text-foreground">
             Evidence quality{" "}
@@ -447,32 +481,6 @@ function ScoreStep({
           <div className="mt-3">
             <ScoreButtons value={evidenceQuality} onChange={setEvidenceQuality} />
           </div>
-        </section>
-
-        {/* One shared comment; required if any skill is 0/1/5 (R6) */}
-        <section className="rounded-xl border bg-card p-6 shadow-card">
-          <label className="text-sm font-semibold text-foreground">
-            Comment{" "}
-            {anyExtreme ? (
-              <span className="text-danger">(required — you gave a 0, 1 or 5)</span>
-            ) : (
-              <span className="font-normal text-muted-foreground/70">(optional)</span>
-            )}
-          </label>
-          <textarea
-            value={comment}
-            onChange={(e) => setComment(e.target.value)}
-            rows={3}
-            placeholder="What in the evidence supports these scores?"
-            className={`mt-2 w-full rounded-lg border px-3 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 ${
-              commentMissing ? "border-danger ring-2 ring-danger/15" : ""
-            }`}
-          />
-          {commentMissing && (
-            <p className="mt-1 text-xs text-danger">
-              A comment is required when any skill is scored 0, 1 or 5.
-            </p>
-          )}
         </section>
       </div>
       <NavRow onBack={onBack}>
@@ -544,8 +552,8 @@ function ReviewStep({
   difficulty,
   capGroups,
   skillScores,
+  skillComments,
   evidenceQuality,
-  comment,
   onBack,
   onSubmit,
 }: {
@@ -554,8 +562,8 @@ function ReviewStep({
   difficulty: string;
   capGroups: CapGroup[];
   skillScores: Record<string, number | null>;
+  skillComments: Record<string, string>;
   evidenceQuality: number;
-  comment: string;
   onBack: () => void;
   onSubmit: () => void;
 }) {
@@ -583,28 +591,23 @@ function ReviewStep({
             </h2>
             <ul className="space-y-2">
               {g.skills.map((sk) => (
-                <li
-                  key={sk.skill_id}
-                  className="flex items-center justify-between gap-3 border-b border-muted py-2 last:border-0"
-                >
-                  <span className="min-w-0 truncate text-sm text-foreground">{sk.label}</span>
-                  <span className="shrink-0 rounded-lg bg-primary-soft px-2.5 py-1 text-sm font-bold tabular-nums text-primary">
-                    {skillScores[sk.skill_id]}/{SCORE_MAX}
-                  </span>
+                <li key={sk.skill_id} className="border-b border-muted py-2 last:border-0">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="min-w-0 truncate text-sm text-foreground">{sk.label}</span>
+                    <span className="shrink-0 rounded-lg bg-primary-soft px-2.5 py-1 text-sm font-bold tabular-nums text-primary">
+                      {skillScores[sk.skill_id]}/{SCORE_MAX}
+                    </span>
+                  </div>
+                  {(skillComments[sk.skill_id] ?? "").trim() && (
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      “{(skillComments[sk.skill_id] ?? "").trim()}”
+                    </p>
+                  )}
                 </li>
               ))}
             </ul>
           </section>
         ))}
-
-        {comment && (
-          <section className="rounded-xl border bg-card p-6 shadow-card">
-            <h2 className="mb-2 text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">
-              Comment
-            </h2>
-            <p className="text-sm text-muted-foreground">{comment}</p>
-          </section>
-        )}
 
         <div className="flex items-start gap-2 rounded-lg bg-primary-soft px-4 py-3 text-sm text-muted-foreground">
           <Sparkles className="mt-0.5 size-4 shrink-0 text-primary" />

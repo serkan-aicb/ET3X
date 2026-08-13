@@ -1,21 +1,16 @@
 "use client";
 
 import { Footer } from "@/components/footer";
-import { createClient } from "@/lib/supabase/client";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
+import { DRAFT_KEYS, useLocalDraft } from "@/lib/local-draft";
+import { getSession, signOut, type LocalSession } from "@/lib/auth/local-session";
 
-type UserWithProfile = {
-  id: string;
-  email: string | undefined;
-  username: string;
-  did: string;
-  real_name?: string | null;
-  matriculation_number?: string | null;
-};
+const NO_SESSION: LocalSession | null = null;
+
 export function AppLayout({
   children,
   userRole,
@@ -25,48 +20,17 @@ export function AppLayout({
   userRole: "student" | "educator" | "admin";
   fullWidth?: boolean;
 }) {
-  const [user, setUser] = useState<UserWithProfile | null>(null);
+  const session = useLocalDraft<LocalSession | null>(DRAFT_KEYS.session, NO_SESSION);
   const router = useRouter();
 
+  // Frozen build: the demo session stands in for auth. The proxy already gates
+  // protected routes at request time; this is a client-side backstop.
   useEffect(() => {
-    const fetchUserData = async () => {
-      const supabase = createClient();
-      
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      if (userError || !user) {
-        router.push("/auth");
-        return;
-      }
-      
-      // Get user profile
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('username, did, real_name, matriculation_number')
-        .eq('id', user.id)
-        .single();
-      
-      if (profileError) {
-        console.error("Error fetching profile:", profileError);
-        router.push("/auth");
-        return;
-      }
-      
-      setUser({
-        id: user.id,
-        email: user.email,
-        username: profile.username,
-        did: profile.did,
-        real_name: profile.real_name,
-        ...(userRole === "student" ? { matriculation_number: profile.matriculation_number } : {})
-      });
-    };
-    
-    fetchUserData();
-  }, [router, userRole]);
+    if (!getSession()) router.push("/auth");
+  }, [router]);
 
-  const handleLogout = async () => {
-    const supabase = createClient();
-    await supabase.auth.signOut();
+  const handleLogout = () => {
+    signOut();
     router.push("/auth");
   };
 
@@ -79,21 +43,8 @@ export function AppLayout({
     }
   };
 
-  const getMyTasksLink = () => {
-    switch (userRole) {
-      case "student": return "/s/my-tasks";
-      case "educator": return "/e/my-tasks";
-      default: return "#";
-    }
-  };
-
-  const getProfileLink = () => {
-    switch (userRole) {
-      case "student": return "/s/profile";
-      case "educator": return "/e/profile";
-      default: return "#";
-    }
-  };
+  const displayName =
+    session?.name || (session?.email ? session.email.split("@")[0] : "");
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -101,41 +52,31 @@ export function AppLayout({
       <header className="bg-background border-b backdrop-blur py-4 px-6 print:hidden">
         <div className="max-w-6xl mx-auto flex justify-between items-center">
           <Link href={getDashboardLink()} className="flex items-center space-x-2">
-            <Image 
-              src="/pics/logo-transparent.png" 
-              alt="Talent3X Logo" 
-              width={300} 
-              height={60} 
+            <Image
+              src="/pics/logo-transparent.png"
+              alt="Talent3X Logo"
+              width={300}
+              height={60}
               className="h-10 w-auto"
               priority
               quality={100}
             />
           </Link>
-          
+
           <div className="flex items-center space-x-4">
-            {user && (
+            {displayName && (
               <span className="text-muted-foreground hidden sm:block">
-                Welcome, <span className="font-semibold text-foreground">{user.real_name || (user.email ? user.email.split('@')[0] : `@${user.username}`)}</span>
+                Welcome, <span className="font-semibold text-foreground">{displayName}</span>
               </span>
             )}
-            
+
             <div className="flex space-x-2">
-              {userRole === "educator" && (
-                <Button variant="outline" onClick={() => router.push("/e/tasks/create")}>
-                  Create Task
+              {userRole === "student" && (
+                <Button variant="outline" onClick={() => router.push("/s/profile")}>
+                  Profile
                 </Button>
               )}
-              
-              {userRole !== "admin" && (
-                <Button variant="outline" onClick={() => router.push(getMyTasksLink())}>
-                  My Tasks
-                </Button>
-              )}
-              
-              <Button variant="outline" onClick={() => router.push(getProfileLink())}>
-                Profile
-              </Button>
-              
+
               <Button variant="outline" onClick={handleLogout}>
                 Logout
               </Button>
