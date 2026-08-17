@@ -48,8 +48,8 @@ export async function POST(request: Request, { params }: RouteParams) {
   // Confirm the action exists and belongs to the caller.
   const { data: action, error: actionError } = await supabase
     .from('actions')
-    .select('id, creator_profile_id, status')
-    .eq('id', actionId)
+    .select('action_id, creator_profile_id, status')
+    .eq('action_id', actionId)
     .single();
 
   if (actionError || !action) {
@@ -139,8 +139,8 @@ export async function DELETE(request: Request, { params }: RouteParams) {
 
   const { data: action, error: actionError } = await supabase
     .from('actions')
-    .select('id, creator_profile_id, status')
-    .eq('id', actionId)
+    .select('action_id, creator_profile_id, status')
+    .eq('action_id', actionId)
     .single();
 
   if (actionError || !action) {
@@ -151,7 +151,15 @@ export async function DELETE(request: Request, { params }: RouteParams) {
   }
   if (action.status !== 'Draft') {
     // CONFIRMED (feedback received 20 July 2026): lock skill selection after
-    // Draft. This is now the confirmed rule, not an assumption.
+    // Draft. Still holds under the later Proposed/Locked/Declined states
+    // added by v6/v10 — those are all reached by LEAVING Draft, so "only in
+    // Draft" already covers them without needing an explicit list. The one
+    // thing this depends on: broadcast-recipient instances (Path B §5a)
+    // must never be created sitting in 'Draft', since a recipient IS the
+    // creator_profile_id after claiming and would otherwise pass the
+    // ownership check above and be able to edit a supposedly read-only
+    // instance. See schema-v6 / broadcast route — those create recipient
+    // rows as 'Locked', not 'Draft', specifically so this check still holds.
     return NextResponse.json({ error: 'Skills can only be modified while the action is in Draft status' }, { status: 400 });
   }
 

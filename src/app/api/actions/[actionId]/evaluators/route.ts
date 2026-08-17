@@ -37,6 +37,23 @@ export async function GET(request: Request, { params }: RouteParams) {
 // worth rejecting an obviously-self-referential INVITE early too, since a
 // creator inviting themselves as an evaluator should be caught here rather
 // than failing much later at evaluation submission time.
+//
+// NEW: Draft -> Proposed/Submitted status transition. Nothing previously
+// moved an action out of 'Draft' — this was a real gap, not a stale
+// comment. Distinguishing Path A (work already done, requesting
+// evaluation) from Path B-5b (work not yet done, evaluator decides
+// first) can't be read off this call alone; the signal used here is
+// whether the action already carries evidence — Path A requires evidence
+// before "Request Evaluation" (flow spec §4 step 6), Path B-5b never has
+// evidence yet at this point (work hasn't happened). This is a judgment
+// call resolving an otherwise-unaddressed gap, not a previously-confirmed
+// rule — flagging for a look rather than presenting it as settled:
+//   - Evidence present  -> status = 'Submitted' (Path A)
+//   - No evidence yet   -> status = 'Proposed'  (Path B-5b, awaiting
+//                          evaluator's accept/adjust/decline)
+// Only applied when the action is currently 'Draft' — re-inviting after a
+// decline, or inviting an additional evaluator later, must not clobber a
+// status that has already moved on.
 export async function POST(request: Request, { params }: RouteParams) {
   const { actionId } = await params;
   const supabase = await createServerClient();
@@ -47,8 +64,8 @@ export async function POST(request: Request, { params }: RouteParams) {
 
   const { data: action, error: actionError } = await supabase
     .from('actions')
-    .select('id, creator_profile_id')
-    .eq('id', actionId)
+    .select('action_id, creator_profile_id, status, evidence_note, evidence_link, evidence_files')
+    .eq('action_id', actionId)
     .single();
 
   if (actionError || !action) {
@@ -92,6 +109,25 @@ export async function POST(request: Request, { params }: RouteParams) {
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  if (action.status === 'Draft') {
+    const hasEvidence = Boolean(action.evidence_note || action.evidence_link || action.evidence_files);
+    const nextStatus = hasEvidence ? 'Submitted' : 'Proposed';
+
+    const { error: statusError } = await supabase
+      .from('actions')
+      .update({ status: nextStatus })
+      .eq('action_id', actionId);
+
+    if (statusError) {
+      // The assignment already exists at this point — surface a 207 rather
+      // than implying the whole request failed.
+      return NextResponse.json(
+        { evaluator_assignment: data, warning: `Assignment created but status transition to ${nextStatus} failed` },
+        { status: 207 }
+      );
+    }
   }
 
   // FLAG: actual invite delivery (email send, share link/QR generation) is
